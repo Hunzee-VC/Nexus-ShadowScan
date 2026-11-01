@@ -1,28 +1,18 @@
-"""SymBiote AgentBOM documents as an inventory source.
+"""Import operator-trusted SymBiote AgentBOM 0.1 documents as inventory.
 
-A SymBiote AgentBOM (https://github.com/aisecnomad/SymBiote) is the sealed,
-machine-generated bill of materials of one agent. Loading one as inventory
-registers its subject agent as sanctioned, with the owner, autonomy level and
-discovery resources taken from the document instead of a hand-written card.
-
-Only the fields named below are read; everything else in the document is
-ignored here. Parsing is fail-closed in the house style: a malformed document
-raises the same validation error family as a malformed card, never a silently
-smaller inventory. The document's own assurance semantics are respected: an
-``automationLevel`` claim whose ``state`` is not ``present`` contributes no
-declared level (unknown never counts as low).
+Structural validation is not seal verification or approval by the producer.
+Only subject identities become approval bindings; dependency resources remain
+contextual. SymBiote remains responsible for cryptographic supply-chain checks.
 """
 
 from __future__ import annotations
 
+import re
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-#: Top-level keys that identify an AgentBOM companion document.
 AGENTBOM_MARKERS = ("specVersion", "snapshot", "subject")
-
-#: ISO/IEC 22989 automation ladder (SPDX 3.1 ``isoAutomationLevel`` names) to
-#: the L0-L5 scale of :mod:`shadowscan.autonomy`.
 ISO_TO_LEVEL: dict[str, int] = {
     "notAutomated": 0,
     "assistiveAutomation": 1,
@@ -32,120 +22,233 @@ ISO_TO_LEVEL: dict[str, int] = {
     "fullAutomation": 5,
     "autonomous": 5,
 }
+_DIGEST = re.compile(r"sha256:[0-9a-f]{64}\Z")
+_ENTITY_ID = re.compile(r"[a-z][a-z0-9-]*:[A-Za-z0-9._~/@+-]+\Z")
+_MAX_ENTITIES = 10_000
+_ENTITY_PREFIXES = {
+    "agents": "agent:",
+    "parties": "party:",
+    "deployments": "deploy:",
+    "toolServers": "server:",
+}
+Invalid = Callable[[Path, str, str], Exception]
 
 
 def is_agentbom(doc: Any) -> bool:
-    """Whether ``doc`` looks like an AgentBOM companion document (checked before
-    the plain ``agents:`` inventory shape, which an AgentBOM also contains)."""
+    """Recognize emitted companion documents before the plain agents-list shape."""
     return isinstance(doc, dict) and all(marker in doc for marker in AGENTBOM_MARKERS)
 
 
-def _claim_value(claim: Any) -> Any:
-    """The value of a serialized SymBiote claim, or ``None`` when absent/unknown."""
-    if not isinstance(claim, dict):
+class _Reader:
+    def __init__(self, path: Path, location: str, invalid: Invalid) -> None:
+        self.path, self.location, self.invalid = path, location, invalid
+        self.ids: set[str] = set()
+
+    def error(self, field: str, reason: str) -> Exception:
+        return self.invalid(self.path, f"{self.location}.{field}", reason)
+
+    def text(self, value: Any, field: str) -> str:
+        if not isinstance(value, str) or not value or value != value.strip():
+            raise self.error(field, "expected a nonempty unpadded string")
+        return value
+
+    def optional_text(self, value: Any, field: str) -> str | None:
+        return None if value is None else self.text(value, field)
+
+    def mapping(self, value: Any, field: str) -> dict[str, Any]:
+        if not isinstance(value, dict) or any(not isinstance(key, str) for key in value):
+            raise self.error(field, "expected an object")
+        return value
+
+    def objects(self, value: Any, field: str) -> list[dict[str, Any]]:
+        if not isinstance(value, list) or len(value) > _MAX_ENTITIES:
+            raise self.error(field, "expected a bounded list of objects")
+        return [self.mapping(item, f"{field}[{index}]") for index, item in enumerate(value)]
+
+    def entities(self, doc: dict[str, Any], field: str) -> dict[str, dict[str, Any]]:
+        out: dict[str, dict[str, Any]] = {}
+        for index, item in enumerate(self.objects(doc.get(field, []), field)):
+            identity = self.entity_id(item.get("id"), f"{field}[{index}].id")
+            if not identity.startswith(_ENTITY_PREFIXES[field]):
+                raise self.error(field, "entity id has the wrong collection prefix")
+            if identity in self.ids:
+                raise self.error(field, "duplicate entity id")
+            self.ids.add(identity)
+            out[identity] = item
+        return out
+
+    def entity_id(self, value: Any, field: str) -> str:
+        identity = self.text(value, field)
+        if len(identity) > 512 or not _ENTITY_ID.fullmatch(identity):
+            raise self.error(field, "expected an AgentBOM entity id")
+        return identity
+
+    def claim(self, value: Any, field: str) -> Any:
+        if value is None:
+            return None
+        claim = self.mapping(value, field)
+        state = claim.get("state", "present")  # Producer schema default, not an unknown claim.
+        if state not in ("present", "unknown", "absent-verified"):
+            raise self.error(field, "unsupported claim state")
+        item = claim.get("value")
+        if state == "present":
+            if item is None:
+                raise self.error(field, "a present claim requires a value")
+            return item
+        if state == "unknown":
+            if item is not None:
+                raise self.error(field, "an unknown claim cannot carry a value")
+            self.text(claim.get("unknownReason"), f"{field}.unknownReason")
+        elif item not in (None, "", [], {}, False):
+            raise self.error(field, "an absent-verified claim must be empty")
         return None
-    if claim.get("state") not in (None, "present"):
-        return None
-    return claim.get("value")
 
 
-def _strings(values: Any) -> list[str]:
-    if not isinstance(values, list):
+def _snapshot(doc: dict[str, Any], subject: str, reader: _Reader) -> dict[str, Any]:
+    if doc.get("specVersion") != "0.1":
+        raise reader.error("specVersion", "unsupported AgentBOM version; expected 0.1")
+    snapshot = reader.mapping(doc.get("snapshot"), "snapshot")
+    digest = reader.text(snapshot.get("digest"), "snapshot.digest")
+    if not _DIGEST.fullmatch(digest):
+        raise reader.error("snapshot.digest", "expected a lowercase sha256: digest with 64 hex digits")
+    serial = snapshot.get("serial")
+    if type(serial) is not int or serial < 1:
+        raise reader.error("snapshot.serial", "expected a positive integer")
+    if snapshot.get("id") != f"snap:{serial}:{digest[7:19]}":
+        raise reader.error("snapshot.id", "does not agree with snapshot serial and digest")
+    if snapshot.get("agentRef") != subject:
+        raise reader.error("snapshot.agentRef", "must identify the document subject")
+    if doc.get("merkle") is not None:
+        merkle = reader.mapping(doc["merkle"], "merkle")
+        if merkle.get("root") != digest:
+            raise reader.error("merkle.root", "must agree with the snapshot digest")
+    return snapshot
+
+
+def _owner(agent: dict[str, Any], parties: dict[str, dict[str, Any]], reader: _Reader) -> str | None:
+    identity = reader.optional_text(agent.get("ownerRef"), "agents.subject.ownerRef")
+    if identity is None:
+        return None
+    if identity not in parties:
+        raise reader.error("agents.subject.ownerRef", "does not identify a party")
+    return reader.optional_text(parties[identity].get("name"), "parties.owner.name")
+
+
+def _autonomy(agent: dict[str, Any], reader: _Reader) -> int | None:
+    ladder = reader.claim(agent.get("automationLevel"), "agents.subject.automationLevel")
+    if ladder is None:
+        return None
+    if not isinstance(ladder, str) or ladder not in ISO_TO_LEVEL:
+        raise reader.error("agents.subject.automationLevel", "expected an isoAutomationLevel name")
+    return ISO_TO_LEVEL[ladder]
+
+
+def _frameworks(agent: dict[str, Any], reader: _Reader) -> list[str]:
+    value = reader.claim(agent.get("framework"), "agents.subject.framework")
+    if value is None:
         return []
-    return [v for v in values if isinstance(v, str) and v]
+    framework = reader.mapping(value, "agents.subject.framework.value")
+    return [f"framework.{reader.text(framework.get('name'), 'agents.subject.framework.name').lower()}"]
 
 
-def summarize(doc: dict[str, Any], path: Path, location: str, invalid: Any) -> dict[str, Any]:
-    """Extract the inventory-relevant facts of one AgentBOM document.
-
-    ``invalid`` is :func:`shadowscan.registry._invalid`, passed in to keep this
-    module import-light and the error type single-sourced. The return value is
-    the keyword set of an ``InventoryEntry`` minus ``source``.
-    """
-    subject = doc.get("subject")
-    if not isinstance(subject, str) or not subject:
-        raise invalid(path, f"{location}.subject", "a nonempty string is required")
-    snapshot = doc.get("snapshot")
-    if not isinstance(snapshot, dict) or not str(snapshot.get("digest", "")).startswith("sha256:"):
-        raise invalid(path, f"{location}.snapshot.digest", "a sha256: digest is required")
-    agents = doc.get("agents")
-    if not isinstance(agents, list):
-        raise invalid(path, f"{location}.agents", "expected the document's agent entities")
-    agent = next((a for a in agents if isinstance(a, dict) and a.get("id") == subject), None)
-    if agent is None:
-        raise invalid(path, f"{location}.agents", f"subject {subject!r} is not among the agents")
-
-    parties = {p.get("id"): p for p in doc.get("parties", []) if isinstance(p, dict)}
-    owner = None
-    owner_party = parties.get(agent.get("ownerRef"))
-    if isinstance(owner_party, dict) and isinstance(owner_party.get("name"), str):
-        owner = owner_party["name"]
-
-    level: int | None = None
-    ladder = _claim_value(agent.get("automationLevel"))
-    if ladder is not None:
-        if not isinstance(ladder, str) or ladder not in ISO_TO_LEVEL:
-            raise invalid(
-                path,
-                f"{location}.agents.{subject}.automationLevel",
-                "expected an isoAutomationLevel name",
-            )
-        level = ISO_TO_LEVEL[ladder]
-
-    names = [subject.split(":", 1)[-1]]
-    if isinstance(agent.get("name"), str) and agent["name"]:
-        names.append(agent["name"])
-
-    frameworks: list[str] = []
-    framework = _claim_value(agent.get("framework"))
-    if isinstance(framework, dict) and isinstance(framework.get("name"), str):
-        frameworks.append(f"framework.{framework['name'].strip().lower()}")
-
+def _deployment_resources(
+    deployments: dict[str, dict[str, Any]], subject: str, reader: _Reader
+) -> tuple[list[str], list[str]]:
     resources: list[str] = []
-    for deployment in doc.get("deployments", []):
-        if not isinstance(deployment, dict) or deployment.get("agentRef") != subject:
+    uids: list[str] = []
+    for deployment in deployments.values():
+        if reader.entity_id(deployment.get("agentRef"), "deployments.agentRef") != subject:
             continue
-        workload = deployment.get("workloadRef")
-        if isinstance(workload, dict):
-            uid = workload.get("uid")
-            if isinstance(uid, str) and uid:
-                resources.append(uid)
-            namespace, name = workload.get("namespace"), workload.get("name")
-            if isinstance(namespace, str) and isinstance(name, str) and namespace and name:
-                resources.append(f"k8s:{namespace}/{name}")
-    for server in doc.get("toolServers", []):
-        if not isinstance(server, dict):
+        if deployment.get("workloadRef") is None:
             continue
-        endpoint = _claim_value(server.get("endpoint"))
-        if isinstance(endpoint, str) and endpoint:
-            resources.append(endpoint)
-        package = _claim_value(server.get("package"))
-        if isinstance(package, dict) and isinstance(package.get("purl"), str) and package["purl"]:
-            resources.append(package["purl"])
-    for ref in agent.get("externalRefs", []) or []:
-        if isinstance(ref, dict) and isinstance(ref.get("url"), str) and ref["url"]:
-            resources.append(ref["url"])
-    card_url = None
-    a2a = agent.get("a2ACard")
-    if isinstance(a2a, dict) and isinstance(a2a.get("url"), str) and a2a["url"]:
-        card_url = a2a["url"]
-        resources.append(card_url)
+        workload = reader.mapping(deployment["workloadRef"], "deployments.workloadRef")
+        if uid := reader.optional_text(workload.get("uid"), "deployments.workloadRef.uid"):
+            uids.append(uid)
+        if resource := _workload_identity(deployment, workload, reader):
+            resources.append(resource)
+    return resources, uids
 
+
+def _workload_identity(deployment: dict[str, Any], workload: dict[str, Any], reader: _Reader) -> str | None:
+    environment = reader.mapping(deployment.get("environment", {}), "deployments.environment")
+    if environment.get("kind") != "k8s":
+        return None
+    namespace = reader.optional_text(environment.get("namespace"), "deployments.environment.namespace")
+    if namespace is not None and workload.get("namespace") not in (None, namespace):
+        raise reader.error("deployments.workloadRef.namespace", "conflicts with deployment namespace")
+    values = (
+        environment.get("cluster"),
+        workload.get("namespace"),
+        workload.get("kind"),
+        workload.get("name"),
+    )
+    parts = [reader.optional_text(value, "deployments.workloadIdentity") for value in values]
+    if any(part is not None and "/" in part for part in parts):
+        raise reader.error("deployments.workloadIdentity", "identity components cannot contain slashes")
+    if not all(part is not None for part in parts):
+        return None
+    return "k8s:" + "/".join(part for part in parts if part is not None)
+
+
+def _subject_resources(agent: dict[str, Any], reader: _Reader) -> list[str]:
+    resources: list[str] = []
+    for ref in reader.objects(agent.get("externalRefs", []), "agents.subject.externalRefs"):
+        reader.text(ref.get("type"), "agents.subject.externalRefs.type")
+        resources.append(reader.text(ref.get("url"), "agents.subject.externalRefs.url"))
+    if agent.get("a2ACard") is not None:
+        card = reader.mapping(agent["a2ACard"], "agents.subject.a2ACard")
+        if url := reader.optional_text(card.get("url"), "agents.subject.a2ACard.url"):
+            resources.append(url)
+    return resources
+
+
+def _component_resources(servers: dict[str, dict[str, Any]], reader: _Reader) -> list[str]:
+    resources: list[str] = []
+    for server in servers.values():
+        endpoint = reader.claim(server.get("endpoint"), "toolServers.endpoint")
+        if endpoint is not None:
+            resources.append(reader.text(endpoint, "toolServers.endpoint.value"))
+        package = reader.claim(server.get("package"), "toolServers.package")
+        if package is not None:
+            package = reader.mapping(package, "toolServers.package.value")
+            if purl := reader.optional_text(package.get("purl"), "toolServers.package.purl"):
+                resources.append(purl)
+    return list(dict.fromkeys(resources))
+
+
+def summarize(doc: dict[str, Any], path: Path, location: str, invalid: Invalid) -> dict[str, Any]:
+    """Return subject inventory fields, never treating components or seals as approval."""
+    reader = _Reader(path, location, invalid)
+    subject = reader.entity_id(doc.get("subject"), "subject")
+    snapshot = _snapshot(doc, subject, reader)
+    agents = reader.entities(doc, "agents")
+    if subject not in agents:
+        raise reader.error("agents", "subject is not among the agents")
+    agent = agents[subject]
+    parties = reader.entities(doc, "parties")
+    deployments = reader.entities(doc, "deployments")
+    servers = reader.entities(doc, "toolServers")
+    resources, uids = _deployment_resources(deployments, subject, reader)
+    resources.extend(_subject_resources(agent, reader))
+    name = reader.optional_text(agent.get("name"), "agents.subject.name")
     return {
         "agent_id": subject,
-        "name": agent.get("name") if isinstance(agent.get("name"), str) else None,
-        "owner": owner,
-        "resources": _strings(resources),
-        "names": _strings(names),
-        "frameworks": frameworks,
+        "name": name,
+        "owner": _owner(agent, parties, reader),
+        "resources": list(dict.fromkeys(resources)),
+        "names": [subject.split(":", 1)[-1], *([name] if name else [])],
+        "frameworks": _frameworks(agent, reader),
         "tags": ["agentbom"],
-        "autonomy_level": level,
+        "autonomy_level": _autonomy(agent, reader),
         "card": {
             "schema": "symbiote-agentbom",
-            "spec_version": str(doc.get("specVersion", "")),
-            "snapshot_id": str(snapshot.get("id", "")),
-            "snapshot_digest": str(snapshot.get("digest", "")),
-            "snapshot_serial": snapshot.get("serial"),
+            "spec_version": doc["specVersion"],
+            "snapshot_id": snapshot["id"],
+            "snapshot_digest": snapshot["digest"],
+            "snapshot_serial": snapshot["serial"],
+            "verification": "not-verified",
+            "component_resources": _component_resources(servers, reader),
+            "workload_uids": list(dict.fromkeys(uids)),
         },
     }
 
