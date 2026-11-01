@@ -23,6 +23,11 @@ The inventory can be supplied as:
 * a simple inventory list ``agents: [{id, name, owner, resources, names, autonomy_level}]`` (YAML/JSON)
 * a CSV with columns ``agent_id, name, owner, resources`` (resources separated by ``|``)
   and an optional ``autonomy_level``
+* **SymBiote AgentBOM documents** – the sealed per-agent bill-of-materials JSON
+  that `SymBiote <https://github.com/aisecnomad/SymBiote>`_ produces
+  (recognized by top-level ``specVersion``/``snapshot``/``subject``); the
+  subject agent becomes one sanctioned entry. See :mod:`shadowscan.agentbom`
+  and ``docs/integrations/symbiote.md``.
 
 Automatic approval requires an explicit, case-sensitive resource pattern and
 all configured ``surfaces``, ``providers``, ``accounts``, ``regions`` and
@@ -48,6 +53,7 @@ from typing import Any
 
 import yaml
 
+from shadowscan import agentbom
 from shadowscan.autonomy import observed_floor, valid_autonomy
 from shadowscan.errors import SetupError, SetupPathError
 from shadowscan.governance import GovernanceError, parse_governance
@@ -331,6 +337,11 @@ class Inventory:
         out: list[InventoryEntry] = []
         for number, doc in enumerate(docs, 1):
             location = f"document {number}"
+            # Checked before the plain ``agents:`` shape: an AgentBOM document
+            # also carries a top-level ``agents`` list (its entity collection).
+            if agentbom.is_agentbom(doc):
+                out.append(cls._entry_from_agentbom(doc, path, location))
+                continue
             if isinstance(doc, dict) and "agents" in doc:
                 _check_fields(doc, {"agents"}, path, location)
                 if not isinstance(doc["agents"], list):
@@ -387,6 +398,16 @@ class Inventory:
             return out
         except csv.Error:
             raise _invalid(path, "CSV document", "invalid CSV syntax") from None
+
+    @staticmethod
+    def _entry_from_agentbom(doc: dict[str, Any], path: Path, location: str) -> InventoryEntry:
+        """One sanctioned entry per AgentBOM document: its subject agent.
+
+        The field mapping lives in :mod:`shadowscan.agentbom`; this wrapper only
+        binds the shared validation-error constructor and the source path.
+        """
+        fields = agentbom.summarize(doc, path, location, _invalid)
+        return InventoryEntry(source=str(path), **fields)
 
     @staticmethod
     def _entry_from_card(doc: dict[str, Any], path: Path, location: str = "entry") -> InventoryEntry:
