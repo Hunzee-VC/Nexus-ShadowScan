@@ -8,12 +8,12 @@ explain operator migrations. Earlier per-change entries are preserved in the
 
 ## Unreleased
 
-- SymBiote AgentBOM documents load directly as an inventory source: a sealed
-  per-agent bill of materials from github.com/aisecnomad/SymBiote registers
-  its subject agent (owner, ISO-ladder autonomy level mapped to L0-L5,
-  discovery resources from deployments, remote tool servers, pinned package
-  purls and external refs), fail-closed like every other format
-  (docs/integrations/symbiote.md).
+- Operator-trusted SymBiote AgentBOM 0.1 documents load as inventory with
+  strict structural validation and literal subject bindings. Complete Kubernetes
+  identities reconcile with the shipped connector; dependency endpoints, purls
+  and workload UIDs remain descriptive. Seal verification remains with SymBiote
+  (docs/integrations/symbiote.md). pyasn1 is pinned to 0.6.5 for the container
+  vulnerability fixes.
 - An audit with each finding reproduced before it was fixed closes 21 gaps.
   Fail-closed: a single saved Zapier, Auth0 or Slack API page, a staged
   submodule hidden by `ignore = all`, an endpoint `--dump-records` manifest and

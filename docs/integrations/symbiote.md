@@ -12,8 +12,13 @@ ShadowScan and SymBiote split one governance loop:
 
 ## AgentBOM documents as inventory
 
-Every sealed AgentBOM is a machine-written sanctioned-agent record. Pass the
-JSON documents (or a directory of them) straight to `--inventory`:
+Importing an AgentBOM is an explicit **operator trust decision**, like importing
+a Capability Card. Verify the document with SymBiote and review the subject
+identities before passing its JSON (or a directory of documents) to `--inventory`.
+A seal or producer claim alone never approves an agent:
+
+The commands below require a SymBiote build with AgentBOM 0.1 and its
+ShadowScan bridge commands. Older Nexus AIBOM documents are a different format.
 
 ```bash
 symbiote scan . -o boms/            # SymBiote: one sealed AgentBOM per agent
@@ -21,23 +26,40 @@ shadowscan scan -c shadowscan.yaml --inventory boms/
 ```
 
 A document is recognized by its top-level `specVersion`, `snapshot` and
-`subject` fields, and contributes **one entry: the subject agent** (an
-AgentBOM's `agents` list contains the BOM's own entity records, not inventory
-entries). The mapping, implemented in `shadowscan/agentbom.py`:
+`subject` fields with supported `specVersion: "0.1"`, and contributes **one entry:
+the subject agent**. An AgentBOM's `agents` list contains its own entity records,
+not inventory entries. The mapping, implemented in `shadowscan/agentbom.py`:
 
 | Inventory field | AgentBOM source |
 |---|---|
 | `agent_id`, `name`, `names` | `subject` and its agent entity |
 | `owner` | the agent's `ownerRef` party |
 | `autonomy_level` | the `automationLevel` claim, via the table below |
-| `resources` | deployment workload UID and `k8s:<namespace>/<name>`, remote tool-server endpoints, pinned package purls, the agent's external refs and A2A card URL |
+| `resources` | complete `k8s:<cluster>/<namespace>/<kind>/<name>` deployment identities, subject external refs and A2A card URL; all matched literally |
 | `frameworks` | the agent's declared framework (`framework.<name>`) |
-| `card` | provenance: spec version, snapshot id, digest and serial |
+| `card` | provenance: spec version, snapshot id/digest/serial, `verification: not-verified`, descriptive `component_resources` and `workload_uids` |
 
-Parsing is fail-closed like every other inventory format: a malformed
-document raises a validation error rather than loading a smaller inventory,
-and an `automationLevel` claim whose state is not `present` contributes no
-declared level — unknown never counts as low.
+The loader checks consumed object/list types, bounded collection sizes, unique
+entity IDs, subject membership and snapshot subject/digest/serial/id consistency.
+Malformed fields raise an inventory validation error. A missing cluster, namespace,
+kind or workload name does not generate a guessed Kubernetes identity. Generated
+resource bindings escape glob metacharacters, so a URL containing `*`, `?` or `[`
+cannot approve another resource.
+
+Tool-server endpoints and package purls describe dependencies, including shared
+and floating components. They stay in `card.component_resources`; they never
+inherit the subject's sanctioned status, owner or autonomy. Bare workload UIDs
+stay in `card.workload_uids`. Subject names remain review suggestions.
+
+Structural checks do **not** recompute the Merkle tree, authenticate a signer or
+verify approval, expiry or deployment acceptance. `card.verification` explicitly
+remains `not-verified`, even when snapshot and Merkle headers agree. Supply-chain
+verification remains SymBiote's responsibility.
+
+Only a `present` automation claim supplies a declared level. The producer
+schema defaults an omitted claim state to `present`; explicit `unknown` and
+`absent-verified` claims supply no level, and malformed claim states or values
+fail validation. Unknown never counts as low.
 
 ## Autonomy vocabulary
 

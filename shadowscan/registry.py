@@ -23,10 +23,11 @@ The inventory can be supplied as:
 * a simple inventory list ``agents: [{id, name, owner, resources, names, autonomy_level}]`` (YAML/JSON)
 * a CSV with columns ``agent_id, name, owner, resources`` (resources separated by ``|``)
   and an optional ``autonomy_level``
-* **SymBiote AgentBOM documents** – the sealed per-agent bill-of-materials JSON
+* **SymBiote AgentBOM documents** – operator-trusted per-agent bill-of-materials JSON
   that `SymBiote <https://github.com/aisecnomad/SymBiote>`_ produces
   (recognized by top-level ``specVersion``/``snapshot``/``subject``); the
-  subject agent becomes one sanctioned entry. See :mod:`shadowscan.agentbom`
+  subject supplies one entry with literal identity bindings. Seals are not
+  verified here and component presence does not confer approval. See :mod:`shadowscan.agentbom`
   and ``docs/integrations/symbiote.md``.
 
 Automatic approval requires an explicit, case-sensitive resource pattern and
@@ -401,12 +402,13 @@ class Inventory:
 
     @staticmethod
     def _entry_from_agentbom(doc: dict[str, Any], path: Path, location: str) -> InventoryEntry:
-        """One sanctioned entry per AgentBOM document: its subject agent.
+        """One operator-trusted entry per AgentBOM document: its subject agent.
 
         The field mapping lives in :mod:`shadowscan.agentbom`; this wrapper only
         binds the shared validation-error constructor and the source path.
         """
         fields = agentbom.summarize(doc, path, location, _invalid)
+        fields["resources"] = [literal_resource_pattern(resource) for resource in fields["resources"]]
         return InventoryEntry(source=str(path), **fields)
 
     @staticmethod

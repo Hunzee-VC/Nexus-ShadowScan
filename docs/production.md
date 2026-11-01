@@ -7,6 +7,14 @@ Automated validation establishes implementation behavior. Production rollout
 also requires the tenant canaries and container/operational checks below; a
 passing unit suite does not establish complete coverage of a particular estate.
 
+AgentBOM inventory import is an explicit operator trust decision. Verify the
+document with SymBiote and review its subject identities before supplying it to
+`--inventory`; the scanner validates structure and records `verification:
+not-verified`, without verifying a seal or adopting producer approval. Only
+literal subject references and complete Kubernetes workload identities become
+approval bindings. Tool-server endpoints, package purls and bare workload UIDs
+remain descriptive provenance. See [SymBiote integration](integrations/symbiote.md).
+
 When several connectors expire, partial-finding preparation shares one
 five-second allowance across the scan. Observations left after it is spent are
 explicit omissions in an incomplete report. This cooperative bound cannot
