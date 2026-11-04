@@ -124,7 +124,7 @@ for the pipeline, the package layout and the connector contract.
 | **8 output formats** | `table` · `json` · `sarif` · `csv` · `markdown` · `html` · `cyclonedx` · `ocsf` |
 | **Risk scoring** | Additive, explainable 0-100 score with per-factor breakdown |
 | **Autonomy classification** | L0 (Chatbot) through L5 (Fully Autonomous) interval |
-| **Inventory reconciliation** | Agent Capability Cards, `agents.yaml` lists, CSV inventories, trusted vendor registries |
+| **Inventory reconciliation** | Agent Capability Cards, `agents.yaml` lists, CSV inventories, SymBiote AgentBOM documents, trusted vendor registries |
 | **Threat & control mappings** | OWASP ASI, OWASP LLM, MITRE ATLAS, MAESTRO, NIST AI RMF, ISO/IEC 42001, EU AI Act, AIUC-1 |
 | **Fleet operations** | Merge reports, dashboard, diff for drift detection, control evidence |
 | **CI/CD integration** | GitHub Actions SARIF upload, deterministic exit codes, drift gating |
@@ -208,7 +208,7 @@ for walkthroughs of each surface and the
 | `shadowscan diff BASE CURRENT` | Compare reports for new, resolved, and drifted findings |
 | `shadowscan controls REPORTS...` | Map findings to NIST AI RMF / ISO 42001 / EU AI Act / AIUC-1 controls |
 | `shadowscan triage REPORT` | Browse a JSON report in the terminal, offline and read-only |
-| `shadowscan inventory check` | Validate Agent Card / agents.yaml / CSV inventory files |
+| `shadowscan inventory check` | Validate Agent Card / agents.yaml / CSV / SymBiote AgentBOM inventory files |
 | `shadowscan inventory stubs` | Generate Agent Card skeletons from shadow findings |
 | `shadowscan mcp-registry snapshot` | Pin an MCP registry into a versioned snapshot |
 | `shadowscan signatures list\|show\|test` | Inspect and test detection signature packs |
@@ -309,7 +309,7 @@ connectors:
 
 ```yaml
 # shadowscan.yaml — full reference
-inventory: [./inventory]              # Agent Cards, agents.yaml, or CSV
+inventory: [./inventory]              # Agent Cards, agents.yaml, CSV or SymBiote AgentBOM documents
 signatures: [./custom-signatures]     # optional extra or overriding packs
 options:
   min_confidence: 0.3                 # finding threshold (0.0-1.0)

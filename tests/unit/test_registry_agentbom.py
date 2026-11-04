@@ -2,15 +2,22 @@
 
 from __future__ import annotations
 
+import functools
 import json
+import re
 from pathlib import Path
 
 import pytest
 
+from shadowscan.agentbom import ISO_TO_LEVEL
+from shadowscan.autonomy import LEVELS
 from shadowscan.models import Finding, Kind, Surface
-from shadowscan.registry import Inventory, InventoryValidationError
+from shadowscan.registry import Inventory, InventoryValidationError, literal_resource_pattern
+from shadowscan.utils import files
 
 FIXTURE = Path(__file__).parent.parent / "fixtures" / "symbiote" / "agentbom.claims-assistant.json"
+SYMBIOTE_DOC = Path(__file__).resolve().parents[2] / "docs" / "integrations" / "symbiote.md"
+K8S_IDENTITY = "k8s:prod-east/claims-prod/Deployment/claims-assistant"
 
 
 def _doc() -> dict:
@@ -256,3 +263,267 @@ def test_mixes_with_other_inventory_formats(tmp_path: Path) -> None:
     simple.write_text("agents:\n  - id: other-agent\n    owner: ops\n")
     inventory = Inventory.load([FIXTURE, simple])
     assert sorted(e.agent_id for e in inventory.entries) == ["agent:claims-assistant", "other-agent"]
+
+
+# --- Identity, reference and id validation -------------------------------------
+
+
+def _subject_id(doc: dict, identity: str) -> None:
+    doc["subject"] = doc["snapshot"]["agentRef"] = doc["agents"][0]["id"] = identity
+
+
+def _set_identity_part(doc: dict, part: str, value: str) -> None:
+    deployment = doc["deployments"][0]
+    if part == "cluster":
+        deployment["environment"]["cluster"] = value
+    elif part == "namespace":
+        # The environment and workload namespaces must agree before the part itself is checked.
+        deployment["environment"]["namespace"] = deployment["workloadRef"]["namespace"] = value
+    else:
+        deployment["workloadRef"][part] = value
+
+
+def _workload_identity(doc: dict) -> str:
+    deployment = doc["deployments"][0]
+    workload = deployment["workloadRef"]
+    parts = (deployment["environment"]["cluster"], workload["namespace"], workload["kind"], workload["name"])
+    return "k8s:" + "/".join(parts)
+
+
+@pytest.mark.parametrize("part", ["cluster", "namespace", "kind", "name"])
+def test_slash_in_any_kubernetes_identity_component_is_rejected(tmp_path, part):
+    # The identity is joined with slashes, so a component carrying one could spell
+    # another workload's ``k8s:<cluster>/<namespace>/<kind>/<name>``.
+    doc = _doc()
+    _set_identity_part(doc, part, "claims-prod/claims-assistant")
+    with pytest.raises(InventoryValidationError, match="cannot contain slashes"):
+        Inventory.load([_write(tmp_path, doc)])
+
+
+@pytest.mark.parametrize("reference", ["party:nobody", "server:github", "agent:claims-assistant"])
+def test_owner_reference_must_name_a_party_in_the_document(tmp_path, reference):
+    doc = _doc()
+    doc["agents"][0]["ownerRef"] = reference
+    with pytest.raises(InventoryValidationError, match="does not identify a party"):
+        Inventory.load([_write(tmp_path, doc)])
+
+
+def test_owner_reference_must_be_a_string(tmp_path):
+    doc = _doc()
+    doc["agents"][0]["ownerRef"] = ["party:claims-it"]
+    with pytest.raises(InventoryValidationError, match="ownerRef"):
+        Inventory.load([_write(tmp_path, doc)])
+
+
+def test_subject_without_owner_reference_has_no_owner(tmp_path):
+    doc = _doc()
+    doc["agents"][0]["ownerRef"] = None
+    assert Inventory.load([_write(tmp_path, doc)]).entries[0].owner is None
+
+
+def _bad_ids(prefix: str) -> dict[str, str]:
+    """Entity ids the ``[a-z][a-z0-9-]*:[A-Za-z0-9._~/@+-]+`` form or the 512-character limit refuses."""
+    return {
+        "whitespace": f"{prefix}:claims assistant",
+        "glob-star": f"{prefix}:claims*",
+        "glob-bracket": f"{prefix}:claims[0]",
+        "non-ascii": f"{prefix}:claimsé",
+        "uppercase-collection": f"{prefix.capitalize()}:claims-assistant",
+        "empty-local-part": f"{prefix}:",
+        "no-separator": f"{prefix}-claims-assistant",
+        "513-characters": f"{prefix}:" + "a" * (513 - len(prefix) - 1),
+    }
+
+
+@pytest.mark.parametrize("flaw", list(_bad_ids("agent")))
+@pytest.mark.parametrize("collection", ["subject", "parties"])
+def test_malformed_entity_ids_are_rejected_without_being_echoed(tmp_path, collection, flaw):
+    doc = _doc()
+    if collection == "subject":
+        identity = _bad_ids("agent")[flaw]
+        _subject_id(doc, identity)
+    else:
+        identity = _bad_ids("party")[flaw]
+        doc["parties"][0]["id"] = doc["agents"][0]["ownerRef"] = identity
+    with pytest.raises(InventoryValidationError, match="expected an AgentBOM entity id") as caught:
+        Inventory.load([_write(tmp_path, doc)])
+    assert identity not in str(caught.value)
+
+
+def test_entity_id_limit_admits_exactly_512_characters(tmp_path):
+    doc = _doc()
+    _subject_id(doc, "agent:" + "a" * (512 - len("agent:")))
+    assert len(Inventory.load([_write(tmp_path, doc)]).entries[0].agent_id) == 512
+
+
+# --- Literal binding of glob metacharacters -------------------------------------
+
+_GLOB_EXPANSIONS = {"x*y": "xzzy", "x?y": "xzy", "x[ab]y": "xay"}
+
+
+@pytest.mark.parametrize("part", ["cluster", "namespace", "kind", "name"])
+@pytest.mark.parametrize("value", sorted(_GLOB_EXPANSIONS))
+def test_glob_characters_inside_kubernetes_identity_parts_bind_literally(tmp_path, part, value):
+    doc = _doc()
+    _set_identity_part(doc, part, value)
+    inventory = Inventory.load([_write(tmp_path, doc)])
+    identity = _workload_identity(doc)
+    assert inventory.entries[0].resources == [literal_resource_pattern(identity)]
+    assert inventory.match(_finding(identity)) is inventory.entries[0]
+    assert inventory.match(_finding(identity.replace(value, _GLOB_EXPANSIONS[value]))) is None
+
+
+@pytest.mark.parametrize(
+    "identity", ["https://agent.example/*", "https://agent.example/a?b", "https://agent.example/[ab]"]
+)
+def test_a2a_card_url_is_a_literal_binding(tmp_path, identity):
+    doc = _doc()
+    doc["agents"][0]["a2ACard"] = {"url": identity}
+    inventory = Inventory.load([_write(tmp_path, doc)])
+    assert inventory.entries[0].resources == [K8S_IDENTITY, literal_resource_pattern(identity)]
+    assert inventory.match(_finding(identity)) is inventory.entries[0]
+    assert inventory.match(_finding("https://agent.example/ab")) is None
+    assert inventory.match(_finding("https://agent.example/unapproved")) is None
+
+
+def test_a2a_card_without_a_url_adds_no_binding(tmp_path):
+    doc = _doc()
+    doc["agents"][0]["a2ACard"] = {"url": None, "name": "claims"}
+    assert Inventory.load([_write(tmp_path, doc)]).entries[0].resources == [K8S_IDENTITY]
+
+
+@pytest.mark.parametrize("card", ["https://agent.example/card", ["https://agent.example/card"], {"url": ""}])
+def test_malformed_a2a_card_fails_closed(tmp_path, card):
+    doc = _doc()
+    doc["agents"][0]["a2ACard"] = card
+    with pytest.raises(InventoryValidationError, match="a2ACard"):
+        Inventory.load([_write(tmp_path, doc)])
+
+
+def test_framework_name_is_lowercased(tmp_path):
+    doc = _doc()
+    doc["agents"][0]["framework"]["value"]["name"] = "LangGraph"
+    assert Inventory.load([_write(tmp_path, doc)]).entries[0].frameworks == ["framework.langgraph"]
+
+
+# --- Shared load-layer protections, reached through an AgentBOM -----------------
+
+
+def test_symbolic_links_never_reach_an_agentbom_document(tmp_path):
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    target = _write(outside, _doc())
+    link = tmp_path / "link.json"
+    link.symlink_to(target)
+    with pytest.raises(ValueError, match="symbolic links"):
+        Inventory.load([link])
+    linked_dir = tmp_path / "linked"
+    linked_dir.symlink_to(outside, target_is_directory=True)
+    with pytest.raises(ValueError, match="symbolic links"):
+        Inventory.load([linked_dir / "agentbom.json"])
+    # A directory walk skips the link and records it rather than loading the document.
+    directory = tmp_path / "inventory"
+    directory.mkdir()
+    (directory / "agentbom.json").symlink_to(target)
+    inventory = Inventory.load([directory])
+    assert inventory.entries == []
+    assert inventory.skipped_links == [str(directory / "agentbom.json")]
+
+
+@pytest.mark.parametrize("prefix", [b"\xff", b"\xc0\xaf"], ids=["invalid-start-byte", "overlong-sequence"])
+def test_non_utf8_bytes_are_refused_before_parsing(tmp_path, prefix):
+    path = tmp_path / "agentbom.json"
+    path.write_bytes(prefix + json.dumps(_doc()).encode("utf-8"))
+    with pytest.raises(InventoryValidationError, match="could not read bounded regular UTF-8 inventory"):
+        Inventory.load([path])
+
+
+@pytest.mark.parametrize("over_by", [0, 1], ids=["exactly-the-limit", "one-byte-over"])
+def test_document_size_limit_is_enforced_by_the_bounded_reader(tmp_path, monkeypatch, over_by):
+    # files.MAX_POLICY_BYTES is bound into read_policy_text's default when that module is
+    # imported, so the reader the registry calls is capped at the document's size instead of
+    # writing 8 MiB; the refusal still comes from the real bounded reader.
+    path = _write(tmp_path, _doc())
+    capped = functools.partial(files.read_policy_text, max_bytes=path.stat().st_size - over_by)
+    monkeypatch.setattr("shadowscan.registry.read_policy_text", capped)
+    if not over_by:
+        assert len(Inventory.load([path]).entries) == 1
+        return
+    with pytest.raises(InventoryValidationError, match="could not read bounded regular UTF-8 inventory"):
+        Inventory.load([path])
+
+
+def test_deeply_nested_json_is_refused_as_malformed(tmp_path):
+    # The strict decoder raises RecursionError past the interpreter's limit; the loader turns
+    # it into an inventory validation error instead of letting it escape.
+    path = tmp_path / "agentbom.json"
+    depth = 100_000
+    path.write_text(json.dumps(_doc())[:-1] + ', "deepNesting": ' + "[" * depth + "]" * depth + "}")
+    with pytest.raises(InventoryValidationError, match="invalid syntax"):
+        Inventory.load([path])
+
+
+def test_top_level_list_is_not_an_agentbom(tmp_path):
+    # Only an object carrying the markers is an AgentBOM: a list of them is read as plain
+    # entries, whose field check refuses the document, so the subject never becomes an approval.
+    path = tmp_path / "agentbom.json"
+    path.write_text(json.dumps([_doc()]))
+    with pytest.raises(InventoryValidationError, match="unsupported field"):
+        Inventory.load([path])
+
+
+@pytest.mark.parametrize("marker", ["specVersion", "snapshot", "subject"])
+def test_document_missing_a_marker_is_not_an_agentbom(tmp_path, marker):
+    # Without every marker the document is read as a plain ``agents:`` list, whose field
+    # check refuses the other top-level keys: fail-closed, although the message names the
+    # plain shape rather than the missing marker.
+    doc = _doc()
+    del doc[marker]
+    with pytest.raises(InventoryValidationError, match="unsupported field; allowed fields: agents"):
+        Inventory.load([_write(tmp_path, doc)])
+
+
+# --- Autonomy ladder and snapshot history ----------------------------------------
+
+
+@pytest.mark.parametrize("name,level", sorted(ISO_TO_LEVEL.items()))
+def test_every_iso_automation_level_maps_to_its_shadowscan_level(tmp_path, name, level):
+    doc = _doc()
+    doc["agents"][0]["automationLevel"]["value"] = name
+    assert Inventory.load([_write(tmp_path, doc)]).entries[0].autonomy_level == level
+
+
+def test_documented_autonomy_table_matches_the_code_mapping():
+    text = SYMBIOTE_DOC.read_text(encoding="utf-8")
+    section = text.split("## Autonomy vocabulary", 1)[1].split("\n## ", 1)[0]
+    documented: dict[str, int] = {}
+    names: dict[int, str] = {}
+    for line in section.splitlines():
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        row = re.fullmatch(r"L(\d) ([a-z-]+)", cells[-1]) if len(cells) == 2 else None
+        if row is None:
+            continue
+        names[int(row.group(1))] = row.group(2)
+        for name in re.findall(r"`([A-Za-z]+)`", cells[0]):
+            documented[name] = int(row.group(1))
+    assert documented == ISO_TO_LEVEL
+    assert names == {entry.number: entry.name for entry in LEVELS}
+    assert set(ISO_TO_LEVEL.values()) == {entry.number for entry in LEVELS}
+
+
+def test_two_snapshots_of_one_subject_in_a_directory_approve_nothing(tmp_path):
+    # A history directory holds serial 1 and serial 2 of the same agent: both entries bind
+    # the workload, and the matcher reports the ambiguity rather than choosing one.
+    directory = tmp_path / "boms"
+    directory.mkdir()
+    (directory / "serial-1.json").write_text(json.dumps(_doc()))
+    later = _doc()
+    later["snapshot"]["serial"] = 2
+    later["snapshot"]["id"] = "snap:2:" + later["snapshot"]["digest"][7:19]
+    (directory / "serial-2.json").write_text(json.dumps(later))
+    inventory = Inventory.load([directory])
+    assert sorted(entry.card["snapshot_serial"] for entry in inventory.entries) == [1, 2]
+    finding = _finding(K8S_IDENTITY)
+    assert inventory.match(finding) is None
+    assert finding.metadata["registry_match_reason"] == "ambiguous-resource-approval"
+    assert finding.metadata["registry_suggestions"] == ["agent:claims-assistant"]

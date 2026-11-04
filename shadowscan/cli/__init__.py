@@ -510,7 +510,10 @@ report_options = [
         "--inventory",
         "-i",
         multiple=True,
-        help="sanctioned inventory: Agent Capability Cards dir/file, agents.yaml or CSV (repeatable)",
+        help=(
+            "sanctioned inventory: Agent Capability Cards dir/file, agents.yaml, CSV or "
+            "SymBiote AgentBOM documents (repeatable)"
+        ),
     ),
     click.option(
         "--signatures",

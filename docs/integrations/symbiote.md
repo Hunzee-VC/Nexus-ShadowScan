@@ -25,6 +25,11 @@ symbiote scan . -o boms/            # SymBiote: one sealed AgentBOM per agent
 shadowscan scan -c shadowscan.yaml --inventory boms/
 ```
 
+Keep one document per subject in the directory you pass. Two snapshots of the
+same agent (serial 1 and serial 2 kept side by side) load as two entries with
+identical bindings; the matcher reports their resource as ambiguous and neither
+entry approves it. Remove superseded snapshots before scanning.
+
 A document is recognized by its top-level `specVersion`, `snapshot` and
 `subject` fields with supported `specVersion: "0.1"`, and contributes **one entry:
 the subject agent**. An AgentBOM's `agents` list contains its own entity records,
@@ -36,7 +41,7 @@ not inventory entries. The mapping, implemented in `shadowscan/agentbom.py`:
 | `owner` | the agent's `ownerRef` party |
 | `autonomy_level` | the `automationLevel` claim, via the table below |
 | `resources` | complete `k8s:<cluster>/<namespace>/<kind>/<name>` deployment identities, subject external refs and A2A card URL; all matched literally |
-| `frameworks` | the agent's declared framework (`framework.<name>`) |
+| `frameworks` | the agent's declared framework (`framework.<name>`, with the name lowercased) |
 | `card` | provenance: spec version, snapshot id/digest/serial, `verification: not-verified`, descriptive `component_resources` and `workload_uids` |
 
 The loader checks consumed object/list types, bounded collection sizes, unique
@@ -101,4 +106,4 @@ observes against the AgentBOM's pinned `tooldef/v1` digests, so a tool whose
 description or schema changed after approval is flagged at discovery time,
 and cross-referencing `shadowscan diff` drift classes with `symbiote diff`
 delta events. Tracked in
-[#334](https://github.com/aisecnomad/Nexus-ShadowScan/issues/334).
+[#334](https://github.com/Hunzee-VC/Nexus-ShadowScan/issues/334).

@@ -7,14 +7,6 @@ Automated validation establishes implementation behavior. Production rollout
 also requires the tenant canaries and container/operational checks below; a
 passing unit suite does not establish complete coverage of a particular estate.
 
-AgentBOM inventory import is an explicit operator trust decision. Verify the
-document with SymBiote and review its subject identities before supplying it to
-`--inventory`; the scanner validates structure and records `verification:
-not-verified`, without verifying a seal or adopting producer approval. Only
-literal subject references and complete Kubernetes workload identities become
-approval bindings. Tool-server endpoints, package purls and bare workload UIDs
-remain descriptive provenance. See [SymBiote integration](integrations/symbiote.md).
-
 When several connectors expire, partial-finding preparation shares one
 five-second allowance across the scan. Observations left after it is spent are
 explicit omissions in an incomplete report. This cooperative bound cannot
@@ -51,7 +43,8 @@ release is created by this change.
 
 ## Migration notes and change history
 
-Unreleased: what an operator sees change after the October 26 audit fixes.
+Unreleased: what an operator sees change after the October 26 audit fixes and
+the November 1 AgentBOM inventory import.
 
 - **Exit 3 where 0 was reported.** An offline replay of a single saved
   `lowcode.zapier` `/v2/zaps` page with `links.next`, an `identity.auth0`
@@ -94,6 +87,18 @@ Unreleased: what an operator sees change after the October 26 audit fixes.
   server whose URL carried inline credentials.
 - **Deadlines.** With `--incremental` and several roots, the automatic deadline
   extension is applied once per job, capped at 1,800 s, not once per root.
+- **New inventory input.** `--inventory` accepts SymBiote AgentBOM 0.1 JSON, a
+  file or a directory of documents, alongside Capability Cards, `agents.yaml`
+  lists and CSV. AgentBOM inventory import is an explicit operator trust
+  decision: verify the document with SymBiote and review its subject identities
+  before supplying it. The scanner validates structure and records
+  `verification: not-verified`, without verifying a seal or adopting producer
+  approval. Only literal subject references and complete
+  `k8s:<cluster>/<namespace>/<kind>/<name>` identities become approval bindings;
+  tool-server endpoints, package purls and bare workload UIDs remain descriptive
+  provenance. A malformed document fails inventory validation (exit 1) before
+  scanning, and two snapshots of one subject in a directory approve nothing. See
+  [SymBiote integration](integrations/symbiote.md).
 
 Unreleased: the shared offline reader rejects collection envelopes embedded in a
 record array. Export one collection envelope or an array of native records;

@@ -122,10 +122,10 @@ is it in the inventory supplied for this scan?*
 | `shadow: true` | No single explicit binding in the **supplied** inventory matched the finding. | Confirm the inventory's scope and freshness; an unmatched finding alone does not prove unauthorized use. |
 
 The inventory is your list of approved agents, passed with `--inventory`: Agent
-Capability Cards (`agent-card.yaml`; not A2A Agent Cards), `agents.yaml` lists or
-CSV. The diagrams call it the agent registry. Approved records of vendor
-registries you list under `trusted_registries` count too. With neither, findings
-are not reconciled: `shadow` is null, not true.
+Capability Cards (`agent-card.yaml`; not A2A Agent Cards), `agents.yaml` lists,
+CSV or SymBiote AgentBOM documents. The diagrams call it the agent registry.
+Approved records of vendor registries you list under `trusted_registries` count
+too. With neither, findings are not reconciled: `shadow` is null, not true.
 
 ## How it works
 
@@ -166,7 +166,7 @@ for the pipeline, the package layout, and the connector contract.
 | **8 output formats** | `table` · `json` · `sarif` · `csv` · `markdown` · `html` · `cyclonedx` · `ocsf` |
 | **Risk scoring** | Additive, explainable 0-100 score with per-factor breakdown |
 | **Autonomy classification** | L0 (chatbot) to L5 (fully autonomous), reported as a floor and a ceiling because a scan can rarely prove a capability absent |
-| **Inventory reconciliation** | Agent Capability Cards, `agents.yaml` lists, CSV inventories, trusted vendor registries |
+| **Inventory reconciliation** | Agent Capability Cards, `agents.yaml` lists, CSV inventories, SymBiote AgentBOM documents, trusted vendor registries |
 | **Threat & control mappings** | OWASP ASI, OWASP LLM, MITRE ATLAS, MAESTRO, NIST AI RMF, ISO/IEC 42001, EU AI Act, AIUC-1 |
 | **Fleet operations** | Merge reports, dashboard, diff for drift detection, control evidence |
 | **CI/CD integration** | GitHub Actions SARIF upload, deterministic exit codes, drift gating |
