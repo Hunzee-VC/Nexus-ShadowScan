@@ -13,9 +13,11 @@ describes how a scan flows from connectors through the engine to reports.
 
 These pages live in the
 [repository documentation directory](https://github.com/Hunzee-VC/Nexus-ShadowScan/tree/main/docs).
-GitHub Pages is enabled at
-<https://hunzee-vc.github.io/Nexus-ShadowScan/>; that URL currently serves the
-repository README, not this MkDocs set. The Docs workflow builds the site when
+GitHub Pages for this repository is served at
+<https://hunzee-vc.github.io/Nexus-ShadowScan/>; the former owner's project-site
+address does not redirect there. Before the transfer that site served the
+repository README, not this MkDocs set; the new address was not checked by the
+transfer change. The Docs workflow builds the site when
 a `main` change touches its sources (CI's docs job builds every commit). Once
 Pages is pointed at GitHub Actions it publishes from `main` in two ways, both a
 maintainer's choice: a manual run of `docs.yml` with `publish=true`, and, when

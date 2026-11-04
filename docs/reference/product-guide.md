@@ -30,7 +30,7 @@ host/runtime inventories), network logs, and running processes.
 |---|---|---|
 | [`Hunzee-VC/Nexus-ShadowScan`](https://github.com/Hunzee-VC/Nexus-ShadowScan) | [`NexusShadowScan`](https://pypi.org/project/NexusShadowScan/) | `shadowscan` |
 
-> The repository was formerly `aisecnomad/Project-Nexus`; GitHub redirects the old links.
+> The repository was formerly `aisecnomad/Project-Nexus`, then `aisecnomad/Nexus-ShadowScan`; GitHub redirects the old links.
 
 This guide describes the current source branch, including changes not yet
 published on PyPI. For the published alpha, see the

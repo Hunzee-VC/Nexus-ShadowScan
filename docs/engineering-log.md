@@ -56,8 +56,10 @@ the same refs, so the submodule URL follows.
   repository. Links inside dated history now point at the new URL; their prose
   is unchanged. The OpenSSF Scorecard badge and viewer link follow the
   repository path because the Scorecard workflow publishes under the name it
-  runs as; the badge shows no score until the first run after the transfer has
-  published at the new path.
+  runs as: its scheduled run of November 2 already ran and published as
+  `Hunzee-VC/Nexus-ShadowScan` (the audit of October 27 still ran under the
+  former name, which bounds the transfer to between those runs). The results
+  at the new path were not readable from this change's environment.
 - **Tests.** `tests/test_repository_consistency.py` treats both names the
   repository had (formerly `aisecnomad/Nexus-ShadowScan` and `aisecnomad/Project-Nexus`)
   as former names, with the same retained-record exclusions and an

@@ -326,7 +326,7 @@ documentation of the commit you installed.
   Review state cannot be established from a checkout; verify it with the
   commands in
   [merge gate and review status](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/production.md#merge-gate-and-review-status).
-* **Name.** The repository was formerly `aisecnomad/Project-Nexus`; GitHub redirects the old links.
+* **Name.** The repository was formerly `aisecnomad/Project-Nexus`, then `aisecnomad/Nexus-ShadowScan`; GitHub redirects the old links.
 
 ## Community and contributing
 
