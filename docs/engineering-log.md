@@ -35,6 +35,42 @@ A second test, `test_nofollow_any_closes_file_on_setup_errors`, replaced
 reads `os.fstat` when a test's call phase ends, so the stub is now scoped to the
 open under test.
 
+### SymBiote AgentBOM documents as an inventory source (#335; November 1)
+
+`--inventory` accepts operator-trusted AgentBOM 0.1 documents alongside
+Capability Cards, lists and CSV. The source produces one subject entry; importing
+it is an operator approval decision, not a claim that the scanner verified a seal.
+
+Review fixes validate consumed collections and claim types, unique IDs, exact
+SHA-256 syntax, supported version, subject membership and snapshot header
+consistency. Producer-default omitted claim state is `present`; explicit unknown
+or verified-absent claims never imply low autonomy. Invalid data uses the existing
+inventory validation errors and file bounds plus a 10,000-entity collection bound.
+
+Only literal subject external references, A2A card URLs and complete Kubernetes
+`k8s:<cluster>/<namespace>/<kind>/<name>` identities become approval bindings.
+Tool-server endpoints and package purls are descriptive `component_resources`;
+bare UIDs are descriptive `workload_uids`. These dependencies do not inherit the
+subject's owner, autonomy or sanctioned status. Provenance explicitly records
+`verification: not-verified`; Merkle recomputation, signer authenticity, expiry
+and approval verification remain SymBiote responsibilities. Regression tests cover
+malformed shapes and claims, glob metacharacters, actual Kubernetes reconciliation
+and component approval isolation. The fixture bytes are unchanged.
+
+The loader is split into typed bounded helpers; the complexity baseline is not
+raised. Separately, pyasn1 0.6.4 is upgraded to 0.6.5 with authentic artifact hashes
+to repair the four HIGH findings reported by the exact-image container scan.
+
+The review follow-up in the same pull request adds negative tests for the
+identity, reference, id and load-layer validations (a slash or a glob
+metacharacter in each Kubernetes identity component, A2A card URLs, owner
+references to absent parties, the entity-id character set and 512-character
+limit, and symlinked, non-UTF-8, oversized, deeply nested, list-shaped and
+marker-less documents), pins every `isoAutomationLevel` mapping against the
+documented table, and pins that two snapshots of one subject in a directory
+approve nothing. It names the format in the inventory, README, product-guide,
+CLI and configuration references and records the one-document-per-subject rule.
+
 ### Audit fixes: fail-closed gaps, redaction coverage, detection accuracy and gate integrity (October 26)
 
 An eight-dimension audit (network egress, untrusted input, output safety, CI and
@@ -11357,7 +11393,6 @@ entry. Tenant canaries and container runtime acceptance are still required.
 The following summarizes the reconciled pre-release implementation.
 
 ### Security
-
 
 - Escaped, multiline and nested sensitive mapping values are redacted before source evidence is emitted; TLS verification rejects all falsy effective settings.
 - Live AWS account attribution is checked through STS even with a configured expected account.

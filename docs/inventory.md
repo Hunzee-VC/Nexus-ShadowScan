@@ -170,6 +170,21 @@ Simple entries and CSV rows declare a level with `autonomy_level` (an integer
 from 0 to 5; a blank CSV cell is undeclared). They have no schema version: the
 field exists only on the current scale.
 
+### SymBiote AgentBOM documents
+
+An [AgentBOM](integrations/symbiote.md) is the per-agent `specVersion: "0.1"`
+JSON that SymBiote produces. It is an operator-trusted document: verify it with
+SymBiote and review its subject identities before passing the file, or a
+directory of them, to `--inventory`. Each document contributes one entry, its
+subject agent. Only the subject's literal identities become approval bindings:
+its external references, its A2A card URL and a complete
+`k8s:<cluster>/<namespace>/<kind>/<name>` deployment identity. Components,
+package purls and workload UIDs are descriptive provenance in `card`, which also
+records `verification: not-verified`; seals are never verified here. A malformed
+document fails inventory validation (exit 1). Several snapshots of one subject
+in a directory approve nothing, because their identical bindings are ambiguous:
+keep one document per subject.
+
 Pass any mix with `--inventory` (repeatable) or `inventory:` in the config;
 directories are searched recursively. Symbolic links are never followed: a
 directory or glob that skips one records a warning naming it (`engine.inventory`
