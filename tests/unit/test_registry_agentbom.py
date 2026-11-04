@@ -453,14 +453,23 @@ def test_document_size_limit_is_enforced_by_the_bounded_reader(tmp_path, monkeyp
         Inventory.load([path])
 
 
-def test_deeply_nested_json_is_refused_as_malformed(tmp_path):
-    # The strict decoder raises RecursionError past the interpreter's limit; the loader turns
-    # it into an inventory validation error instead of letting it escape.
+def test_deeply_nested_json_never_escapes_the_loader(tmp_path):
+    # Whether the strict decoder can read 100,000 nested arrays depends on the interpreter:
+    # through 3.13 it raises RecursionError at a fixed depth, while 3.14 bounds recursion by
+    # the remaining C stack, so a runner with a deep stack reads the document. Either way the
+    # loader must fail closed with an inventory validation error, never let RecursionError
+    # escape, and, when it reads the document, yield exactly the subject entry, since the
+    # nested value sits under a key the loader does not consume.
     path = tmp_path / "agentbom.json"
     depth = 100_000
     path.write_text(json.dumps(_doc())[:-1] + ', "deepNesting": ' + "[" * depth + "]" * depth + "}")
-    with pytest.raises(InventoryValidationError, match="invalid syntax"):
-        Inventory.load([path])
+    try:
+        inventory = Inventory.load([path])
+    except InventoryValidationError as error:
+        assert "invalid syntax" in str(error)
+    else:
+        assert [entry.agent_id for entry in inventory.entries] == ["agent:claims-assistant"]
+        assert inventory.entries[0].resources == [K8S_IDENTITY]
 
 
 def test_top_level_list_is_not_an_agentbom(tmp_path):
