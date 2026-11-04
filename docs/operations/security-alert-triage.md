@@ -44,3 +44,65 @@ its postinstall is intentionally disabled. The fixture was not built or run.
 The historical alert dispositions above remain unchanged. This correction
 does not establish a 10/10 score; a new Scorecard run on the merged revision
 must verify that outcome.
+
+## November 4 alerts on a removed benchmark manifest
+
+Five Dependabot security-update runs failed on 2026-11-03 (23:58 UTC) and
+2026-11-04 (00:31 to 00:34 UTC), all against `main` at `1a821e57`:
+[41743229626](https://github.com/Hunzee-VC/Nexus-ShadowScan/actions/runs/41743229626),
+[41747503854](https://github.com/Hunzee-VC/Nexus-ShadowScan/actions/runs/41747503854),
+[41747537479](https://github.com/Hunzee-VC/Nexus-ShadowScan/actions/runs/41747537479),
+[41747673760](https://github.com/Hunzee-VC/Nexus-ShadowScan/actions/runs/41747673760)
+and [41747890565](https://github.com/Hunzee-VC/Nexus-ShadowScan/actions/runs/41747890565).
+Each was a `security` job for `undici` (advisory range `>= 7.0.0 < 7.30.1`)
+in the directory `/tools/benchmark/realworld/cdxgen`, and each ended with the
+line
+
+```text
+Error during file fetching; aborting: /tools/benchmark/realworld/cdxgen/package.json not found
+```
+
+There is no such manifest to fetch. `main` has not contained
+`tools/benchmark/realworld/` since
+[`05394b79`](https://github.com/Hunzee-VC/Nexus-ShadowScan/commit/05394b79c2a4ad4014fbf03c53a63d6d07f8b3d1)
+(#281, 2026-10-20) extracted the benchmark harnesses and corpora, including the
+estate artifacts of the Dependabot #1 row above, to the pinned companion. The
+dependency graph that Dependabot reads still lists the removed lock: the SBOM
+export read on 2026-11-04
+(`gh api repos/Hunzee-VC/Nexus-ShadowScan/dependency-graph/sbom`) held 206 npm
+entries, among them `undici` 7.29.1 and the `@cdxgen/*` packages of the removed
+`tools/benchmark/realworld/cdxgen/package-lock.json`, while none of the
+manifests under `tests/fixtures/` that are on `main` appeared.
+`.github/dependabot.yml` has never had an npm or Go entry, so nothing refreshes
+those parts of the graph; its pip entry keeps the Python part current. Security
+updates are alert-driven from the graph, not from that file.
+
+Disposition to apply (not yet applied): in the Security tab's Dependabot
+alerts, filter by the manifest
+`tools/benchmark/realworld/cdxgen/package-lock.json`, check for any alert
+whose manifest is under `benchmarks/shadowbench/estate/artifacts/code/`,
+confirm that each manifest path is absent from `main`, and dismiss those
+alerts with the reason "This alert is inaccurate or incorrect" (or "Vulnerable
+code is not actually used", the October 18 precedent) and the comment
+"Manifest removed from main in 05394b79 (#281, 2026-10-20); the dependency
+graph still lists it". Record the alert numbers and the date in this section
+once that is done. No repository setting changes: the dependency graph and
+Dependabot security updates stay enabled, and nothing is suppressed by
+pattern.
+
+Verification afterwards: the same SBOM call no longer lists the lock (no
+`undici`, `@cyclonedx/cdxgen` or `@cdxgen/*` entries), and the Actions list
+shows no new Dependabot run for `/tools/benchmark/realworld/cdxgen` after the
+next `undici` advisory. Dependabot is expected to queue a security update only
+for an open alert, so dismissal should stop these runs; the Actions check is
+what confirms it. Dismissal does not by itself rebuild the graph. If the
+export still lists the lock, the entries are stale rather than live, and
+rebuilding the graph is a request to GitHub Support; do not record the graph
+as rebuilt until the export shows the entries gone.
+
+The rule: an alert on a manifest that is not on `main` is dismissed with this
+rationale, naming the commit that removed the manifest. It is never fixed by
+re-adding the manifest or by adding an npm or Go entry to
+`.github/dependabot.yml`: an entry for a directory that is not on `main` adds
+a weekly `package.json not found` failure and refreshes nothing, and a
+re-added manifest would be a benchmark input, not a ShadowScan dependency.

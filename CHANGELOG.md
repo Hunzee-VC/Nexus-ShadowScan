@@ -8,6 +8,14 @@ explain operator migrations. Earlier per-change entries are preserved in the
 
 ## Unreleased
 
+- The 2026-11-03/04 Dependabot security-update failures on the benchmark
+  manifest removed in #281 are recorded in the alert triage page, with the
+  dismissal to apply and the rule that an alert on a manifest absent from
+  `main` is dismissed rather than configured away; the rollout guide explains
+  how to review a Dependabot base-image digest, the CI guide lists the
+  hand-pinned Trivy and Semgrep scanners, and the workflow inventory no longer
+  says Scorecard starts on ruleset changes.
+
 - An audit with each finding reproduced before it was fixed closes 21 gaps.
   Fail-closed: a single saved Zapier, Auth0 or Slack API page, a staged
   submodule hidden by `ignore = all`, an endpoint `--dump-records` manifest and
