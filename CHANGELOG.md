@@ -8,6 +8,15 @@ explain operator migrations. Earlier per-change entries are preserved in the
 
 ## Unreleased
 
+- A YAML file the configuration loader cannot read is MCP configuration by
+  its keys (those read before the failure, and a key-shaped server table
+  spelling in the rest), not by any mention of `mcp`: a Spring Boot
+  `application.yml` with a stray properties line, which has left every scan
+  of `spring-projects/spring-ai-examples` incomplete since 0.1.3, is ordinary
+  configuration again, with the structured-check warning and the same
+  findings; one whose unreadable part spells a server table still fails
+  closed.
+
 - An audit with each finding reproduced before it was fixed closes 21 gaps.
   Fail-closed: a single saved Zapier, Auth0 or Slack API page, a staged
   submodule hidden by `ignore = all`, an endpoint `--dump-records` manifest and

@@ -124,7 +124,18 @@ an issue export, an OpenAPI description or an AST fixture that merely quotes
 a client's `mcpServers:` in a string value is ordinary data. A
 dedicated MCP configuration name (`.mcp.json`, `mcp.json`, `smithery.yaml`, …)
 is always parsed, so its defects still make the scan incomplete, as does a
-document that declares servers in malformed form or cannot be read at all.
+document that declares servers in malformed form. A JSON or TOML document
+that cannot be read at all is one too when its bytes may spell a server table
+key; a YAML document the loader cannot read is decided by its keys, as past
+the walk's bounds: those the YAML scanner read before it failed, and a
+key-shaped `mcpServers:`, `mcp_servers:`, or `mcp:` with `servers:` (at a
+line start or in a flow mapping; quoted, escaped or folded) in the text it
+did not read. A Spring Boot `application.yml` whose `mcp` section names no
+server table and whose stray properties line breaks the parse is therefore
+ordinary configuration: its syntax error is the structured-check warning
+(`invalid structured configuration syntax; structured checks skipped`),
+which strict accounting counts, not a full-weight error; one whose
+unreadable part spells a table keeps the error.
 That holds under a test or fixture path too, where other malformed fixtures
 are discounted (see the [coverage policy](../scanning.md#coverage-policy)): an MCP configuration is
 reported at full weight there, so a NUL byte or a syntax error that hides
