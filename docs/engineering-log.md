@@ -30,6 +30,10 @@ deleting go to the binding modules as before, and a tool that consults the type
 finds the bound value to restore. `tests/unit/test_redaction_namespace.py`
 patches a rule twice and deletes one through the namespace and checks that every
 binding module holds the original object after undo.
+A second test, `test_nofollow_any_closes_file_on_setup_errors`, replaced
+`os.fstat` with a failing stub for its whole duration; pytest 9.2's output capture
+reads `os.fstat` when a test's call phase ends, so the stub is now scoped to the
+open under test.
 
 ### Audit fixes: fail-closed gaps, redaction coverage, detection accuracy and gate integrity (October 26)
 
