@@ -21,8 +21,9 @@ downloaded file against the workflow, branch and commit that built the release:
 ```bash
 file=nexusshadowscan-0.1.4-py3-none-any.whl     # or nexusshadowscan-0.1.4.tar.gz
 commit=94fda063307c2c0c402a0610f378544b6189f809  # the commit tag v0.1.4 names
-gh attestation verify "$file" --repo aisecnomad/Nexus-ShadowScan \
-  --signer-workflow aisecnomad/Nexus-ShadowScan/.github/workflows/release.yml \
+repo=aisecnomad/Nexus-ShadowScan                # 0.1.4 was attested under this name, before the transfer
+gh attestation verify "$file" --repo "$repo" \
+  --signer-workflow "$repo"/.github/workflows/release.yml \
   --source-ref refs/heads/main --source-digest "$commit" --signer-digest "$commit" \
   --deny-self-hosted-runners
 ```
@@ -30,6 +31,10 @@ gh attestation verify "$file" --repo aisecnomad/Nexus-ShadowScan \
 In a clone, `git rev-parse "v0.1.4^{commit}"` prints that commit. With `--repo`
 alone, `gh` accepts an attestation that any workflow, branch or runner of the
 repository signed.
+Attestations keep the repository name they were signed under. The repository is now
+`Hunzee-VC/Nexus-ShadowScan`; releases 0.1.3 and 0.1.4 were attested before the transfer, so
+`repo` above names the former repository, and the first release after the transfer is verified
+with `repo=Hunzee-VC/Nexus-ShadowScan`.
 The 0.1.2 wheel was attested before the repository was renamed; verify it with `--repo aisecnomad/Project-Nexus`,
 that name in `--signer-workflow`, and the commit of the `v0.1.2` tag.
 
@@ -39,7 +44,7 @@ deployment, prefer the hash-locked install.
 The current source branch can include changes made after the release. The
 PyPI command above does not install them; use a reviewed source revision
 below, or consult the
-[0.1.4 documentation](https://github.com/aisecnomad/Nexus-ShadowScan/blob/v0.1.4/README.md)
+[0.1.4 documentation](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/v0.1.4/README.md)
 for the published command set.
 
 ## From a reviewed revision (hash-locked)
@@ -52,7 +57,7 @@ for the release evidence and platform limits.
 
 ```bash
 SHADOWSCAN_REVISION="REPLACE_WITH_REVIEWED_40_CHARACTER_SHA"
-git clone https://github.com/aisecnomad/Nexus-ShadowScan.git
+git clone https://github.com/Hunzee-VC/Nexus-ShadowScan.git
 cd Nexus-ShadowScan
 git checkout --detach "$SHADOWSCAN_REVISION"
 test "$(git rev-parse HEAD)" = "$SHADOWSCAN_REVISION"

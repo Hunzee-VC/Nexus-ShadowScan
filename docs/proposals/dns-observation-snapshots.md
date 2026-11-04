@@ -1,7 +1,7 @@
 # DNS observation snapshots
 
 Status: proposed, October 20, 2026; **not implemented**. This is the design and
-acceptance plan for [#210](https://github.com/aisecnomad/Nexus-ShadowScan/issues/210).
+acceptance plan for [#210](https://github.com/Hunzee-VC/Nexus-ShadowScan/issues/210).
 It does not add a command, connector, configuration key, dependency or DNS
 egress. `network.logs` remains offline. Its existing passive temporal DNS
 attribution is a separate, implemented capability.

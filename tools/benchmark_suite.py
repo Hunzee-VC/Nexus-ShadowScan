@@ -14,7 +14,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / "tools" / "benchmark_evidence.json"
-COMPANION_URL = "https://github.com/aisecnomad/Nexus-ShadowBench.git"
+COMPANION_URL = "https://github.com/Hunzee-VC/Nexus-ShadowBench.git"
 SOURCE_PATHS = {
     "cases": "benchmarks/shadowbench/cases/results/2026-10-11/metrics.json",
     "estate": "benchmarks/shadowbench/estate/results/2026-10-11/metrics.json",
@@ -59,7 +59,7 @@ def extract(suite: Path) -> dict[str, Any]:
     return {
         "schema": 1,
         "source_commit": "0792106b8d2cc09517f7f4ee2eeabf4f8eb8da2d",
-        "source_repository": "https://github.com/aisecnomad/Nexus-ShadowScan",
+        "source_repository": "https://github.com/Hunzee-VC/Nexus-ShadowScan",
         "migration_manifest_sha256": hashlib.sha256((suite / "MIGRATION.json").read_bytes()).hexdigest(),
         "sources": {
             name: {"path": SOURCE_PATHS[name], "sha256": hashlib.sha256(data).hexdigest()}

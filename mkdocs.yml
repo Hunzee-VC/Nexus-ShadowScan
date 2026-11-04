@@ -5,9 +5,9 @@ site_description: Discover shadow AI agents across your enterprise.
 # the Docs workflow with publish=true once, or set the repository variable
 # DOCS_PUBLISH to "true" so every docs push to main republishes the site.
 # Public documentation links point at docs/ until then.
-site_url: https://aisecnomad.github.io/Nexus-ShadowScan/
-repo_url: https://github.com/aisecnomad/Nexus-ShadowScan
-repo_name: aisecnomad/Nexus-ShadowScan
+site_url: https://hunzee-vc.github.io/Nexus-ShadowScan/
+repo_url: https://github.com/Hunzee-VC/Nexus-ShadowScan
+repo_name: Hunzee-VC/Nexus-ShadowScan
 edit_uri: edit/main/docs/
 
 theme:
@@ -209,4 +209,4 @@ nav:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/aisecnomad/Nexus-ShadowScan
+      link: https://github.com/Hunzee-VC/Nexus-ShadowScan

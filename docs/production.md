@@ -182,7 +182,7 @@ every candidate change lives in the
 [candidate change history](history/production-change-history.md), so this
 page stays the rollout guide. 0.1.4 has no separate migration notes: the note
 above covers its diagnostic categories and Google AI endpoint signals, and the
-[0.1.4 release notes](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/RELEASE_NOTES.md)
+[0.1.4 release notes](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/RELEASE_NOTES.md)
 say where 0.1.3 counted those diagnostics and list its other operator-facing
 changes: `diff` baselines written by 0.1.3, a one-time incremental cache miss,
 findings kept when a connector's deadline expires, and scalar subclasses no
@@ -284,7 +284,7 @@ a tag that has not been published.
 
 ```bash
 SHADOWSCAN_REVISION="REPLACE_WITH_REVIEWED_40_CHARACTER_SHA"
-git clone https://github.com/aisecnomad/Nexus-ShadowScan.git
+git clone https://github.com/Hunzee-VC/Nexus-ShadowScan.git
 cd Nexus-ShadowScan
 git checkout --detach "$SHADOWSCAN_REVISION"
 test "$(git rev-parse HEAD)" = "$SHADOWSCAN_REVISION"
@@ -416,7 +416,7 @@ image, and the daemon falls back to Docker Hub when the mirror fails. A builder
 elsewhere that hits the limit can set the same daemon mirror or authenticate to
 Docker Hub; the digest pin keeps the base image identical either way.
 
-The [Kubernetes offline Job example](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/examples/k8s-job.yaml) has a 20-minute
+The [Kubernetes offline Job example](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/examples/k8s-job.yaml) has a 20-minute
 active deadline, a placeholder for a reviewed image digest, and a matching
 NetworkPolicy that denies egress when enforced by the cluster CNI. Supply a
 reviewed `/input` volume before running it. For live API collection, use a
@@ -926,7 +926,7 @@ relying on enforcement. Neither the policy file nor this checker updates live
 repository administration settings.
 
 Ruleset
-[23913372, Require CI and CodeQL](https://github.com/aisecnomad/Nexus-ShadowScan/rules/23913372)
+[23913372, Require CI and CodeQL](https://github.com/Hunzee-VC/Nexus-ShadowScan/rules/23913372)
 is configured to require `test (3.11)`, `test (3.12)` and `analyze`, an
 up-to-date branch, and one approving review from a reviewer with write access,
 alongside `Protect main`. The 2026-10-10 readback below shows the aggregate
@@ -961,7 +961,7 @@ returned no active rules, so nothing enforced review, CI or linear history on
 At 19:08 UTC on 2026-10-02 both again read back as `enforcement: disabled`
 (last updated 18:39 UTC) with no active rules on `main`. The committed
 snapshots in
-[`.github/rulesets/observed/`](https://github.com/aisecnomad/Nexus-ShadowScan/tree/main/.github/rulesets/observed)
+[`.github/rulesets/observed/`](https://github.com/Hunzee-VC/Nexus-ShadowScan/tree/main/.github/rulesets/observed)
 recorded that 04:28 UTC state until they were refreshed from the 2026-10-10
 readback described below.
 On 2026-10-03 (19:06 UTC), both rulesets read back active again. The review/CI
@@ -1026,7 +1026,7 @@ updates on 2026-10-11 at 06:45:21 UTC (`Protect main`) and 06:45:33 UTC
 (`Require CI and CodeQL`). The immutable release-tag ruleset also read back
 active with no bypass actors, blocking updates and deletion of `refs/tags/v*`.
 The complete responses are retained in
-[the October 18 snapshot directory](https://github.com/aisecnomad/Nexus-ShadowScan/tree/main/.github/rulesets/observed/2026-10-18).
+[the October 18 snapshot directory](https://github.com/Hunzee-VC/Nexus-ShadowScan/tree/main/.github/rulesets/observed/2026-10-18).
 No settings were changed for this readback; it does not establish continuous
 historical enforcement, an independent approval of any PR, or release or
 deployment acceptance.
@@ -1053,7 +1053,7 @@ own, on two Dependabot updates. A repository administrator can bypass or
 reconfigure rules, so a merged pull request, the
 version string and the internal AI-assisted hardening logs are not evidence of
 independent review. The review and merge policy is in
-[CONTRIBUTING.md](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/CONTRIBUTING.md#review-and-merge-policy).
+[CONTRIBUTING.md](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/CONTRIBUTING.md#review-and-merge-policy).
 
 Rulesets, branch protection and pull request approvals are repository settings
 that can change at any time, so an
@@ -1063,13 +1063,13 @@ evidence:
 
 ```bash
 # Rules currently enforced on main; an empty list means nothing is enforced
-gh api repos/aisecnomad/Nexus-ShadowScan/rules/branches/main
+gh api repos/Hunzee-VC/Nexus-ShadowScan/rules/branches/main
 # The ruleset itself, including its enforcement state
-gh api repos/aisecnomad/Nexus-ShadowScan/rulesets/23913372 --jq '{name, enforcement, rules: [.rules[].type]}'
+gh api repos/Hunzee-VC/Nexus-ShadowScan/rulesets/23913372 --jq '{name, enforcement, rules: [.rules[].type]}'
 # Classic branch protection; HTTP 404 means none is configured
-gh api repos/aisecnomad/Nexus-ShadowScan/branches/main/protection
+gh api repos/Hunzee-VC/Nexus-ShadowScan/branches/main/protection
 # Who authored, reviewed and merged the pull request that introduced a change
-gh pr view <number> --repo aisecnomad/Nexus-ShadowScan --json author,mergedBy,reviews
+gh pr view <number> --repo Hunzee-VC/Nexus-ShadowScan --json author,mergedBy,reviews
 ```
 
 The offline rules helper can prepare a reviewed PUT body from a fresh full
@@ -1078,17 +1078,17 @@ GitHub can omit that field for identities without ruleset write access. Read
 the default branch first and confirm it is `main`:
 
 ```bash
-gh api repos/aisecnomad/Nexus-ShadowScan --jq .default_branch
-gh api repos/aisecnomad/Nexus-ShadowScan/rulesets/23913372 > /secure/main-rules-before.json
+gh api repos/Hunzee-VC/Nexus-ShadowScan --jq .default_branch
+gh api repos/Hunzee-VC/Nexus-ShadowScan/rulesets/23913372 > /secure/main-rules-before.json
 python -m tools.release.rules prepare --input /secure/main-rules-before.json \
-  --output /secure/main-rules-update.json --repository aisecnomad/Nexus-ShadowScan \
+  --output /secure/main-rules-update.json --repository Hunzee-VC/Nexus-ShadowScan \
   --default-branch main
 # Review the generated body before this administrator operation.
-gh api --method PUT repos/aisecnomad/Nexus-ShadowScan/rulesets/23913372 \
+gh api --method PUT repos/Hunzee-VC/Nexus-ShadowScan/rulesets/23913372 \
   --input /secure/main-rules-update.json
-gh api repos/aisecnomad/Nexus-ShadowScan/rulesets/23913372 > /secure/main-rules-after.json
+gh api repos/Hunzee-VC/Nexus-ShadowScan/rulesets/23913372 > /secure/main-rules-after.json
 python -m tools.release.rules verify --input /secure/main-rules-after.json \
-  --output /secure/merge-rule-verification.json --repository aisecnomad/Nexus-ShadowScan \
+  --output /secure/merge-rule-verification.json --repository Hunzee-VC/Nexus-ShadowScan \
   --default-branch main
 ```
 
@@ -1107,10 +1107,10 @@ governance checker. The release workflow obtains its snapshot
 directly from GitHub; an offline receipt cannot authenticate its own API origin,
 establish historical enforcement or prove an actual human approved the final PR.
 
-The [two-ruleset payload helper](https://github.com/aisecnomad/Nexus-ShadowScan/tree/main/tools/governance)
+The [two-ruleset payload helper](https://github.com/Hunzee-VC/Nexus-ShadowScan/tree/main/tools/governance)
 additionally prepares `Protect main` and `Require CI and CodeQL` together,
 removing bypass actors from both. The observed snapshots and proposed PUT
-bodies are in [.github/rulesets](https://github.com/aisecnomad/Nexus-ShadowScan/tree/main/.github/rulesets).
+bodies are in [.github/rulesets](https://github.com/Hunzee-VC/Nexus-ShadowScan/tree/main/.github/rulesets).
 The top-level observed snapshots retain the 2026-10-10 readback with four
 `always` bypass actors. The separate `observed/2026-10-18/` snapshots record
 both rulesets active with empty bypass lists and matching the existing payloads.

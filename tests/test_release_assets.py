@@ -12,7 +12,7 @@ import pytest
 
 from tools.release import assets
 
-REPOSITORY = "aisecnomad/Nexus-ShadowScan"
+REPOSITORY = "Hunzee-VC/Nexus-ShadowScan"
 COMMIT = "a" * 40
 RUN = "123"
 WHEEL = "nexusshadowscan-0.1.3-py3-none-any.whl"

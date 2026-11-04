@@ -100,7 +100,7 @@ def test_images_carry_no_version_count_or_repository_slug(render: Callable[[], s
 
 def test_readme_and_architecture_page_reference_the_generated_images() -> None:
     readme = (ROOT / "docs/reference/product-guide.md").read_text(encoding="utf-8")
-    raw = "https://raw.githubusercontent.com/aisecnomad/Nexus-ShadowScan/main/docs/assets/"
+    raw = "https://raw.githubusercontent.com/Hunzee-VC/Nexus-ShadowScan/main/docs/assets/"
     for path in (BANNER, DATA_FLOW, BENCHMARK):
         assert f"{raw}{path.name}" in readme
     assert f"assets/{CONNECTORS.name}" in (ROOT / "docs" / "architecture.md").read_text(encoding="utf-8")

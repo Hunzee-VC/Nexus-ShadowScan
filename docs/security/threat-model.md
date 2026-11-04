@@ -2,7 +2,7 @@
 
 A consolidated view of what ShadowScan trusts, what it does not, and which
 control enforces each boundary. It restates the trust model that
-[`AGENTS.md`](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/AGENTS.md)
+[`AGENTS.md`](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/AGENTS.md)
 holds for contributors and the per-connector egress and limit notes in
 [production](../production.md), so a reviewer can start here instead of
 reassembling them. [SECURITY.md](../security.md) remains the reporting policy.

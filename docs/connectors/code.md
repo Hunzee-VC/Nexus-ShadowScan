@@ -354,7 +354,7 @@ Credential redaction resolves supported Go SDK import aliases against the full
 source before excerpts are cut. Excerpts use the same LF-based line positions as
 source matches, including when Go raw literals contain carriage returns.
 This is bounded lexical redaction, not arbitrary dynamic call resolution;
-reports remain confidential. See the [security policy](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/SECURITY.md).
+reports remain confidential. See the [security policy](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/SECURITY.md).
 
 Rust ordinary strings and byte strings may span physical lines; their contents
 remain literal evidence, while code after the closing quote is still scanned.
@@ -814,8 +814,8 @@ and before another escape, as in `C:\data\nuser\fred`, reads the line as
 escaped text, so that comment ends at the `\n` and what follows is read as
 the entry's tokens), and Yarn 1's
 `name value` registry credentials are withheld (see
-[what is redacted](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/SECURITY.md#what-is-redacted),
-and [what can remain](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/SECURITY.md#what-can-remain)
+[what is redacted](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/SECURITY.md#what-is-redacted),
+and [what can remain](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/SECURITY.md#what-can-remain)
 for the netrc forms it does not read, a commented-out token outside an
 entry among them).
 A file whose name selects no analysis (`*.jsonl`, `*.bak`,

@@ -3,7 +3,7 @@
 Start an incomplete-scan investigation with `summary.incomplete_reasons` and
 the affected connector's errors and coverage ledger. On 2026-10-20, scanner
 package code matching candidate
-[`423ef281361bc0b610274ebede0186e15942ddab`](https://github.com/aisecnomad/Nexus-ShadowScan/commit/423ef281361bc0b610274ebede0186e15942ddab)
+[`423ef281361bc0b610274ebede0186e15942ddab`](https://github.com/Hunzee-VC/Nexus-ShadowScan/commit/423ef281361bc0b610274ebede0186e15942ddab)
 on macOS arm64 / Python 3.11.16 completed these default offline scans with
 exit 0, no incomplete reasons and no coverage gaps:
 
@@ -117,7 +117,7 @@ commit `aee3c9842aa2c45fe851d206485a82616d9909ce`). Pin a reviewed full
 
 ```yaml
 repos:
-  - repo: https://github.com/aisecnomad/Nexus-ShadowScan
+  - repo: https://github.com/Hunzee-VC/Nexus-ShadowScan
     rev: REPLACE_WITH_REVIEWED_40_CHARACTER_SHA
     hooks:
       - id: shadowscan-staged

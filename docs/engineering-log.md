@@ -13,6 +13,72 @@ Counts and figures quoted in an entry are those of its date.
 
 ## Unreleased
 
+### Repository transfer to the Hunzee-VC organization (November 4)
+
+The repository was transferred from `aisecnomad/Nexus-ShadowScan` to
+`Hunzee-VC/Nexus-ShadowScan`. GitHub redirects the old web, API and Git URLs,
+and the numeric repository ID (`1174915264`) that the scheduled governance
+audit is pinned to is unchanged. The companion benchmark repository moved with
+it: `git ls-remote` of `Hunzee-VC/Nexus-ShadowBench` and of the old URL return
+the same refs, so the submodule URL follows.
+
+- **Governance tool.** `tools/governance/rulesets.py` pinned `REPOSITORY` to
+  the former name and rejected GitHub's current ruleset responses, whose
+  `source` is the new name, with "ruleset response does not match the expected
+  repository and ruleset"; the weekly audit's observe step therefore failed on
+  November 3. `REPOSITORY` is now the new name, and the same check refuses a
+  response for either former name (`tests/test_governance_rulesets.py` covers
+  the retained October 26 observation as it covers the October 10 one). The
+  retained responses under `.github/rulesets/observed/` are unchanged.
+  With the name fixed, the readback still differed from the reviewed payloads
+  in one place: GitHub's responses now carry `dismissal_restriction`
+  (`{"enabled": false, "allowed_actors": []}`) in the `pull_request` rule
+  parameters, a field absent from the October 26 responses, while both
+  rulesets' `updated_at` is unchanged at 2026-10-11 06:45 UTC. The tool now
+  compares that one field as absent only when it equals that off state, which
+  is what its absence described (nobody is restricted from dismissing reviews);
+  an enabled restriction, a listed actor or any other value is still reported
+  as a settings change, and `plan` keeps it in the prepared payload. The
+  reviewed `.update.json` payloads are unchanged. GitHub's documentation of the
+  field was not reachable from this change's environment.
+- **References.** Package metadata URLs (`pyproject.toml`, `CITATION.cff`, the
+  Dockerfile `org.opencontainers.image.source` label), the SARIF
+  `informationUri` and CycloneDX `vcs` reference, the MkDocs `repo_url`,
+  `repo_name`, `site_url` and social link, the issue forms, README and product
+  guide badges, links and clone commands, the governance, security and support
+  documents, the operations runbooks' `gh` commands, the example workflows, the
+  workflow comments, the companion submodule URL in `.gitmodules`, CI and
+  `tools/benchmark_suite.py`, and `source_repository` in
+  `tools/benchmark_evidence.json` (which `verify_evidence` compares with the
+  extract the tool computes, so the two change together) name the new
+  repository. Links inside dated history now point at the new URL; their prose
+  is unchanged. The OpenSSF Scorecard badge and viewer link follow the
+  repository path because the Scorecard workflow publishes under the name it
+  runs as; the badge shows no score until the first run after the transfer has
+  published at the new path.
+- **Tests.** `tests/test_repository_consistency.py` treats both names the
+  repository had (formerly `aisecnomad/Nexus-ShadowScan` and `aisecnomad/Project-Nexus`)
+  as former names, with the same retained-record exclusions and an
+  explained form for each place a former name must stay: the 0.1.2 attestation
+  under the first name, the 0.1.3 and 0.1.4 attestations under the second, and
+  the rename and transfer notes. The release, governance-audit, AI-review gate
+  and README-visual tests name the new repository.
+- **Kept on purpose.** The install guide still says to
+  verify 0.1.3 and 0.1.4 with `--repo aisecnomad/Nexus-ShadowScan` and that name in `--signer-workflow`:
+  their signing certificates name the repository as it was when they were
+  built, and the install guide says so. Retained reviews under `archive/`, the
+  ruleset responses under `.github/rulesets/observed/`, release-note and
+  history prose, and the `@aisecnomad` maintainer handle in `CODEOWNERS`,
+  `GOVERNANCE.md` and `MAINTAINERS.md` are unchanged.
+- **Not done here.** Steps 3 to 6 of the publishing runbook's rename checklist
+  are maintainer actions outside this change: the PyPI and TestPyPI trusted
+  publishers must name `Hunzee-VC` before the next release can upload, the
+  GitHub Pages address changes to `hunzee-vc.github.io/Nexus-ShadowScan/`
+  (the old project-site path does not redirect; the documents now name the new
+  address, which was not reachable from the change's environment), and the
+  OpenSSF Best Practices project entry names the repository URL. No claim of
+  independent review is made for this change.
+
 ### Audit fixes: fail-closed gaps, redaction coverage, detection accuracy and gate integrity (October 26)
 
 An eight-dimension audit (network egress, untrusted input, output safety, CI and
@@ -879,7 +945,7 @@ CVE-2026-111943 (HIGH) in Wolfi `ca-certificates-bundle` 20260909-r2, fixed in
 
 - `benchmark-suite` moves from `e027b98` to `1ce0eee`, which adds the
   companion's documentation and standards, an append-only `AMENDMENTS.json`
-  ledger for migrated harness code (aisecnomad/Nexus-ShadowBench#2), a
+  ledger for migrated harness code (Hunzee-VC/Nexus-ShadowBench#2), a
   code-surface `fetch` that delegates to the hardened cases fetcher, certifi
   2026.10.19 with a CI `pip-audit` step, and errata for stale statements in
   preserved files.
@@ -1687,7 +1753,7 @@ The proposal stays open; these tests do not claim live DNS acceptance.
 ### Repository scan completion and bounded processing (October 20)
 
 Adapted selected changes from the closed, unmerged
-[PR #284](https://github.com/aisecnomad/Nexus-ShadowScan/pull/284), which had no recorded review, onto the
+[PR #284](https://github.com/Hunzee-VC/Nexus-ShadowScan/pull/284), which had no recorded review, onto the
 existing staged-scan and readiness workflows. The filesystem probe counts up to
 180,000 entries within its unchanged one-second bound and proposes at most
 1800 seconds at the 120-second default. The existing rate of 12,000 entries per
@@ -5614,7 +5680,7 @@ endpoint and IP-range source references. Live DNS enrichment stays deferred
 
 Rescan after upgrading and keep earlier reports as historical observations;
 lower attribution is not evidence that a workload stopped. See the
-[migration notes](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/production-migrations.md#october-14-bounded-evidence-migration-unreleased).
+[migration notes](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/production-migrations.md#october-14-bounded-evidence-migration-unreleased).
 The archived implementation record under
 `archive/reviews/evidence-depth-2026-10-14/` is author-written offline evidence;
 its full before/after reports were not committed.
@@ -5623,7 +5689,7 @@ its full before/after reports were not committed.
 
 Integrates the reviewed parts of three draft pull requests, #216, #203
 and #204, into one design. Rollout and migration notes are in the
-[deployment guide](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/history/production-change-history.md#october-14-detection-precision-ambiguous-app-names-and-scoped-correlation-unreleased).
+[deployment guide](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/history/production-change-history.md#october-14-detection-precision-ambiguous-app-names-and-scoped-correlation-unreleased).
 
 - Name signals can be marked `ambiguous: true`. The Google Gemini identity
   signature uses it: a Gemini display name, publisher or description stays a
@@ -6028,7 +6094,7 @@ That review is not independent human review.
 - `benchmarks/shadowbench/` and `tools/shadowbench/`: two benchmark tracks
   that measure shadow AI agent discovery across all nine surfaces, from #193
   and #194 (the `tools.shadowbench` cases/estate entry point, now retained in
-  [the companion](https://github.com/aisecnomad/Nexus-ShadowBench/tree/main/tools/shadowbench)). #195
+  [the companion](https://github.com/Hunzee-VC/Nexus-ShadowBench/tree/main/tools/shadowbench)). #195
   landed them as `synthetic` and `estate`; the track it called `synthetic`
   is `cases` here, since both tracks are synthetic, and this entry describes
   both tracks after the review fixes below. The *cases* track generates

@@ -5,16 +5,16 @@ environment variables, record dumps, incremental state and reports as sensitive
 data. Redaction reduces accidental disclosure; it does not make reports public.
 
 **Reporting a vulnerability:** open a
-[private GitHub security advisory](https://github.com/aisecnomad/Nexus-ShadowScan/security/advisories/new);
+[private GitHub security advisory](https://github.com/Hunzee-VC/Nexus-ShadowScan/security/advisories/new);
 [Reporting](#reporting) says what to include and
 [Supported versions](#supported-versions) which versions receive fixes. Never
 put credentials, tenant exports or exploit details in a public issue.
 
 ## Trust boundary
 
-See the [STRIDE threat model](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/security/threat-model.md)
+See the [STRIDE threat model](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/security/threat-model.md)
 for boundary-specific threats, controls and residual risks, and the
-[published hardening log](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/history/consolidated-review-2026-09-24.md)
+[published hardening log](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/history/consolidated-review-2026-09-24.md)
 for dated implementation evidence.
 
 ```mermaid
@@ -44,7 +44,7 @@ credential-shaped environment variables exported for the built-in connectors
 (`*_TOKEN`, `*_SECRET`, `*_KEY`, `*_PASSWORD`, `*_PAT`, connection strings,
 webhook URLs and URLs that carry a password, the CI, cloud SDK and package
 tooling credential variables; the
-[plugin contract](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/connectors.md#third-party-plugin-execution)
+[plugin contract](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/connectors.md#third-party-plugin-execution)
 lists them)
 unless `options.plugin_env` names them, so they are neither in its
 environment (`os.environ`, on Linux `/proc/self/environ`) nor in that of the
@@ -189,7 +189,7 @@ coverage, even when a response includes an empty collection field.
   pseudonyms. Key rotation invalidates cache reuse and collection comparability.
   Resource finding IDs remain stable. Old public credential digests and private
   legacy gateway binding mappings remain sensitive; see the
-  [credential evidence migration](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/production-migrations.md#credential-evidence-identity-migration).
+  [credential evidence migration](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/production-migrations.md#credential-evidence-identity-migration).
 * `options.connector_timeout_seconds` / `--connector-timeout-seconds` defaults
   to a 120-second cooperative completion deadline. Late connector results are
   discarded and coverage is incomplete. Legacy `connector_timeout` /
@@ -645,9 +645,9 @@ coverage, even when a response includes an empty collection field.
   while scanning. Runtime telemetry attribution does not prove that a particular
   dependency executed.
 
-See [deployment and migration](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/production.md),
-[scan semantics](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/scanning.md),
-and [connector permissions](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/connectors.md).
+See [deployment and migration](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/production.md),
+[scan semantics](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/scanning.md),
+and [connector permissions](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/connectors.md).
 
 ## Supported versions
 
@@ -665,14 +665,14 @@ commitment. The project is an alpha (`Development Status :: 3 - Alpha`).
 
 A version is published when it appears in the
 [PyPI release history](https://pypi.org/project/NexusShadowScan/#history) and as a
-[release tag](https://github.com/aisecnomad/Nexus-ShadowScan/tags). Report the
+[release tag](https://github.com/Hunzee-VC/Nexus-ShadowScan/tags). Report the
 installed release version and artifact identity, or the full commit SHA for a
 source installation. Publication does not establish production acceptance for
 your environment.
 
 ## Reporting
 
-Use a [private GitHub security advisory](https://github.com/aisecnomad/Nexus-ShadowScan/security/advisories/new).
+Use a [private GitHub security advisory](https://github.com/Hunzee-VC/Nexus-ShadowScan/security/advisories/new).
 Do not include credentials, private exports or exploit details in public issues.
 
 ### What to report privately
@@ -683,7 +683,7 @@ and malformed inputs that make incomplete coverage look complete. Reports about
 CI or release-evidence integrity also belong in the private channel.
 
 Ordinary false positives, missed integrations and incorrect attribution can use
-the [detection report form](https://github.com/aisecnomad/Nexus-ShadowScan/issues/new?template=detection_report.yml)
+the [detection report form](https://github.com/Hunzee-VC/Nexus-ShadowScan/issues/new?template=detection_report.yml)
 when the reproduction is safe to publish. A trusted component being compromised
 is outside the scanner's stated trust boundary; explain any demonstrated bypass
 rather than assuming the scanner protects a compromised host.

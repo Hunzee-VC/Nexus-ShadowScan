@@ -16,7 +16,7 @@ from tools.release.evidence import verify_ci_run, verify_codeql_run, write_manif
 from tools.release.rules import MAIN_RULESET_ID, verify_against_live, verify_ruleset
 
 SHA = "a" * 40
-REPOSITORY = "aisecnomad/Nexus-ShadowScan"
+REPOSITORY = "Hunzee-VC/Nexus-ShadowScan"
 
 
 def _merge_rules() -> dict[str, Any]:
@@ -326,12 +326,12 @@ def test_release_manifest_covers_every_artifact_and_detects_changed_bytes(candid
     [
         (
             "ci-verification.json",
-            '{"repository":"wrong/repo","repository":"aisecnomad/Nexus-ShadowScan"}',
+            '{"repository":"wrong/repo","repository":"Hunzee-VC/Nexus-ShadowScan"}',
             "saved ci evidence",
         ),
         (
             "codeql-verification.json",
-            '{"repository":"aisecnomad/Nexus-ShadowScan","diagnostic":Infinity}',
+            '{"repository":"Hunzee-VC/Nexus-ShadowScan","diagnostic":Infinity}',
             "saved codeql evidence",
         ),
         (

@@ -5,7 +5,7 @@ per-release steps that put a reviewed ShadowScan release on PyPI as
 `NexusShadowScan`, so that `pip install NexusShadowScan` installs it.
 
 Publishing is a manual maintainer action and comes after the
-[release process](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/GOVERNANCE.md#release-process):
+[release process](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/GOVERNANCE.md#release-process):
 independent human review of the exact candidate commit and the acceptance
 evidence for its deployment scope. Coding agents prepare candidates. They
 never push a version tag, dispatch the workflow with `publish` set, or approve
@@ -13,7 +13,7 @@ a deployment.
 
 ## How an upload is gated
 
-The [release-evidence workflow](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/.github/workflows/release.yml)
+The [release-evidence workflow](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/.github/workflows/release.yml)
 (**Release candidate evidence**) is the only path to the package index. No
 package-index token exists: PyPI trusts this repository's workflow and
 environment through OpenID Connect (trusted publishing).
@@ -50,7 +50,7 @@ with `publish: pypi`; evidence-only and TestPyPI runs cannot attach assets.
    | Field | Value |
    |---|---|
    | PyPI project name | `NexusShadowScan` |
-   | Owner | `aisecnomad` |
+   | Owner | `Hunzee-VC` |
    | Repository name | `Nexus-ShadowScan` |
    | Workflow name | `release.yml` |
    | Environment name | `pypi` |
@@ -91,7 +91,7 @@ with `publish: pypi`; evidence-only and TestPyPI runs cannot attach assets.
    and confirm both tests passed rather than skipped; re-pin the images in a
    reviewed change if they fail. Merge through the normal review process.
 2. **Review and accept the exact commit**, as the
-   [release process](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/GOVERNANCE.md#release-process)
+   [release process](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/GOVERNANCE.md#release-process)
    requires. A green CI run is not that review.
 3. **Rehearse on TestPyPI.** The upload freezes `README.md` as that
    version's project description, so first repeat the step 1 `readme_images` check in a
@@ -100,11 +100,11 @@ with `publish: pypi`; evidence-only and TestPyPI runs cannot attach assets.
    `testpypi` deployment:
 
    ```bash
-   gh workflow run release.yml --repo aisecnomad/Nexus-ShadowScan --ref main \
+   gh workflow run release.yml --repo Hunzee-VC/Nexus-ShadowScan --ref main \
      -f expected_commit=<reviewed-40-character-sha> \
      -f ci_run_id=<its successful push CI run> \
      -f codeql_run_id=<its successful push CodeQL run> \
-     -f ruleset_readback="$(gh api repos/aisecnomad/Nexus-ShadowScan/rulesets/23913372)" \
+     -f ruleset_readback="$(gh api repos/Hunzee-VC/Nexus-ShadowScan/rulesets/23913372)" \
      -f publish=testpypi
    ```
 
@@ -175,8 +175,8 @@ with `publish: pypi`; evidence-only and TestPyPI runs cannot attach assets.
      'import json, sys; print(*(f["url"] for f in json.load(sys.stdin)["urls"] if f["packagetype"] == "sdist"))' \
      | xargs curl -fsSL --proto '=https' -o "dists/nexusshadowscan-$version.tar.gz"
    for file in "dists/nexusshadowscan-$version-py3-none-any.whl" "dists/nexusshadowscan-$version.tar.gz"; do
-     gh attestation verify "$file" --repo aisecnomad/Nexus-ShadowScan \
-       --signer-workflow aisecnomad/Nexus-ShadowScan/.github/workflows/release.yml \
+     gh attestation verify "$file" --repo Hunzee-VC/Nexus-ShadowScan \
+       --signer-workflow Hunzee-VC/Nexus-ShadowScan/.github/workflows/release.yml \
        --source-ref refs/heads/main --source-digest "$commit" --signer-digest "$commit" \
        --deny-self-hosted-runners
    done
@@ -242,7 +242,7 @@ with `publish: pypi`; evidence-only and TestPyPI runs cannot attach assets.
 
    ```bash
    python -m tools.release.assets --directory publication-input \
-     --repository aisecnomad/Nexus-ShadowScan --commit "$commit" --run-id "$run_id"
+     --repository Hunzee-VC/Nexus-ShadowScan --commit "$commit" --run-id "$run_id"
    ```
 
    Set `commit` and `run_id` to the reviewed SHA and successful production
@@ -255,8 +255,8 @@ with `publish: pypi`; evidence-only and TestPyPI runs cannot attach assets.
 
    ```bash
    gh attestation verify "nexusshadowscan-$version-py3-none-any.whl" \
-     --repo aisecnomad/Nexus-ShadowScan --bundle provenance.sigstore.json \
-     --signer-workflow aisecnomad/Nexus-ShadowScan/.github/workflows/release.yml \
+     --repo Hunzee-VC/Nexus-ShadowScan --bundle provenance.sigstore.json \
+     --signer-workflow Hunzee-VC/Nexus-ShadowScan/.github/workflows/release.yml \
      --source-ref refs/heads/main --source-digest "$commit" --signer-digest "$commit" \
      --deny-self-hosted-runners
    ```
@@ -320,10 +320,13 @@ with `publish: pypi`; evidence-only and TestPyPI runs cannot attach assets.
 
 The trusted publishers, the attestation identity and the Pages address all
 contain the repository name; GitHub's redirects cover only web, API and Git
-URLs. The repository was renamed from `aisecnomad/Project-Nexus` to
-`aisecnomad/Nexus-ShadowScan`. For this or any later rename, in this order:
+URLs. The repository was renamed from `aisecnomad/Project-Nexus` to `aisecnomad/Nexus-ShadowScan`,
+then transferred from `aisecnomad/Nexus-ShadowScan` to the `Hunzee-VC` organization as
+`Hunzee-VC/Nexus-ShadowScan`. A transfer changes the owner half of the name and follows
+the same steps. For this or any later rename or transfer, in this order:
 
-1. Rename it under **Settings → General → Repository name**. Rulesets,
+1. Rename it under **Settings → General → Repository name**, or transfer it
+   under **Settings → General → Danger Zone → Transfer ownership**. Rulesets,
    environments, secrets and the numeric repository ID, which the scheduled
    governance audit is pinned to, carry over.
 2. Merge the change that updates the in-repository references. The weekly
@@ -338,15 +341,20 @@ URLs. The repository was renamed from `aisecnomad/Project-Nexus` to
    the old path does not redirect. Update links to it, and dispatch the Docs
    workflow with `publish: true` again if the site is deployed from it.
 5. Point local clones at the new URL with
-   `git remote set-url origin https://github.com/aisecnomad/Nexus-ShadowScan.git`.
+   `git remote set-url origin https://github.com/Hunzee-VC/Nexus-ShadowScan.git`.
+   The pinned companion `benchmark-suite` submodule URL in `.gitmodules` and
+   `tools/benchmark_suite.py` follows the companion's own location; after the
+   transfer both name `Hunzee-VC/Nexus-ShadowBench`.
 6. Upload the first release under the new name more than 14 days after the
    last release, by PyPI upload time; otherwise PyPI flags it with a
    **Change of provenance** warning that stays on that release (see below).
    If it cannot wait, name the rename in that release's notes.
 
 Attestations keep the name they were signed under. Verify files released
-before a rename with the old `--repo` value, as the install instructions do
-for 0.1.2.
+before a rename or transfer with the old `--repo` value, as the install
+instructions do for 0.1.2 and for 0.1.3 and 0.1.4, which say to
+verify them with `--repo aisecnomad/Nexus-ShadowScan`. The commands above name the
+current repository, which the next release is attested under.
 
 PyPI shows a **Change of provenance** warning on a release whose
 attestations name a different repository or workflow file from the
@@ -389,4 +397,4 @@ asks users to confirm the change.
   message and the release notes.
 - **Suspected compromise of the repository or its workflow.** Remove the trusted
   publisher on PyPI first; this stops further uploads with nothing to rotate.
-  Then follow [SECURITY.md](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/SECURITY.md).
+  Then follow [SECURITY.md](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/SECURITY.md).

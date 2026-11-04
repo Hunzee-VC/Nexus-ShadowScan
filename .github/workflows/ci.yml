@@ -495,7 +495,7 @@ jobs:
           python -m pip install --no-deps --no-build-isolation -e .
       - name: Initialize only the pinned public companion
         run: |
-          git -c submodule.benchmark-suite.url=https://github.com/aisecnomad/Nexus-ShadowBench.git submodule update --init --depth 1 -- benchmark-suite
+          git -c submodule.benchmark-suite.url=https://github.com/Hunzee-VC/Nexus-ShadowBench.git submodule update --init --depth 1 -- benchmark-suite
           python -m tools.benchmark_suite
       - name: Preserve the moved harness complexity ratchet
         run: python -m tools.benchmark_complexity

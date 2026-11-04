@@ -1,14 +1,14 @@
 <h1 align="center">
-  <img src="https://raw.githubusercontent.com/aisecnomad/Nexus-ShadowScan/84183af55768191b6a4044b424a2e8e57013763a/docs/assets/hero-banner.svg" alt="Nexus ShadowScan" width="100%">
+  <img src="https://raw.githubusercontent.com/Hunzee-VC/Nexus-ShadowScan/84183af55768191b6a4044b424a2e8e57013763a/docs/assets/hero-banner.svg" alt="Nexus ShadowScan" width="100%">
 </h1>
 
 <p align="center">
-  <a href="https://github.com/aisecnomad/Nexus-ShadowScan/actions/workflows/ci.yml"><img src="https://github.com/aisecnomad/Nexus-ShadowScan/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
-  <a href="https://github.com/aisecnomad/Nexus-ShadowScan/actions/workflows/codeql.yml"><img src="https://github.com/aisecnomad/Nexus-ShadowScan/actions/workflows/codeql.yml/badge.svg?branch=main" alt="CodeQL"></a>
-  <a href="https://scorecard.dev/viewer/?uri=github.com/aisecnomad/Nexus-ShadowScan"><img src="https://api.scorecard.dev/projects/github.com/aisecnomad/Nexus-ShadowScan/badge" alt="OpenSSF Scorecard"></a>
+  <a href="https://github.com/Hunzee-VC/Nexus-ShadowScan/actions/workflows/ci.yml"><img src="https://github.com/Hunzee-VC/Nexus-ShadowScan/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="https://github.com/Hunzee-VC/Nexus-ShadowScan/actions/workflows/codeql.yml"><img src="https://github.com/Hunzee-VC/Nexus-ShadowScan/actions/workflows/codeql.yml/badge.svg?branch=main" alt="CodeQL"></a>
+  <a href="https://scorecard.dev/viewer/?uri=github.com/Hunzee-VC/Nexus-ShadowScan"><img src="https://api.scorecard.dev/projects/github.com/Hunzee-VC/Nexus-ShadowScan/badge" alt="OpenSSF Scorecard"></a>
   <a href="https://pypi.org/project/NexusShadowScan/"><img src="https://img.shields.io/pypi/v/NexusShadowScan.svg" alt="PyPI: NexusShadowScan"></a>
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.11%E2%80%933.14-blue.svg" alt="Python 3.11-3.14"></a>
-  <a href="https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License: Apache-2.0"></a>
+  <a href="https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License: Apache-2.0"></a>
 </p>
 
 <p align="center"><strong>Discover evidence of shadow AI agents across your organization and reconcile it against your inventory of approved agents.</strong></p>
@@ -43,7 +43,7 @@ The distribution is `NexusShadowScan`; the command and Python package are
 trusted publishing and attested on GitHub, so you can check a download with
 `gh attestation verify`. For a deployment, install a reviewed commit from the
 hash-locks instead; both procedures are in the
-[installation guide](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/getting-started/install.md).
+[installation guide](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/getting-started/install.md).
 
 ## Quick start
 
@@ -68,7 +68,7 @@ them. To match a PyPI release rather than `main`, add `--branch v<version>` to t
 clone:
 
 ```bash
-git clone https://github.com/aisecnomad/Nexus-ShadowScan && cd Nexus-ShadowScan
+git clone https://github.com/Hunzee-VC/Nexus-ShadowScan && cd Nexus-ShadowScan
 python -m venv .venv && . .venv/bin/activate && pip install .
 shadowscan scan -c examples/shadowscan.offline.yaml --format html -o report.html
 shadowscan code tests/fixtures/sample_repo --inventory agent-card.yaml
@@ -94,14 +94,14 @@ $ shadowscan scan -c examples/shadowscan.offline.yaml --max-rows 4
 ```
 
 To scan your own environment, list its connectors in a `shadowscan.yaml` (see the
-[configuration reference](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/getting-started/configuration.md)),
+[configuration reference](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/getting-started/configuration.md)),
 keep secrets in environment variables, and run:
 
 ```bash
 shadowscan scan -c shadowscan.yaml --format sarif -o shadowscan.sarif
 ```
 
-The [quick start guide](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/getting-started/quickstart.md)
+The [quick start guide](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/getting-started/quickstart.md)
 walks through each surface.
 
 ## Why ShadowScan
@@ -130,7 +130,7 @@ are not reconciled: `shadow` is null, not true.
 ## How it works
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/aisecnomad/Nexus-ShadowScan/84183af55768191b6a4044b424a2e8e57013763a/docs/assets/architecture-data-flow.svg" alt="Data flow of one scan: trusted operator inputs (signature packs, configuration, your inventory of approved agents and mapping catalogs) and untrusted scan targets (provider APIs, offline exports, repository checkouts, hosts and processes) feed one or more connectors per surface; the engine merges, correlates, reconciles, assesses autonomy and scores risk; reporters and the JSON report commands publish the results" width="95%">
+  <img src="https://raw.githubusercontent.com/Hunzee-VC/Nexus-ShadowScan/84183af55768191b6a4044b424a2e8e57013763a/docs/assets/architecture-data-flow.svg" alt="Data flow of one scan: trusted operator inputs (signature packs, configuration, your inventory of approved agents and mapping catalogs) and untrusted scan targets (provider APIs, offline exports, repository checkouts, hosts and processes) feed one or more connectors per surface; the engine merges, correlates, reconciles, assesses autonomy and scores risk; reporters and the JSON report commands publish the results" width="95%">
 </p>
 
 ```text
@@ -153,7 +153,7 @@ Collection and analysis fail closed:
 - Only the opt-in LLM triage is advisory: its failures are warnings, and it never
   changes scores.
 
-See [architecture](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/architecture.md)
+See [architecture](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/architecture.md)
 for the pipeline, the package layout, and the connector contract.
 
 ## Key capabilities
@@ -182,7 +182,7 @@ for the pipeline, the package layout, and the connector contract.
 * Built-in collectors inspect provider resources using read operations. Scope the audit identity to the documented read permissions. A third-party plugin runs only when allowlisted by exact name, with the scanner's privileges and no sandbox; review it separately.
 * ShadowScan sends no telemetry. A scan connects only to the sources and credential endpoints its configuration names and, if you enable the opt-in LLM triage, to the model endpoint you choose, which receives redacted finding summaries (the redaction limits above apply). `shadowscan jwt --jwks-url` fetches the key set you name, and `shadowscan mcp-registry snapshot` reads the official MCP Registry unless `--url` names another.
 
-See [SECURITY.md](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/SECURITY.md) and [docs/production.md](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/production.md) for deployment behavior, migration, and limits.
+See [SECURITY.md](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/SECURITY.md) and [docs/production.md](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/production.md) for deployment behavior, migration, and limits.
 
 ## Commands and exit codes
 
@@ -214,8 +214,8 @@ Exit codes:
 | 3 | Incomplete scan or comparison; inspect the report before relying on it |
 
 A complete static scan does not prove that no agent runs. For exit 3, start with
-[incomplete-scan troubleshooting](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/getting-started/incomplete-scans.md);
-see [scan semantics](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/scanning.md)
+[incomplete-scan troubleshooting](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/getting-started/incomplete-scans.md);
+see [scan semantics](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/scanning.md)
 for the full rules.
 
 ## Benchmarks
@@ -226,7 +226,7 @@ it was the only tool that covered every surface. The maintainer built and scored
 all three with AI coding assistants (Claude, Codex, Grok, Google Antigravity, and
 others); read the caveats under the charts before comparing tools. Each report link
 opens a fixed commit of
-[Nexus ShadowBench](https://github.com/aisecnomad/Nexus-ShadowBench), where the
+[Nexus ShadowBench](https://github.com/Hunzee-VC/Nexus-ShadowBench), where the
 benchmarks moved without being rerun or regraded.
 
 **Estate recall** is the share of all expected entities (in the head-to-head,
@@ -236,16 +236,16 @@ categories a tool declares.
 
 | Run | Inputs | ShadowScan | Next-best open-source tool |
 |---|---|---|---|
-| [Head-to-head](https://github.com/aisecnomad/Nexus-ShadowBench/blob/1ce0eee376585f85fbd0fec98235d556310e6277/tools/benchmark/results/REPORT.md) (tools pinned 2026-10-06) | 900 synthetic cases, 3 surfaces | Estate recall 0.90 (0.87–0.92) | Cisco AI BOM 0.49 (0.45–0.53) |
-| [ShadowBench cases](https://github.com/aisecnomad/Nexus-ShadowBench/blob/1ce0eee376585f85fbd0fec98235d556310e6277/benchmarks/shadowbench/cases/results/2026-10-11/REPORT.md) (2026-10-11) | 346 cases, 738 entities, 9 surfaces | Estate recall 0.839 | AI-Infra-Guard, AgentDiscover 0.035 |
-| [Shadow AI discovery](https://github.com/aisecnomad/Nexus-ShadowBench/blob/1ce0eee376585f85fbd0fec98235d556310e6277/benchmarks/shadow-ai-discovery/results/2026-10-09/REPORT.md) (2026-10-09) | 87 public repositories, code only | In-scope value F1 0.972 | NuGuard 0.750 |
+| [Head-to-head](https://github.com/Hunzee-VC/Nexus-ShadowBench/blob/1ce0eee376585f85fbd0fec98235d556310e6277/tools/benchmark/results/REPORT.md) (tools pinned 2026-10-06) | 900 synthetic cases, 3 surfaces | Estate recall 0.90 (0.87–0.92) | Cisco AI BOM 0.49 (0.45–0.53) |
+| [ShadowBench cases](https://github.com/Hunzee-VC/Nexus-ShadowBench/blob/1ce0eee376585f85fbd0fec98235d556310e6277/benchmarks/shadowbench/cases/results/2026-10-11/REPORT.md) (2026-10-11) | 346 cases, 738 entities, 9 surfaces | Estate recall 0.839 | AI-Infra-Guard, AgentDiscover 0.035 |
+| [Shadow AI discovery](https://github.com/Hunzee-VC/Nexus-ShadowBench/blob/1ce0eee376585f85fbd0fec98235d556310e6277/benchmarks/shadow-ai-discovery/results/2026-10-09/REPORT.md) (2026-10-09) | 87 public repositories, code only | In-scope value F1 0.972 | NuGuard 0.750 |
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/aisecnomad/Nexus-ShadowScan/84183af55768191b6a4044b424a2e8e57013763a/docs/assets/benchmarks-head-to-head.webp" alt="Head-to-head estate recall on 900 synthetic cases: ShadowScan 0.90, Cisco AI BOM 0.49, AgentSonar 0.33, agent-bom 0.29, Shadow AI Detector 0.28, AgentDiscover 0.23, Open Shadow AI 0.19, Snyk Agent Scan 0.18, AI-Detector 0.13, Cisco MCP Scanner 0.04, Claw-Hunter 0.04" width="95%">
+  <img src="https://raw.githubusercontent.com/Hunzee-VC/Nexus-ShadowScan/84183af55768191b6a4044b424a2e8e57013763a/docs/assets/benchmarks-head-to-head.webp" alt="Head-to-head estate recall on 900 synthetic cases: ShadowScan 0.90, Cisco AI BOM 0.49, AgentSonar 0.33, agent-bom 0.29, Shadow AI Detector 0.28, AgentDiscover 0.23, Open Shadow AI 0.19, Snyk Agent Scan 0.18, AI-Detector 0.13, Cisco MCP Scanner 0.04, Claw-Hunter 0.04" width="95%">
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/aisecnomad/Nexus-ShadowScan/84183af55768191b6a4044b424a2e8e57013763a/docs/assets/benchmarks-cross-tool.webp" alt="Left: ShadowBench cases estate recall, ShadowScan 0.839 against 0.035 or less for every other tool. Right: Shadow AI discovery in-scope value F1, ShadowScan 0.972, NuGuard 0.750, SafeDep vet 0.587, Trusera ai-bom 0.585, cdxgen 0.511, AgentDiscover 0.420, SafeDep xbom 0.185, Agentic Radar 0.102, Geiger 0.035" width="95%">
+  <img src="https://raw.githubusercontent.com/Hunzee-VC/Nexus-ShadowScan/84183af55768191b6a4044b424a2e8e57013763a/docs/assets/benchmarks-cross-tool.webp" alt="Left: ShadowBench cases estate recall, ShadowScan 0.839 against 0.035 or less for every other tool. Right: Shadow AI discovery in-scope value F1, ShadowScan 0.972, NuGuard 0.750, SafeDep vet 0.587, Trusera ai-bom 0.585, cdxgen 0.511, AgentDiscover 0.420, SafeDep xbom 0.185, Agentic Radar 0.102, Geiger 0.035" width="95%">
 </p>
 
 How to read these numbers:
@@ -261,7 +261,7 @@ How to read these numbers:
   in view.
 * The discovery result is in-sample: the 0.972 F1 was measured after tuning on
   that corpus. An earlier archived run recorded
-  [0.909](https://github.com/aisecnomad/Nexus-ShadowBench/blob/1ce0eee376585f85fbd0fec98235d556310e6277/benchmarks/shadow-ai-discovery/results/2026-10-08/REPORT.md)
+  [0.909](https://github.com/Hunzee-VC/Nexus-ShadowBench/blob/1ce0eee376585f85fbd0fec98235d556310e6277/benchmarks/shadow-ai-discovery/results/2026-10-08/REPORT.md)
   against a different expected-fact universe (835 facts against 839), and labels
   and adapters also changed between the runs, so the two are not a controlled
   before-and-after comparison.
@@ -276,27 +276,27 @@ How to read these numbers:
 * ShadowScan still has gaps. It found 70% of AI developer home directories in the
   head-to-head, its specificity on decoys in the cases run was 63%, and it marked
   27 of its 326 scans in the cases run and 43 of 87 in the discovery run
-  incomplete. In three [real-world repository runs](https://github.com/aisecnomad/Nexus-ShadowBench/blob/1ce0eee376585f85fbd0fec98235d556310e6277/benchmarks/README.md)
+  incomplete. In three [real-world repository runs](https://github.com/Hunzee-VC/Nexus-ShadowBench/blob/1ce0eee376585f85fbd0fec98235d556310e6277/benchmarks/README.md)
   from 2026-10-08 (34, 41 and 326 public repositories), other tools scored higher,
   partly because those runs count ShadowScan's incomplete scans as misses.
 
-See [benchmark evidence](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/reference/product-guide.md#benchmarks)
+See [benchmark evidence](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/reference/product-guide.md#benchmarks)
 for per-surface results and limits.
 
 ## Documentation
 
 | Topic | Reference |
 |---|---|
-| Installation and first scan | [Installation](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/getting-started/install.md), [quick start](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/getting-started/quickstart.md) |
-| Options and configuration | [CLI reference](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/reference/cli.md), [configuration](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/getting-started/configuration.md) |
-| Examples, output and detection | [Product guide](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/reference/product-guide.md), [connector reference](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/connectors/reference.md) |
-| Python integration | [API reference](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/api/index.md) |
-| Benchmark protocols and limitations | [Benchmark evidence](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/reference/product-guide.md#benchmarks) |
-| Production use and trust boundaries | [Deployment](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/production.md), [threat model](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/security/threat-model.md) |
+| Installation and first scan | [Installation](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/getting-started/install.md), [quick start](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/getting-started/quickstart.md) |
+| Options and configuration | [CLI reference](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/reference/cli.md), [configuration](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/getting-started/configuration.md) |
+| Examples, output and detection | [Product guide](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/reference/product-guide.md), [connector reference](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/connectors/reference.md) |
+| Python integration | [API reference](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/api/index.md) |
+| Benchmark protocols and limitations | [Benchmark evidence](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/reference/product-guide.md#benchmarks) |
+| Production use and trust boundaries | [Deployment](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/production.md), [threat model](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/security/threat-model.md) |
 
 Documentation links on this page open `main`, which can be newer than the version
 you installed, and pages there can move. A PyPI release's documentation stays at
-its tag, `https://github.com/aisecnomad/Nexus-ShadowScan/tree/v<version>`, where
+its tag, `https://github.com/Hunzee-VC/Nexus-ShadowScan/tree/v<version>`, where
 `<version>` is what `shadowscan --version` prints; for a source install, read the
 documentation of the commit you installed.
 
@@ -305,45 +305,45 @@ documentation of the commit you installed.
 * **Release state.** Alpha; the package classifier is `Development Status :: 3 - Alpha`.
   A version is published when it appears in the
   [PyPI release history](https://pypi.org/project/NexusShadowScan/#history) and as a
-  [release tag](https://github.com/aisecnomad/Nexus-ShadowScan/tags); a version
+  [release tag](https://github.com/Hunzee-VC/Nexus-ShadowScan/tags); a version
   number in the source is not evidence of publication, and commits on `main` after
   a release tag are unreleased. Confirm a version's publication and artifact
   identity there before installing it. Publication does not establish independent
   review or deployment acceptance.
 * **Single maintainer, AI-assisted development.** Apart from Dependabot updates and
   README edits carried from three pull requests opened by another GitHub account
-  ([#229](https://github.com/aisecnomad/Nexus-ShadowScan/pull/229),
-  [#275](https://github.com/aisecnomad/Nexus-ShadowScan/pull/275) and
-  [#313](https://github.com/aisecnomad/Nexus-ShadowScan/pull/313), credited as
+  ([#229](https://github.com/Hunzee-VC/Nexus-ShadowScan/pull/229),
+  [#275](https://github.com/Hunzee-VC/Nexus-ShadowScan/pull/275) and
+  [#313](https://github.com/Hunzee-VC/Nexus-ShadowScan/pull/313), credited as
   co-author), every commit up to this revision was written by a single maintainer
   or generated with an AI coding assistant (Claude, Codex, Grok, GitHub Copilot,
   Google Antigravity, Perplexity, Meta AI, etc.). The logs under
-  [archive/reviews/](https://github.com/aisecnomad/Nexus-ShadowScan/tree/main/archive/reviews)
+  [archive/reviews/](https://github.com/Hunzee-VC/Nexus-ShadowScan/tree/main/archive/reviews)
   are AI-assisted, not third-party reviews.
 * **Recommendation.** Review the revision yourself or have it reviewed, then
   pin that full commit SHA as shown in
-  [Deployment install](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/getting-started/install.md#from-a-reviewed-revision-hash-locked).
+  [Deployment install](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/getting-started/install.md#from-a-reviewed-revision-hash-locked).
   Review state cannot be established from a checkout; verify it with the
   commands in
-  [merge gate and review status](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/production.md#merge-gate-and-review-status).
+  [merge gate and review status](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/production.md#merge-gate-and-review-status).
 * **Name.** The repository was formerly `aisecnomad/Project-Nexus`; GitHub redirects the old links.
 
 ## Community and contributing
 
 | I want to… | Start here |
 |---|---|
-| Ask a question or troubleshoot | [Support guide](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/SUPPORT.md) |
-| Report a bug or request a feature | [Issue forms](https://github.com/aisecnomad/Nexus-ShadowScan/issues/new/choose) |
-| Report a false positive or missed framework | [Detection quality report](https://github.com/aisecnomad/Nexus-ShadowScan/issues/new?template=detection_report.yml) |
-| Make a first contribution | [Contributor guide](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/CONTRIBUTING.md) |
-| Report a vulnerability privately | [Security policy](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/SECURITY.md#reporting) |
-| Understand decisions, review and release requirements | [Governance](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/GOVERNANCE.md), [Maintainers](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/MAINTAINERS.md), [Roadmap](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/ROADMAP.md) |
-| Understand participation standards | [Code of conduct](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/CODE_OF_CONDUCT.md) |
-| See what changed or cite the project | [Release notes](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/RELEASE_NOTES.md), [Changelog](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/CHANGELOG.md), [Engineering log](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/engineering-log.md), [CITATION.cff](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/CITATION.cff) |
+| Ask a question or troubleshoot | [Support guide](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/SUPPORT.md) |
+| Report a bug or request a feature | [Issue forms](https://github.com/Hunzee-VC/Nexus-ShadowScan/issues/new/choose) |
+| Report a false positive or missed framework | [Detection quality report](https://github.com/Hunzee-VC/Nexus-ShadowScan/issues/new?template=detection_report.yml) |
+| Make a first contribution | [Contributor guide](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/CONTRIBUTING.md) |
+| Report a vulnerability privately | [Security policy](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/SECURITY.md#reporting) |
+| Understand decisions, review and release requirements | [Governance](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/GOVERNANCE.md), [Maintainers](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/MAINTAINERS.md), [Roadmap](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/ROADMAP.md) |
+| Understand participation standards | [Code of conduct](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/CODE_OF_CONDUCT.md) |
+| See what changed or cite the project | [Release notes](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/RELEASE_NOTES.md), [Changelog](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/CHANGELOG.md), [Engineering log](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/engineering-log.md), [CITATION.cff](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/CITATION.cff) |
 
 Use synthetic, minimal examples in public reports. Scan results can contain
 credentials, personal data, and sensitive information even after redaction.
 
 ## License
 
-Apache-2.0. See [LICENSE](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/LICENSE) and [NOTICE](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/NOTICE).
+Apache-2.0. See [LICENSE](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/LICENSE) and [NOTICE](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/NOTICE).

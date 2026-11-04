@@ -1,13 +1,24 @@
 # Changelog
 
 One summary per release. Detailed implementation history is maintained in the
-[engineering log](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/engineering-log.md);
-[release notes](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/RELEASE_NOTES.md)
+[engineering log](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/engineering-log.md);
+[release notes](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/RELEASE_NOTES.md)
 explain operator migrations. Earlier per-change entries are preserved in the
-[change-history archive](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/history/changelog-detail.md).
+[change-history archive](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/history/changelog-detail.md).
 
 ## Unreleased
 
+- The repository was transferred from `aisecnomad/Nexus-ShadowScan` to
+  `Hunzee-VC/Nexus-ShadowScan`, and the companion benchmark repository to
+  `Hunzee-VC/Nexus-ShadowBench`. The governance tool's expected repository,
+  which had failed the weekly audit's ruleset readback since the transfer
+  (it also compares GitHub's new, off-by-default `dismissal_restriction`
+  pull-request parameter as absent, and only in that state),
+  package metadata, the SARIF and CycloneDX project URLs, documentation links,
+  badges, clone commands, the submodule URL and the tests follow the new names;
+  the consistency test treats the former name like the earlier one. Releases
+  0.1.3 and 0.1.4 keep the name their attestations carry:
+  verify them with `--repo aisecnomad/Nexus-ShadowScan`.
 - An audit with each finding reproduced before it was fixed closes 21 gaps.
   Fail-closed: a single saved Zapier, Auth0 or Slack API page, a staged
   submodule hidden by `ignore = all`, an endpoint `--dump-records` manifest and
