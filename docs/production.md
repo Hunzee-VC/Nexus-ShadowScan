@@ -458,7 +458,7 @@ Dependabot's weekly docker update proposes the newer digest of the
 - Check that the `apk` Python pin (`python-3.12` and `python-3.12-base` at the
   same revision in both stages) still installs on the new base; the image build
   fails otherwise, and the pin carries its own exception note in the Dockerfile.
-- Treat the pull request's green `container-security` job as the acceptance
+- Treat the pull request's green `container-security` job as the build-and-scan
   evidence: it builds the image from the proposed digest and runs the Trivy
   scan with a fresh database against that exact image. A red job means the
   new base is not accepted, whatever the digest comparison said.
