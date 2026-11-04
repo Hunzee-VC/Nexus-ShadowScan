@@ -44,7 +44,7 @@ py-serializable==2.1.0
 pyparsing==3.3.3
 pytest-cov==7.1.0
 pytest-xdist==3.8.0
-pytest==9.2.0
+pytest==9.1.1
 python-discovery==1.6.4
 referencing==0.37.0
 responses==0.26.3
