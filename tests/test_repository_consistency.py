@@ -293,12 +293,14 @@ _FORMER_NAME_RECORDS = (
     ".github/rulesets/observed/",
 )
 _FORMER_NAME = re.compile(
-    r"aisecnomad(?:/|%2F|\.github\.io/)(?:Project-Nexus|Nexus-ShadowScan)", re.IGNORECASE
+    r"aisecnomad(?:/|%2F|\.github\.io/)(?:Project-Nexus|Nexus-ShadowScan|Nexus-ShadowBench)",
+    re.IGNORECASE,
 )
 # Elsewhere a former name may appear only in these forms, which say that it is a former
 # name: 0.1.2 was attested under the first and 0.1.3 and 0.1.4 under the second, the rename
 # and the transfer are described, and one dated observation keeps the request path it
-# recorded. Each form is removed from the line before the check, so a stale link beside one
+# recorded. The pinned companion moved with the repository, so its former owner URL is
+# a stale reference too. Each form is removed from the line before the check, so a stale link beside one
 # is still caught.
 # Split so that this file passes its own check.
 _FORMER_SLUGS = ("aisecnomad/" + "Project-Nexus", "aisecnomad/" + "Nexus-ShadowScan")
@@ -311,11 +313,11 @@ _FORMER_NAME_FORMS = re.compile(
             r"^repo=SLUG\s+# 0\.1\.[34] was attested under this name, before the transfer$",
             r"`gh attestation verify <file> --repo SLUG`",
             r"verify (?:it|them|0\.1\.\d+(?: and 0\.1\.\d+)?) with `--repo SLUG`",
-            r"(?:later|those) releases with `--repo SLUG`",
+            r"0\.1\.3 and 0\.1\.4 with `--repo SLUG`",
             r"attested (?:as|under) `SLUG` before the (?:rename|transfer)",
             r"(?:renamed|transferred) from `?SLUG`? to(?: `?SLUG`?)?",
             r"renamed to `SLUG`",
-            r"names `SLUG`",
+            r"checked after the upload, names `SLUG`",
             r"formerly `?SLUG`?(?:,? (?:and|then) `?SLUG`?)*(?![\w.%/-])",
             r"`GET /repos/SLUG/[^`]*` \(the former name\)",
             r'^FORMER_REPOSITORIES = \("SLUG", "SLUG"\)$',
@@ -372,8 +374,8 @@ def test_former_name_check_flags_unexplained_references() -> None:
         f"The repository was renamed from `{first}` to `{second}` and then transferred.",
         f"transferred from `{second}` to `Hunzee-VC/Nexus-ShadowScan`; GitHub redirects",
         f"(formerly `{second}` and `{first}`), so a rename cannot skip the audit job.",
-        f"and later releases with `--repo {second}`.",
-        f"PyPI's provenance for both files names `{second}`, `release.yml` and",
+        f"and 0.1.3 and 0.1.4 with `--repo {second}`.",
+        f"files, checked after the upload, names `{second}`,",
     ):
         assert not _names_former_repository(explained), explained
     for slug in _FORMER_SLUGS:
@@ -391,6 +393,21 @@ def test_former_name_check_flags_unexplained_references() -> None:
             f"gh api repos/{slug}/rulesets/23913372",
         ):
             assert _names_former_repository(stale), stale
+    companion = "aisecnomad/" + "Nexus-ShadowBench"
+    assert not _FORMER_NAME.search("https://github.com/Hunzee-VC/Nexus-ShadowBench.git")
+    for stale in (
+        f"\turl = https://github.com/{companion}.git",
+        f"git -c submodule.benchmark-suite.url=https://github.com/{companion}.git submodule update",
+        f"[Nexus ShadowBench](https://github.com/{companion})",
+    ):
+        assert _names_former_repository(stale), stale
+
+
+def test_reporters_name_the_repository_that_pyproject_names() -> None:
+    """The SARIF informationUri and the CycloneDX vcs reference follow the repository, as pyproject does."""
+    from shadowscan.reporters import cyclonedx, sarif
+
+    assert sarif._PROJECT_URI == cyclonedx._PROJECT_URI == _pyproject()["project"]["urls"]["Repository"]
 
 
 # With `--repo` alone, `gh attestation verify` accepts an attestation that any workflow, branch or

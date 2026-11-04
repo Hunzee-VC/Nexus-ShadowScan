@@ -26,7 +26,9 @@ the same refs, so the submodule URL follows.
   the former name and rejected GitHub's current ruleset responses, whose
   `source` is the new name, with "ruleset response does not match the expected
   repository and ruleset"; the weekly audit's observe step therefore failed on
-  November 3. `REPOSITORY` is now the new name, and the same check refuses a
+  November 3 (that run's separate dependency-audit job failed as well, on the
+  pyasn1 0.6.4 advisory in `requirements.lock`, which this change does not
+  touch; #335 moves that pin to 0.6.5). `REPOSITORY` is now the new name, and the same check refuses a
   response for either former name (`tests/test_governance_rulesets.py` covers
   the retained October 26 observation as it covers the October 10 one). The
   retained responses under `.github/rulesets/observed/` are unchanged.
@@ -70,14 +72,18 @@ the same refs, so the submodule URL follows.
   ruleset responses under `.github/rulesets/observed/`, release-note and
   history prose, and the `@aisecnomad` maintainer handle in `CODEOWNERS`,
   `GOVERNANCE.md` and `MAINTAINERS.md` are unchanged.
-- **Not done here.** Steps 3 to 6 of the publishing runbook's rename checklist
-  are maintainer actions outside this change: the PyPI and TestPyPI trusted
-  publishers must name `Hunzee-VC` before the next release can upload, the
-  GitHub Pages address changes to `hunzee-vc.github.io/Nexus-ShadowScan/`
+- **Not done here.** Steps 3, 4 and 6 of the publishing runbook's rename
+  checklist are maintainer actions outside this change: the PyPI and TestPyPI
+  trusted publishers must name `Hunzee-VC` before the next release can upload,
+  the GitHub Pages address changes to `hunzee-vc.github.io/Nexus-ShadowScan/`
   (the old project-site path does not redirect; the documents now name the new
   address, which was not reachable from the change's environment), and the
-  OpenSSF Best Practices project entry names the repository URL. No claim of
-  independent review is made for this change.
+  first release under the new name is subject to PyPI's change-of-provenance
+  timing. Step 5's in-repository half, the companion URL in `.gitmodules` and
+  `tools/benchmark_suite.py`, is done here; local clones still need their
+  remote re-pointed. Outside that checklist, the OpenSSF Best Practices project
+  entry names the repository URL. No claim of independent review is made for
+  this change.
 
 ### Audit fixes: fail-closed gaps, redaction coverage, detection accuracy and gate integrity (October 26)
 

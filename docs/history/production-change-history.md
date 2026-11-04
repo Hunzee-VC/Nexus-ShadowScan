@@ -243,8 +243,8 @@ URLs, and a reviewed 40-character commit SHA is unchanged by the rename, so
 existing pins keep resolving; update clone and `git+https` URLs, including
 copies of the consumer workflow examples, to the new name anyway. The GitHub
 Pages project site moves without a redirect. Attestations keep the repository
-name they were signed under: verify 0.1.2 with `--repo aisecnomad/Project-Nexus`
-and later releases with `--repo Hunzee-VC/Nexus-ShadowScan`.
+name they were signed under: verify 0.1.2 with `--repo aisecnomad/Project-Nexus`,
+and 0.1.3 and 0.1.4 with `--repo aisecnomad/Nexus-ShadowScan`.
 
 Reports change in one field. OCSF events carry `metadata.product.vendor_name`
 `Nexus ShadowScan` instead of `Project Nexus`; update SIEM parsers or filters that
