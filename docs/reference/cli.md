@@ -321,7 +321,7 @@ The global `-v`/`-vv` (info/debug) and `-q` (errors only) flags go before the co
 |---|---|
 | `-f, --format FORMAT` | Output format (see [Output formats](#output-formats)) |
 | `-o, --output FILE` | Write report to file |
-| `-i, --inventory PATH` | Agent Capability Cards directory/file, `agents.yaml`, or CSV (repeatable) |
+| `-i, --inventory PATH` | Agent Capability Cards directory/file, `agents.yaml`, CSV, or SymBiote AgentBOM documents (repeatable) |
 | `-s, --signatures DIR` | Extra signature pack directory (repeatable) |
 | `--fail-on LEVEL` | Exit 2 if any finding reaches `critical`\|`high`\|`medium`\|`low`\|`info` |
 | `--min-confidence FLOAT` | Drop findings below this confidence (0.0-1.0, default: 0.0) |

@@ -19,6 +19,13 @@ explain operator migrations. Earlier per-change entries are preserved in the
   the consistency test treats the former name like the earlier one. Releases
   0.1.3 and 0.1.4 keep the name their attestations carry:
   verify them with `--repo aisecnomad/Nexus-ShadowScan`.
+
+- Operator-trusted SymBiote AgentBOM 0.1 documents load as inventory with
+  strict structural validation and literal subject bindings. Complete Kubernetes
+  identities reconcile with the shipped connector; dependency endpoints, purls
+  and workload UIDs remain descriptive. Seal verification remains with SymBiote
+  (docs/integrations/symbiote.md). pyasn1 is pinned to 0.6.5 for the container
+  vulnerability fixes.
 - An audit with each finding reproduced before it was fixed closes 21 gaps.
   Fail-closed: a single saved Zapier, Auth0 or Slack API page, a staged
   submodule hidden by `ignore = all`, an endpoint `--dump-records` manifest and

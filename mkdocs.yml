@@ -137,6 +137,7 @@ nav:
       - Local pre-commit scans: operations/code-precommit.md
       - Control evidence report: operations/controls.md
       - AI bill of materials: operations/ai-bom.md
+      - SymBiote (AgentBOM) integration: integrations/symbiote.md
       - OCSF events: operations/ocsf.md
       - LLM triage: operations/llm-triage.md
   - Assurance:
