@@ -1,0 +1,571 @@
+{
+  "specVersion": "0.1",
+  "snapshot": {
+    "id": "snap:1:694c01949367",
+    "kind": "declared",
+    "digest": "sha256:694c01949367ed5d3aaa4d6860ae7b377b7fe85ef24de82bc42dfd27316d7fe2",
+    "serial": 1,
+    "prev": null,
+    "agentRef": "agent:claims-assistant",
+    "deploymentRef": null,
+    "validity": {
+      "notBefore": null,
+      "notAfter": null
+    },
+    "producedAt": "2026-11-01T12:00:00Z",
+    "producerRef": "symbiote",
+    "observationWindow": null,
+    "approvals": [],
+    "policyBundle": null
+  },
+  "subject": "agent:claims-assistant",
+  "producer": {
+    "name": "symbiote",
+    "version": "0.1.0",
+    "digest": null,
+    "collectors": []
+  },
+  "agents": [
+    {
+      "id": "agent:claims-assistant",
+      "name": "Claims Assistant",
+      "description": null,
+      "provenance": {
+        "assurance": "declared",
+        "method": null,
+        "evidence": [],
+        "locator": null,
+        "collector": null,
+        "observedAt": null
+      },
+      "trustRef": null,
+      "tags": [],
+      "externalRefs": [],
+      "foreign": {},
+      "version": "2.4.1",
+      "digest": null,
+      "role": "root",
+      "purpose": "Summarize and triage insurance claims",
+      "framework": {
+        "value": {
+          "name": "langgraph",
+          "version": "0.4.1"
+        },
+        "state": "present",
+        "assurance": "declared",
+        "method": "config",
+        "evidence": [],
+        "locator": null,
+        "collector": null,
+        "observedAt": null,
+        "confidence": null,
+        "unknownReason": null
+      },
+      "ownerRef": "party:claims-it",
+      "operatorRef": null,
+      "automationLevel": {
+        "value": "conditionalAutomation",
+        "state": "present",
+        "assurance": "declared",
+        "method": "config",
+        "evidence": [],
+        "locator": null,
+        "collector": null,
+        "observedAt": null,
+        "confidence": null,
+        "unknownReason": null
+      },
+      "autonomyProfile": [],
+      "identities": [],
+      "instructions": [],
+      "entrypoint": null,
+      "parentRef": null,
+      "a2ACard": null,
+      "policyBundle": null
+    }
+  ],
+  "deployments": [
+    {
+      "id": "deploy:claims-assistant-prod",
+      "name": null,
+      "description": null,
+      "provenance": {
+        "assurance": "declared",
+        "method": null,
+        "evidence": [],
+        "locator": null,
+        "collector": null,
+        "observedAt": null
+      },
+      "trustRef": null,
+      "tags": [],
+      "externalRefs": [],
+      "foreign": {},
+      "agentRef": "agent:claims-assistant",
+      "snapshotRefs": [],
+      "environment": {
+        "kind": "k8s",
+        "cluster": "prod-east",
+        "namespace": "claims-prod",
+        "host": null,
+        "region": null
+      },
+      "tenant": null,
+      "workloadIdentityRef": null,
+      "workloadRef": {
+        "group": "apps",
+        "kind": "Deployment",
+        "namespace": "claims-prod",
+        "name": "claims-assistant",
+        "uid": "3f1c9a2e-uid-claims"
+      },
+      "startedAt": null,
+      "endedAt": null,
+      "observedBy": []
+    }
+  ],
+  "toolServers": [
+    {
+      "id": "server:claims-kb",
+      "name": "claims-kb",
+      "description": null,
+      "provenance": {
+        "assurance": "declared",
+        "method": null,
+        "evidence": [],
+        "locator": null,
+        "collector": null,
+        "observedAt": null
+      },
+      "trustRef": null,
+      "tags": [],
+      "externalRefs": [],
+      "foreign": {},
+      "kind": "mcp",
+      "digest": null,
+      "client": null,
+      "transport": {
+        "value": "streamable-http",
+        "state": "present",
+        "assurance": "declared",
+        "method": "config",
+        "evidence": [],
+        "locator": null,
+        "collector": null,
+        "observedAt": null,
+        "confidence": null,
+        "unknownReason": null
+      },
+      "endpoint": {
+        "value": "https://mcp.claims.example.com/kb",
+        "state": "present",
+        "assurance": "declared",
+        "method": "config",
+        "evidence": [],
+        "locator": null,
+        "collector": null,
+        "observedAt": null,
+        "confidence": null,
+        "unknownReason": null
+      },
+      "package": null,
+      "command": null,
+      "argsDigest": null,
+      "envVarNames": [],
+      "headerNames": [],
+      "serverInfo": null,
+      "protocolVersion": null,
+      "instructionsDigest": null,
+      "authentication": {
+        "value": {
+          "mode": "oauth2",
+          "issuer": null,
+          "scopesRequested": []
+        },
+        "state": "present",
+        "assurance": "declared",
+        "method": "config",
+        "evidence": [],
+        "locator": null,
+        "collector": null,
+        "observedAt": null,
+        "confidence": null,
+        "unknownReason": null
+      },
+      "trustZone": "unknown",
+      "crossesTrustBoundary": {
+        "value": true,
+        "state": "present",
+        "assurance": "declared",
+        "method": "config",
+        "evidence": [],
+        "locator": null,
+        "collector": null,
+        "observedAt": null,
+        "confidence": null,
+        "unknownReason": null
+      },
+      "toolListMeta": null,
+      "toolsetDigest": null,
+      "toolsetDigestResult": null,
+      "registryResolutionRef": null,
+      "clientTrustFlags": {}
+    },
+    {
+      "id": "server:github",
+      "name": "github",
+      "description": null,
+      "provenance": {
+        "assurance": "declared",
+        "method": null,
+        "evidence": [],
+        "locator": null,
+        "collector": null,
+        "observedAt": null
+      },
+      "trustRef": null,
+      "tags": [],
+      "externalRefs": [],
+      "foreign": {},
+      "kind": "mcp",
+      "digest": null,
+      "client": null,
+      "transport": {
+        "value": "stdio",
+        "state": "present",
+        "assurance": "declared",
+        "method": "config",
+        "evidence": [],
+        "locator": null,
+        "collector": null,
+        "observedAt": null,
+        "confidence": null,
+        "unknownReason": null
+      },
+      "endpoint": null,
+      "package": {
+        "value": {
+          "purl": "pkg:npm/%40acme/github-tools@1.4.2",
+          "digest": null,
+          "floating": true,
+          "launcher": "other"
+        },
+        "state": "present",
+        "assurance": "declared",
+        "method": "config",
+        "evidence": [],
+        "locator": null,
+        "collector": null,
+        "observedAt": null,
+        "confidence": null,
+        "unknownReason": null
+      },
+      "command": null,
+      "argsDigest": null,
+      "envVarNames": [
+        "GITHUB_TOKEN"
+      ],
+      "headerNames": [],
+      "serverInfo": null,
+      "protocolVersion": null,
+      "instructionsDigest": null,
+      "authentication": {
+        "value": {
+          "mode": "api-key",
+          "issuer": null,
+          "scopesRequested": []
+        },
+        "state": "present",
+        "assurance": "declared",
+        "method": "config",
+        "evidence": [],
+        "locator": null,
+        "collector": null,
+        "observedAt": null,
+        "confidence": null,
+        "unknownReason": null
+      },
+      "trustZone": "unknown",
+      "crossesTrustBoundary": {
+        "value": true,
+        "state": "present",
+        "assurance": "declared",
+        "method": "config",
+        "evidence": [],
+        "locator": null,
+        "collector": null,
+        "observedAt": null,
+        "confidence": null,
+        "unknownReason": null
+      },
+      "toolListMeta": null,
+      "toolsetDigest": null,
+      "toolsetDigestResult": null,
+      "registryResolutionRef": null,
+      "clientTrustFlags": {}
+    }
+  ],
+  "tools": [
+    {
+      "id": "tool:github/get_issue",
+      "name": null,
+      "description": null,
+      "provenance": {
+        "assurance": "declared",
+        "method": null,
+        "evidence": [],
+        "locator": null,
+        "collector": null,
+        "observedAt": null
+      },
+      "trustRef": null,
+      "tags": [],
+      "externalRefs": [],
+      "foreign": {},
+      "serverRef": "server:github",
+      "toolName": "get_issue",
+      "title": null,
+      "inputSchema": {
+        "type": "object"
+      },
+      "outputSchema": null,
+      "annotations": null,
+      "digest": {
+        "algorithm": "tooldef/v1",
+        "value": "sha256:abababababababababababababababababababababababababababababababab",
+        "status": "ok",
+        "reason": null
+      },
+      "fullDigest": null,
+      "descriptionDigest": null,
+      "inputSchemaDigest": null,
+      "source": "declared-config",
+      "sideEffects": null,
+      "sideEffectClass": "read-only",
+      "capabilities": [],
+      "requiredScopes": null,
+      "approvalGate": "unknown",
+      "textFlags": [],
+      "state": "declared",
+      "invocationCount": null,
+      "firstSeen": null,
+      "lastSeen": null
+    }
+  ],
+  "instructions": [
+    {
+      "id": "instr:agents-md",
+      "name": null,
+      "description": null,
+      "provenance": {
+        "assurance": "declared",
+        "method": null,
+        "evidence": [],
+        "locator": null,
+        "collector": null,
+        "observedAt": null
+      },
+      "trustRef": null,
+      "tags": [],
+      "externalRefs": [],
+      "foreign": {},
+      "kind": "agents-md",
+      "path": "AGENTS.md",
+      "uri": null,
+      "mediaType": "text/markdown",
+      "size": 512,
+      "digest": "sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+      "normalizedDigest": null,
+      "lineEndings": "lf",
+      "precedence": 0,
+      "editors": null,
+      "loadsRemote": null,
+      "containsSecretLike": false,
+      "frontmatter": null,
+      "source": null
+    }
+  ],
+  "prompts": [],
+  "skills": [],
+  "models": [],
+  "dataSources": [],
+  "identities": [],
+  "credentialBindings": [],
+  "grants": [],
+  "approvals": [],
+  "resolutions": [],
+  "evidence": [],
+  "evaluations": [],
+  "vex": [],
+  "trustStatus": [],
+  "parties": [
+    {
+      "id": "party:claims-it",
+      "kind": "organization",
+      "name": "Claims IT",
+      "urls": [],
+      "contacts": []
+    }
+  ],
+  "policies": [],
+  "software": [],
+  "edges": [
+    {
+      "type": "providesTool",
+      "from": "server:github",
+      "to": "tool:github/get_issue",
+      "scope": "runtime",
+      "qualifiers": {},
+      "assurance": "declared",
+      "validity": null,
+      "evidence": [],
+      "observedCount": null,
+      "firstSeen": null,
+      "lastSeen": null,
+      "declaredBy": null
+    }
+  ],
+  "coverage": {
+    "surfaces": {
+      "code": {
+        "status": "not-attempted",
+        "sources": [],
+        "itemsSeen": 0,
+        "truncatedAt": null
+      },
+      "registry": {
+        "status": "not-attempted",
+        "sources": [],
+        "itemsSeen": 0,
+        "truncatedAt": null
+      },
+      "identity": {
+        "status": "not-attempted",
+        "sources": [],
+        "itemsSeen": 0,
+        "truncatedAt": null
+      },
+      "model-gateway": {
+        "status": "not-attempted",
+        "sources": [],
+        "itemsSeen": 0,
+        "truncatedAt": null
+      },
+      "tools": {
+        "status": "not-attempted",
+        "sources": [],
+        "itemsSeen": 0,
+        "truncatedAt": null
+      },
+      "data": {
+        "status": "not-attempted",
+        "sources": [],
+        "itemsSeen": 0,
+        "truncatedAt": null
+      },
+      "runtime": {
+        "status": "not-attempted",
+        "sources": [],
+        "itemsSeen": 0,
+        "truncatedAt": null
+      },
+      "network": {
+        "status": "not-attempted",
+        "sources": [],
+        "itemsSeen": 0,
+        "truncatedAt": null
+      },
+      "instructions": {
+        "status": "not-attempted",
+        "sources": [],
+        "itemsSeen": 0,
+        "truncatedAt": null
+      },
+      "policy": {
+        "status": "not-attempted",
+        "sources": [],
+        "itemsSeen": 0,
+        "truncatedAt": null
+      }
+    },
+    "exclusions": [],
+    "window": null,
+    "collectors": [],
+    "textIncluded": false
+  },
+  "derived": {
+    "flags": [],
+    "findings": []
+  },
+  "merkle": {
+    "algorithm": "rfc6962-sha256-salted",
+    "root": "sha256:694c01949367ed5d3aaa4d6860ae7b377b7fe85ef24de82bc42dfd27316d7fe2",
+    "leafCount": 9,
+    "nonce": "4242424242424242424242424242424242424242424242424242424242424242",
+    "leaves": [
+      {
+        "kind": "agent",
+        "id": "agent:claims-assistant",
+        "leafHash": "sha256:bd4710995ce3b6bd37f570f681e5caa3f8910a23e92b370a5dfe05c2fc1b002e",
+        "salt": "9e505bcce2d9f64f931e77065671fcaf"
+      },
+      {
+        "kind": "coverage",
+        "id": "coverage",
+        "leafHash": "sha256:72588cb3892f0be0c847186905cc84a96d4a65ab8e36d41c3fb080e4657c3fc7",
+        "salt": "45951cdedf94c8d3271fe0e3a4b7de07"
+      },
+      {
+        "kind": "deploy",
+        "id": "deploy:claims-assistant-prod",
+        "leafHash": "sha256:649ebb850de911efca18c84e6e7ffb3d1edb370756c9a104f2145e66cde52280",
+        "salt": "6131bed70a0678d23c84ef03369b00b4"
+      },
+      {
+        "kind": "edge",
+        "id": "providesTool:server:github->tool:github/get_issue",
+        "leafHash": "sha256:9b1eec01e7da3d32074fda423533294c70b5a92d23a0271d15dff3cf84f470eb",
+        "salt": "23abe0df0a91c5a1cabc87e15555857a"
+      },
+      {
+        "kind": "instr",
+        "id": "instr:agents-md",
+        "leafHash": "sha256:507399fcf5ce68783bd5b3c440ab894e5817cfb644f75556938e76397a31059c",
+        "salt": "5b50f8b799a3503248822a1e1a0f8ee4"
+      },
+      {
+        "kind": "party",
+        "id": "party:claims-it",
+        "leafHash": "sha256:657489157870efb96e260a876fdbdd807334f478e92cf25b7246489f7b8ab79f",
+        "salt": "1721f5659526cc772effc00d95223bae"
+      },
+      {
+        "kind": "server",
+        "id": "server:claims-kb",
+        "leafHash": "sha256:cbfc723e1bd561d7e841aa8a03193d632fd20332473a87184a23e36b22f3d626",
+        "salt": "55bc5024eb2c1089f24a80385cd6d061"
+      },
+      {
+        "kind": "server",
+        "id": "server:github",
+        "leafHash": "sha256:93dfa3474eb33f490e0de182c2a273c84fcc18c4724cd7683d4065b0e35a1518",
+        "salt": "6a20c5ad6f3805adc1aa66ae64d488fd"
+      },
+      {
+        "kind": "tool",
+        "id": "tool:github/get_issue",
+        "leafHash": "sha256:d12cdc0b264b6759575068206c66aaaa34f110b6fe49d76b0aba5c5988137b7b",
+        "salt": "a0d0ea6f8882cfd8972b9df3c57c4a3a"
+      }
+    ]
+  },
+  "redactions": [],
+  "redacted": [],
+  "links": {
+    "cyclonedx": null,
+    "spdx": null
+  },
+  "lossReport": null,
+  "deltas": [],
+  "foreignProperties": []
+}
