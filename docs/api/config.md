@@ -25,7 +25,7 @@ Python, which validates itself on construction. The
 
 ```yaml
 inventory:
-  - ./inventory/              # Capability Cards, agents.yaml files or CSVs
+  - ./inventory/              # Capability Cards, agents.yaml files, CSVs or SymBiote AgentBOM documents
 signatures:
   - ./custom-signatures/      # extra signature packs
 options:

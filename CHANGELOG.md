@@ -16,6 +16,12 @@ explain operator migrations. Earlier per-change entries are preserved in the
   hand-pinned Trivy and Semgrep scanners, and the workflow inventory no longer
   says Scorecard starts on ruleset changes.
 
+- Operator-trusted SymBiote AgentBOM 0.1 documents load as inventory with
+  strict structural validation and literal subject bindings. Complete Kubernetes
+  identities reconcile with the shipped connector; dependency endpoints, purls
+  and workload UIDs remain descriptive. Seal verification remains with SymBiote
+  (docs/integrations/symbiote.md). pyasn1 is pinned to 0.6.5 for the container
+  vulnerability fixes.
 - An audit with each finding reproduced before it was fixed closes 21 gaps.
   Fail-closed: a single saved Zapier, Auth0 or Slack API page, a staged
   submodule hidden by `ignore = all`, an endpoint `--dump-records` manifest and
