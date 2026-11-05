@@ -157,7 +157,7 @@ deterministic and unrelated to any timeout, deadline or walk bound.
 
 ### Redaction rules stay restorable under pytest 9.2's monkeypatch (November 4)
 
-Dependabot's dev-tools bump (#337) moves pytest from 9.1.1 to 9.2.0, whose
+Dependabot's dev-tools bump (#337) proposed moving pytest from 9.1.1 to 9.2.0, whose
 `monkeypatch.setattr` records an attribute's original value from the target's
 own `__dict__` unless the target's type has a data descriptor for the name
 (pytest-dev/pytest#10644). `shadowscan.utils.redaction` is a namespace that
@@ -176,6 +176,14 @@ A second test, `test_nofollow_any_closes_file_on_setup_errors`, replaced
 `os.fstat` with a failing stub for its whole duration; pytest 9.2's output capture
 reads `os.fstat` when a test's call phase ends, so the stub is now scoped to the
 open under test.
+
+The bump itself is deferred: CI's `benchmark-tests` job runs the pinned
+Nexus-ShadowBench companion's own suite with this lock's pytest, and under 9.2.0
+its `tests/unit/test_benchmark_realworld_review2.py` stubs `os.stat` with an
+object that has no `st_size`, which the same capture reads (run 41883114617).
+pytest stays at 9.1.1 and #337 takes only ruff 0.17.3 and mypy 2.4.1, with the
+matching pre-commit revisions; both fixes above are correct under 9.1.1 and are
+what 9.2 needs once the companion test is fixed and its pin moves.
 
 ### SymBiote AgentBOM documents as an inventory source (#335; November 1)
 
