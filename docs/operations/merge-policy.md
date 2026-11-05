@@ -1,6 +1,6 @@
 # Enforce and verify the merge policy
 
-The versioned [ruleset policy](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/.github/rulesets/require-ci-and-review.json)
+The versioned [ruleset policy](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/.github/rulesets/require-ci-and-review.json)
 is a desired configuration, not evidence that GitHub is enforcing it. Both
 visible repository rulesets have been enabled and disabled several times since
 2026-09; the dated readbacks are under
@@ -48,7 +48,7 @@ between that change and this readback.
 
 The immutable release-tag ruleset (24723135) also read back active with no
 bypass actors, blocking updates and deletion of `refs/tags/v*`. The complete
-[October 18 responses](https://github.com/aisecnomad/Nexus-ShadowScan/tree/main/.github/rulesets/observed/2026-10-18)
+[October 18 responses](https://github.com/Hunzee-VC/Nexus-ShadowScan/tree/main/.github/rulesets/observed/2026-10-18)
 are retained separately from the October 10 snapshots. No settings were changed
 for this readback. It establishes neither an independent approval of a PR nor
 release or deployment acceptance; check current settings and the final PR
@@ -72,7 +72,7 @@ and `python -m tools.governance_check` passes the review/CI ruleset; for
 `Protect main` it reports `status_checks_required`, as on October 18, because
 that ruleset carries no status-check rule. GitHub reports no change to any of
 the three rulesets since 2026-10-11 (06:45 UTC). The complete
-[October 26 responses](https://github.com/aisecnomad/Nexus-ShadowScan/tree/main/.github/rulesets/observed/2026-10-26)
+[October 26 responses](https://github.com/Hunzee-VC/Nexus-ShadowScan/tree/main/.github/rulesets/observed/2026-10-26)
 are retained beside the October 18 set; their settings are identical, and only
 the API's timestamp formatting differs. No settings were changed for this
 readback. Like every readback, it is a point-in-time observation: it is not
@@ -96,9 +96,9 @@ approval counts introduced since the committed examples were prepared.
 
 ```bash
 set -e
-test "$(gh api repos/aisecnomad/Nexus-ShadowScan --jq .default_branch)" = main
+test "$(gh api repos/Hunzee-VC/Nexus-ShadowScan --jq .default_branch)" = main
 for id in 23892853 23913372; do
-  gh api "repos/aisecnomad/Nexus-ShadowScan/rulesets/$id" > "/restricted/$id-before.json"
+  gh api "repos/Hunzee-VC/Nexus-ShadowScan/rulesets/$id" > "/restricted/$id-before.json"
   python -m tools.governance.rulesets plan --ruleset-id "$id" \
     --input "/restricted/$id-before.json" --output "/restricted/$id-update.json"
 done
@@ -119,16 +119,16 @@ evidence and must not replace this preparation.
 set -e
 # Administrator operations: apply only the two payloads just reviewed.
 for id in 23892853 23913372; do
-  gh api --method PUT "repos/aisecnomad/Nexus-ShadowScan/rulesets/$id" \
+  gh api --method PUT "repos/Hunzee-VC/Nexus-ShadowScan/rulesets/$id" \
     --input "/restricted/$id-update.json" > "/restricted/$id-put-response.json"
-  gh api "repos/aisecnomad/Nexus-ShadowScan/rulesets/$id" > "/restricted/$id-after.json"
+  gh api "repos/Hunzee-VC/Nexus-ShadowScan/rulesets/$id" > "/restricted/$id-after.json"
   python -m tools.governance.rulesets verify --ruleset-id "$id" \
     --input "/restricted/$id-after.json" --expected "/restricted/$id-update.json"
 done
 python -m tools.governance_check /restricted/23913372-after.json
 # Inspect the effective rules as well as the individual settings objects.
-gh api repos/aisecnomad/Nexus-ShadowScan/rules/branches/main
-gh api repos/aisecnomad/Nexus-ShadowScan/branches/main/protection
+gh api repos/Hunzee-VC/Nexus-ShadowScan/rules/branches/main
+gh api repos/Hunzee-VC/Nexus-ShadowScan/branches/main/protection
 ```
 
 The two-ruleset verifier compares every managed field of each full readback to
@@ -161,7 +161,7 @@ require weakening the rules or merging the probe.
 
 ## Detect protection drift between commits
 
-The weekly [dependency and governance audit](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/.github/workflows/audit.yml)
+The weekly [dependency and governance audit](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/.github/workflows/audit.yml)
 has a separate read-only job that fetches both current rulesets and compares
 their repository identities and settings to the reviewed update payloads. It
 also runs on manual dispatch from `main`. A disabled rule, missing aggregate
@@ -223,4 +223,4 @@ Repository administration and independent reviewer availability remain
 external prerequisites. Human-labeled holdouts and live tenant receipts are
 separate acceptance evidence; see [evaluation](../evaluation.md),
 [canaries](../canaries.md) and the
-[production verifier](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/tools/acceptance/README.md).
+[production verifier](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/tools/acceptance/README.md).

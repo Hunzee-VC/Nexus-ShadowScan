@@ -1,7 +1,7 @@
 # Benchmarks moved to Nexus ShadowBench
 
 Corpora, historical results, harnesses and benchmark-only tests now live in
-[Nexus ShadowBench](https://github.com/aisecnomad/Nexus-ShadowBench). Main pins
+[Nexus ShadowBench](https://github.com/Hunzee-VC/Nexus-ShadowBench). Main pins
 that repository as the optional `benchmark-suite` submodule. Normal scanner
 installation and regression evaluation need no submodule or network access.
 The documented self-scan profile excludes `benchmark-suite` as this separate

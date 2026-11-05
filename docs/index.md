@@ -12,10 +12,12 @@ investigate ownership and capabilities. [Architecture](architecture.md)
 describes how a scan flows from connectors through the engine to reports.
 
 These pages live in the
-[repository documentation directory](https://github.com/aisecnomad/Nexus-ShadowScan/tree/main/docs).
-GitHub Pages is enabled at
-<https://aisecnomad.github.io/Nexus-ShadowScan/>; that URL currently serves the
-repository README, not this MkDocs set. The Docs workflow builds the site when
+[repository documentation directory](https://github.com/Hunzee-VC/Nexus-ShadowScan/tree/main/docs).
+GitHub Pages for this repository is served at
+<https://hunzee-vc.github.io/Nexus-ShadowScan/>; the former owner's project-site
+address does not redirect there. Before the transfer that site served the
+repository README, not this MkDocs set; the new address was not checked by the
+transfer change. The Docs workflow builds the site when
 a `main` change touches its sources (CI's docs job builds every commit). Once
 Pages is pointed at GitHub Actions it publishes from `main` in two ways, both a
 maintainer's choice: a manual run of `docs.yml` with `publish=true`, and, when
@@ -92,9 +94,9 @@ See [evaluation](evaluation.md), [production deployment](production.md) and
 
 ## Community
 
-Read the [code of conduct](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/CODE_OF_CONDUCT.md),
-use the [support guide](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/SUPPORT.md),
+Read the [code of conduct](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/CODE_OF_CONDUCT.md),
+use the [support guide](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/SUPPORT.md),
 or follow the [contribution guide](contributing.md). Maintainer-scoped
-[good first issues](https://github.com/aisecnomad/Nexus-ShadowScan/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+[good first issues](https://github.com/Hunzee-VC/Nexus-ShadowScan/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 are a starting point when available. Keep credentials and private exports out of
 public issues. For deployment, pin a reviewed full commit SHA and retain its release evidence.

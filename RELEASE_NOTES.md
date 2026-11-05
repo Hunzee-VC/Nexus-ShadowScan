@@ -1,11 +1,11 @@
 # Release notes
 
 What changed for people who install, configure or operate ShadowScan, one
-section per release. [CHANGELOG.md](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/CHANGELOG.md)
+section per release. [CHANGELOG.md](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/CHANGELOG.md)
 summarizes each release, the
-[engineering log](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/engineering-log.md)
+[engineering log](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/engineering-log.md)
 records each in detail, and the
-[deployment and migration guide](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/production.md)
+[deployment and migration guide](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/production.md)
 has the full upgrade steps.
 
 ## 0.1.4 — 2026-10-23
@@ -18,7 +18,7 @@ explains PyPI's change-of-provenance warning on it. No connector,
 signature or mapping is added. It was published on 2026-10-23 from the
 tag `v0.1.4` on `94fda063` to
 [PyPI](https://pypi.org/project/NexusShadowScan/0.1.4/) and as the
-[GitHub release](https://github.com/aisecnomad/Nexus-ShadowScan/releases/tag/v0.1.4),
+[GitHub release](https://github.com/Hunzee-VC/Nexus-ShadowScan/releases/tag/v0.1.4),
 which lists the publication evidence; confirm the artifact identity there
 before installing it. This section was corrected after the tag: the text
 at `v0.1.4` misdescribes some of these changes. The GitHub release notes
@@ -27,20 +27,20 @@ leave out the known limitations. Every change in the release was
 approved on its final head by a reviewer who authored or co-authored none
 of them, and the maintainer accepts these approvals as the independent
 human review the
-[release process](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/GOVERNANCE.md#release-process)
+[release process](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/GOVERNANCE.md#release-process)
 requires; the approval records do not describe what was checked. At the
 maintainer's direction, a Claude Code session created and pushed the
 tag under the maintainer's git identity, dispatched the PyPI run and
 published the GitHub release, steps the
-[publishing runbook](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/operations/publishing.md#per-release)
+[publishing runbook](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/operations/publishing.md#per-release)
 reserves for the maintainer, and a second session, also at the
 maintainer's direction, dispatched the TestPyPI rehearsal and merged the
 approved #318 and #319; the maintainer approved every deployment.
 Publication and artifact attestations do not establish deployment
 acceptance. Details:
-[CHANGELOG.md](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/CHANGELOG.md)
+[CHANGELOG.md](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/CHANGELOG.md)
 and the operator note in the
-[deployment and migration guide](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/production.md#migration-notes-and-change-history).
+[deployment and migration guide](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/production.md#migration-notes-and-change-history).
 
 ### Before you upgrade
 
@@ -51,7 +51,7 @@ and the operator note in the
   changed, whatever `--fail-on-new` or `--fail-on-drift` would report.
   Review the first 0.1.4 report against the old baseline, then adopt it as
   the new baseline, as the
-  [drift guide](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/operations/drift.md)
+  [drift guide](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/operations/drift.md)
   describes for scanner upgrades.
 - New Google AI endpoint detections can fail gates. The Google Vertex AI,
   Gemini API and Vertex AI Agent Engine signatures gain Private Service
@@ -150,7 +150,7 @@ and the operator note in the
   0.1.4 carries no such warning. 0.1.3 carries it because 0.1.2 was
   attested under the repository's earlier name, and it cannot be cleared
   short of deleting 0.1.2, which stays; the
-  [publishing runbook](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/operations/publishing.md#renaming-the-repository)
+  [publishing runbook](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/operations/publishing.md#renaming-the-repository)
   explains it.
 
 ### Plugin connectors
@@ -175,7 +175,7 @@ and the operator note in the
   checks run its own code; a plain `str` subclass is withheld.
   Built-in connectors produce plain strings; a plugin connector runs with
   scanner privileges, as
-  [SECURITY.md](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/SECURITY.md)
+  [SECURITY.md](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/SECURITY.md)
   describes.
 - A `ConnectorError` raised from a connector's `__init__` drops its
   `reason`: the connector is reported as failed and the scan as incomplete
@@ -187,8 +187,8 @@ and the operator note in the
 
 ## 0.1.3 — 2026-10-22
 
-The first release since the repository was renamed to
-`aisecnomad/Nexus-ShadowScan`, and the first built as a source distribution
+The first release since the repository was renamed to `aisecnomad/Nexus-ShadowScan`,
+and the first built as a source distribution
 and a wheel from it. It carries every change on `main` since 0.1.2:
 budgeted coverage gaps, capability interactions in risk scores, agent
 registry and A2A Agent Card sources, drift classes, the fleet dashboard,
@@ -197,14 +197,14 @@ offline terminal triage, and the detection, redaction and hardening work the
 sections below describe. It was published on 2026-10-22 from the tag
 `v0.1.3` on `aee3c984` to
 [PyPI](https://pypi.org/project/NexusShadowScan/0.1.3/) and as the
-[GitHub release](https://github.com/aisecnomad/Nexus-ShadowScan/releases/tag/v0.1.3);
+[GitHub release](https://github.com/Hunzee-VC/Nexus-ShadowScan/releases/tag/v0.1.3);
 confirm the artifact identity there before installing it. No independent
 human review is recorded for it. Publication and artifact attestations do
 not establish deployment acceptance. Details:
-[CHANGELOG.md](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/CHANGELOG.md),
-the [migration notes](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/production-migrations.md)
+[CHANGELOG.md](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/CHANGELOG.md),
+the [migration notes](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/production-migrations.md)
 and the
-[candidate change history](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/history/production-change-history.md).
+[candidate change history](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/history/production-change-history.md).
 
 ### Before you upgrade
 
@@ -244,7 +244,7 @@ and the
   by `profile: ci`, which both settings refuse. An undecodable test fixture
   is still read for credentials first under either, so strict accounting
   never finds fewer keys than the default (see
-  [strict accounting](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/scanning.md#coverage-budget-and-strict-accounting)).
+  [strict accounting](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/scanning.md#coverage-budget-and-strict-accounting)).
   Expect scans that previously exited 3 on a dangling
   symbolic link in a test fixture to exit 0 now, with the gap listed.
 - Risk scores gain capability interactions. Seven capability sets -- the
@@ -310,7 +310,7 @@ and the
   audit over 64 KiB, with malformed front matter or an unclosed fence; and
   defective network log records (a malformed context, TTL, timestamp or JA4
   value, or over 32 DNS answers). The
-  [deployment and migration guide](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/production.md)
+  [deployment and migration guide](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/production.md)
   lists each case and what it withholds.
 - Low-code autonomy evidence is read more strictly: triggers a person operates
   (n8n manual, chat and form triggers, Workato Workbot commands, Zapier
@@ -336,7 +336,7 @@ and the
   hard dependency on `python-pkcs11` 0.9.4, a native extension with wheels for
   CPython 3.11-3.14 on Linux and macOS. Rebuild images from the hash locks
   rather than upgrading packages in place. See the
-  [migration notes for 0.1.3](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/production-migrations.md).
+  [migration notes for 0.1.3](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/production-migrations.md).
 
 ### What changes in scan results
 
@@ -351,14 +351,14 @@ and the
   submodules and exceeded bounds fail closed. Git 2.45 or later and a local
   `.git` directory are required; linked worktrees are refused. Keep a full
   scan in CI and follow the
-  [staged-scan guide](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/operations/code-precommit.md)
+  [staged-scan guide](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/operations/code-precommit.md)
   before enabling the hook. There is no 500 ms latency guarantee.
 - `shadowscan triage REPORT` browses an existing JSON report offline. Filtering
   does not change completeness, attest authenticity or resolve findings;
   quitting an incomplete report exits 3.
 - `shadowscan.api.scan(config)` exposes a small candidate Python API facade.
   It remains alpha; the proposed 1.0 compatibility boundary is described in
-  the [API contract](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/api/compatibility.md).
+  the [API contract](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/api/compatibility.md).
 - Signature loading uses native YAML event parsing when available while
   retaining bounded Python construction and the Python-parser fallback.
   Resource, nesting and duplicate-key checks remain enforced.
@@ -539,7 +539,7 @@ and the
   `benchmark-suite` companion. Ordinary scanner development and core evaluation
   work without initializing it; benchmark work needs the explicit initialization
   and pin checks in the
-  [benchmark guide](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/benchmarks/README.md).
+  [benchmark guide](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/benchmarks/README.md).
   This migration is not a new benchmark run.
 - The optional `attach_github_release` workflow input attaches verified original
   provenance/SBOM bundles and checksummed assets to an existing
@@ -551,7 +551,7 @@ and the
   and `sbom.sigstore.json` (they were `provenance.json` and `sbom.json`), the
   names release-signature checks look for among a release's assets. Verify a
   download with `gh attestation verify --bundle` as the
-  [publishing runbook](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/operations/publishing.md)
+  [publishing runbook](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/operations/publishing.md)
   shows; a script that downloaded the old names needs the new ones.
 - This release uploads a source distribution beside the universal
   `py3-none-any` wheel. The release workflow builds the wheel from that sdist
@@ -575,7 +575,7 @@ and the
   its best outcome is a `neutral` check, never `success`, it posts `COMMENT`
   reviews only, and it must not be a required check. The historical October 10
   ruleset readback listed four `always` bypass actors; the later
-  [October 18 administrator readback](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/operations/merge-policy.md#october-18-readback)
+  [October 18 administrator readback](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/operations/merge-policy.md#october-18-readback)
   recorded empty bypass lists. Verify current enforcement and exact-head review
   before merging or deploying; historical snapshots do not establish live policy.
 
@@ -598,7 +598,7 @@ Its production preflight failed before a PyPI upload. The immutable tag remains
 on its original commit; version 0.1.2 carries the correction through a new
 review and CI cycle. Confirm publication on
 [PyPI](https://pypi.org/project/NexusShadowScan/0.1.2/) and the
-[GitHub release](https://github.com/aisecnomad/Nexus-ShadowScan/releases/tag/v0.1.2)
+[GitHub release](https://github.com/Hunzee-VC/Nexus-ShadowScan/releases/tag/v0.1.2)
 before installing this version from the production index.
 
 ## 0.1.1 — 2026-10-08
@@ -606,12 +606,12 @@ before installing this version from the production index.
 Initial alpha candidate of `NexusShadowScan`, with 38 connectors across nine
 discovery surfaces. Install with `python -m pip install NexusShadowScan` and
 run `shadowscan --help`; see the
-[README](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/README.md#install)
+[README](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/README.md#install)
 for cloud extras and hash-locked deployment instructions.
 
 This version reached [TestPyPI](https://test.pypi.org/project/NexusShadowScan/0.1.1/)
 and the immutable `v0.1.1` tag, but not production PyPI.
-[PR #159](https://github.com/aisecnomad/Nexus-ShadowScan/pull/159#pullrequestreview-5458962521)
+[PR #159](https://github.com/Hunzee-VC/Nexus-ShadowScan/pull/159#pullrequestreview-5458962521)
 received a non-author approval on a source tree identical to the tagged commit.
 Publication and artifact attestations do not establish deployment acceptance.
 
@@ -657,7 +657,7 @@ Publication and artifact attestations do not establish deployment acceptance.
   that carry the heuristic level as `risk_level`. Rules no longer set
   `security-severity` or the `security` tag, so GitHub code scanning no longer
   rates ShadowScan alerts as security severities; the
-  [severity guide](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/severity.md)
+  [severity guide](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/severity.md)
   explains why.
 - Three new connectors and surfaces: `endpoint.inventory` (AI clients,
   coding agents, MCP servers, editor and browser extensions and local models
@@ -688,7 +688,7 @@ Publication and artifact attestations do not establish deployment acceptance.
   formula injection, and Markdown is defanged.
 - Credential redaction covers more forms, including keys passed positionally
   to well-known LLM SDK calls. Known gaps are listed in
-  [SECURITY.md](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/SECURITY.md);
+  [SECURITY.md](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/SECURITY.md);
   treat reports as confidential.
 - Scanned repositories are read without following links, git runs with
   hardened configuration, and live collection enforces HTTPS, origin and

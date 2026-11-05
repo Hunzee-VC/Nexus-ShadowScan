@@ -5,7 +5,7 @@ Per-change migration and behavior notes for the changes between 0.1.2 and
 the labels they were written under, so links to them stay valid. Read them
 together with the [production deployment guide](production.md) when
 upgrading or pinning a reviewed revision. The
-[release notes](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/RELEASE_NOTES.md)
+[release notes](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/RELEASE_NOTES.md)
 summarise them for operators, and the
 [candidate change history](history/production-change-history.md) keeps the
 full dated log.
@@ -468,7 +468,7 @@ across this change reports findings as resolved or new that are neither.
   punctuated or not, a password literal of fewer than six
   characters or that reads as an upper-case variable name, a literal on a
   later line that no operator joins) is listed under
-  [what can remain](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/SECURITY.md#what-can-remain).
+  [what can remain](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/SECURITY.md#what-can-remain).
   Excerpts and report text change accordingly; finding ids do not.
 - **Completeness.** Scans incomplete only because of a file guessed to be an
   MCP configuration that is not one, an import-bound call between 8,192 and
@@ -1052,7 +1052,7 @@ and executable shims. Freeze repository/family sampling and acceptance
 thresholds before showing scanner results to reviewers. These new authored
 regressions must be excluded from that holdout.
 
-The [acceptance verifier](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/tools/acceptance/README.md)
+The [acceptance verifier](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/tools/acceptance/README.md)
 supports static code, AWS and Slack. A code change cannot substitute for human
 labels, approved tenant credentials or live acceptance receipts.
 
@@ -1186,7 +1186,7 @@ PowerShell and cmd continuations, commented or prefixed source argv and an
 executable passed separately from its argument list. Regenerate old reports,
 exports and cached evidence under the reviewed revision; changing the scanner
 cannot erase already retained copies. Continue to protect audit artifacts and
-follow the credential handling policy in [SECURITY.md](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/SECURITY.md).
+follow the credential handling policy in [SECURITY.md](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/SECURITY.md).
 The additive JSON `inventory_present` field distinguishes an explicitly supplied
 empty inventory from a scan without inventory reconciliation. CSV now retains
 the entire sanitized permission list, including permissions beyond position 30.
@@ -1206,7 +1206,7 @@ ambiguous bindings and registered versus unregistered source agents. Freeze
 sampling, labels and acceptance thresholds before showing results to reviewers;
 exclude the new authored regression fixtures. Follow
 [rollout acceptance](production.md#rollout-acceptance) for complete and permission-denied
-tenant canaries. The [acceptance verifier](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/tools/acceptance/README.md)
+tenant canaries. The [acceptance verifier](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/tools/acceptance/README.md)
 supports static code, AWS and Slack; passing those scopes does not grant
 acceptance to other connectors. Human labels and live receipts remain pending
 until operators supply them.

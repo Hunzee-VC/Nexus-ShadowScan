@@ -514,7 +514,7 @@ A plugin declares the scanner as an ordinary dependency with a lower bound
 on a published release, for example `NexusShadowScan>=0.1.4`, the first
 release whose `ConnectorError` takes `reason=`. To build
 against unreleased source, depend on a reviewed full git revision, for example
-`NexusShadowScan @ git+https://github.com/aisecnomad/Nexus-ShadowScan.git@<40-character-sha>`.
+`NexusShadowScan @ git+https://github.com/Hunzee-VC/Nexus-ShadowScan.git@<40-character-sha>`.
 PyPI rejects direct URL requirements, so a plugin published on PyPI cannot use
 that form. Use a fresh virtual environment when moving from an earlier Project
 Nexus distribution named `shadowscan` or `project-nexus-shadowscan`; installing

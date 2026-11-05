@@ -2,7 +2,7 @@
 
 This page describes how to set up a reproducible development environment and
 run ShadowScan's test suites the way CI does. The gates themselves are defined
-in the [contributor guide](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/CONTRIBUTING.md#quality-gates);
+in the [contributor guide](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/CONTRIBUTING.md#quality-gates);
 this page is the practical companion.
 
 ## Environment
@@ -217,7 +217,7 @@ reason the sweep's input cannot reach it.
 ## Function and module size
 
 `make complexity` runs `python -m tools.complexity_gate`, which holds two measures to
-[`tools/complexity_baseline.json`](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/tools/complexity_baseline.json):
+[`tools/complexity_baseline.json`](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/tools/complexity_baseline.json):
 
 - the McCabe complexity that ruff reports as `C901` for every function in `shadowscan/` and `tools/`
   with complexity above 15. A nested function counts into the function around
@@ -265,7 +265,7 @@ files remain unchanged.
 
 ## What CI runs
 
-The [CI workflow](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/.github/workflows/ci.yml)
+The [CI workflow](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/.github/workflows/ci.yml)
 runs the same commands on Linux for Python 3.11, 3.12, 3.13 and 3.14 and on
 macOS for 3.11 and 3.14, installs the hash-locked dependency sets, audits every
 lock and builds and validates the wheel outside the checkout. A separate
@@ -307,5 +307,5 @@ describes running the scanner itself inside a pipeline.
 
 Bug fixes need a regression test, and connector changes need offline fixtures
 and documentation, as the
-[pull request requirements](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/CONTRIBUTING.md#pull-requests)
+[pull request requirements](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/CONTRIBUTING.md#pull-requests)
 describe.

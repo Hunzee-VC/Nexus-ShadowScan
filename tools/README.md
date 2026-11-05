@@ -43,10 +43,10 @@ the companion checkout; the main scanner's regression corpora remain local.
 
 | Package | Question it answers | Entry point |
 |---|---|---|
-| [ShadowBench](https://github.com/aisecnomad/Nexus-ShadowBench/tree/main/tools/shadowbench) | All nine surfaces: generated cases and one authored organization | Companion README |
-| [Discovery](https://github.com/aisecnomad/Nexus-ShadowBench/tree/main/tools/discovery_benchmark) | Facts found in 87 pinned public repositories; the weekly workflow uses the companion pin | Companion README |
-| [Synthetic and sampled](https://github.com/aisecnomad/Nexus-ShadowBench/tree/main/tools/benchmark) | Generated repository, endpoint and network inputs, plus sampled real-world repositories | Historical source-checkout instructions |
-| [Repository and home views](https://github.com/aisecnomad/Nexus-ShadowBench/tree/main/tools/benchmark_realworld) | Public repositories read as a working tree and as `$HOME` | Historical source-checkout instructions |
+| [ShadowBench](https://github.com/Hunzee-VC/Nexus-ShadowBench/tree/main/tools/shadowbench) | All nine surfaces: generated cases and one authored organization | Companion README |
+| [Discovery](https://github.com/Hunzee-VC/Nexus-ShadowBench/tree/main/tools/discovery_benchmark) | Facts found in 87 pinned public repositories; the weekly workflow uses the companion pin | Companion README |
+| [Synthetic and sampled](https://github.com/Hunzee-VC/Nexus-ShadowBench/tree/main/tools/benchmark) | Generated repository, endpoint and network inputs, plus sampled real-world repositories | Historical source-checkout instructions |
+| [Repository and home views](https://github.com/Hunzee-VC/Nexus-ShadowBench/tree/main/tools/benchmark_realworld) | Public repositories read as a working tree and as `$HOME` | Historical source-checkout instructions |
 
 ## Release, governance and acceptance
 

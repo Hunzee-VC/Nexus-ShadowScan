@@ -17,20 +17,28 @@ from tools.governance.rulesets import REPOSITORY, RULESETS, observe_readback, pr
 from tools.governance_check import GITHUB_ACTIONS_APP_ID, check_ruleset, requires_advisory_check
 
 ROOT = Path(__file__).resolve().parents[1]
-# The observed snapshots are GitHub's 2026-10-10 responses, recorded before the
-# repository was renamed from its former name. They stay as recorded; GitHub now
-# reports the current name in `source`, so tests read them as it returns them.
-FORMER_REPOSITORY = "aisecnomad/Project-Nexus"
+# The observed snapshots are GitHub's responses as recorded: the 2026-10-10 ones
+# before the repository was renamed from its first name, the dated ones before it
+# was transferred. They stay as recorded; GitHub now reports the current name in
+# `source`, so tests read them as it returns them.
+FORMER_REPOSITORIES = ("aisecnomad/Project-Nexus", "aisecnomad/Nexus-ShadowScan")
 
 
 def _snapshot(ruleset_id: int = 23913372) -> dict[str, Any]:
     observed = json.loads((ROOT / ".github/rulesets/observed" / f"{ruleset_id}.json").read_text())
-    assert observed["source"] == FORMER_REPOSITORY
+    assert observed["source"] == FORMER_REPOSITORIES[0]
     return {**observed, "source": REPOSITORY}
 
 
-def test_observed_snapshot_of_the_former_name_is_refused_as_another_repository() -> None:
-    observed = json.loads((ROOT / ".github/rulesets/observed/23913372.json").read_text())
+@pytest.mark.parametrize(
+    ("snapshot", "former"),
+    [("23913372.json", FORMER_REPOSITORIES[0]), ("2026-10-26/23913372.json", FORMER_REPOSITORIES[1])],
+)
+def test_observed_snapshot_of_a_former_name_is_refused_as_another_repository(
+    snapshot: str, former: str
+) -> None:
+    observed = json.loads((ROOT / ".github/rulesets/observed" / snapshot).read_text())
+    assert observed["source"] == former
     with pytest.raises(ValueError, match="expected repository"):
         prepare_payload(observed, ruleset_id=23913372)
 
@@ -121,6 +129,39 @@ def test_plan_refuses_wrong_identity_or_scope_and_missing_existing_controls(fiel
     source[field] = value
     with pytest.raises(ValueError):
         prepare_payload(source, ruleset_id=23913372)
+
+
+@pytest.mark.parametrize("ruleset_id", RULESETS)
+def test_readback_with_an_off_dismissal_restriction_matches_the_reviewed_payload(ruleset_id: int) -> None:
+    # GitHub began returning `dismissal_restriction` in pull_request parameters after the
+    # payloads were reviewed, without changing the rulesets. Off with no actors is the state
+    # the field's absence described; anything else is a settings change.
+    expected = json.loads((ROOT / ".github/rulesets" / f"{ruleset_id}.update.json").read_text())
+    readback = _readback(expected, ruleset_id)
+    review = _rule(readback, "pull_request")["parameters"]
+    review["dismissal_restriction"] = {"enabled": False, "allowed_actors": []}
+    original = copy.deepcopy(readback)
+    verify_readback(readback, expected, ruleset_id=ruleset_id)
+    assert readback == original
+    observed = observe_readback(readback, expected, ruleset_id=ruleset_id)
+    assert observed["status"] == "complete" and observed["visible_controls_match"] is True
+    assert (
+        "dismissal_restriction"
+        not in _rule(prepare_payload(readback, ruleset_id=ruleset_id), "pull_request")["parameters"]
+    )
+    for restriction in (
+        {"enabled": True, "allowed_actors": []},
+        {"enabled": False, "allowed_actors": [{"actor_id": 1, "actor_type": "Team"}]},
+        {"enabled": 0, "allowed_actors": []},
+        {"enabled": False},
+    ):
+        review["dismissal_restriction"] = restriction
+        with pytest.raises(ValueError, match="differs from reviewed payload: rules"):
+            verify_readback(readback, expected, ruleset_id=ruleset_id)
+        with pytest.raises(ValueError, match="differs from reviewed payload: rules"):
+            observe_readback(readback, expected, ruleset_id=ruleset_id)
+        planned = _rule(prepare_payload(readback, ruleset_id=ruleset_id), "pull_request")["parameters"]
+        assert planned["dismissal_restriction"] == restriction
 
 
 @pytest.mark.parametrize("ruleset_id", RULESETS)

@@ -67,13 +67,13 @@ shadowscan = "shadowscan.cli:main"
 # Third-party connectors can register here: name = "package.module:ConnectorClass"
 
 [project.urls]
-Homepage = "https://github.com/aisecnomad/Nexus-ShadowScan"
-Documentation = "https://github.com/aisecnomad/Nexus-ShadowScan/tree/main/docs"
-Repository = "https://github.com/aisecnomad/Nexus-ShadowScan"
-Changelog = "https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/CHANGELOG.md"
-"Release notes" = "https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/RELEASE_NOTES.md"
-Security = "https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/SECURITY.md"
-Issues = "https://github.com/aisecnomad/Nexus-ShadowScan/issues"
+Homepage = "https://github.com/Hunzee-VC/Nexus-ShadowScan"
+Documentation = "https://github.com/Hunzee-VC/Nexus-ShadowScan/tree/main/docs"
+Repository = "https://github.com/Hunzee-VC/Nexus-ShadowScan"
+Changelog = "https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/CHANGELOG.md"
+"Release notes" = "https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/RELEASE_NOTES.md"
+Security = "https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/SECURITY.md"
+Issues = "https://github.com/Hunzee-VC/Nexus-ShadowScan/issues"
 
 [tool.setuptools.packages.find]
 include = ["shadowscan*"]

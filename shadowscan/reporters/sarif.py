@@ -49,7 +49,7 @@ _LEVEL = {
     RiskLevel.LOW: "note",
     RiskLevel.INFO: "note",
 }
-_PROJECT_URI = "https://github.com/aisecnomad/Nexus-ShadowScan"
+_PROJECT_URI = "https://github.com/Hunzee-VC/Nexus-ShadowScan"
 _SEVERITY_GUIDE = f"{_PROJECT_URI}/blob/main/docs/severity.md"
 _HEURISTIC_RISK = "shadowscan/heuristic-risk"
 _SCORE_BASIS = "shadowscan/score-basis"

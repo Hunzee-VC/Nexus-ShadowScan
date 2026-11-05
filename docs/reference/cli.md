@@ -1,7 +1,7 @@
 # Command reference
 
 Every `shadowscan` command and its options. The
-[README](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/README.md)
+[README](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/README.md)
 lists them in one table; `shadowscan <command> --help` prints the options of
 the installed version, which is authoritative where this page and it differ.
 

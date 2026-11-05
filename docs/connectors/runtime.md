@@ -193,7 +193,7 @@ respective source, and only `denied`, `unreadable` and `truncated` mark
 coverage incomplete. Optional
 `observed_at` is an ISO timestamp. Offline replay does no live inspection and
 needs no inspection options. See the synthetic
-[inspection fixture](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/tests/fixtures/runtime/inspection.jsonl).
+[inspection fixture](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/tests/fixtures/runtime/inspection.jsonl).
 
 ### Lifecycle corroboration
 

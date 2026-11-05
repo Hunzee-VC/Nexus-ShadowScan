@@ -25,10 +25,18 @@ from tools.governance_check import (
     requires_advisory_check,
 )
 
-REPOSITORY = "aisecnomad/Nexus-ShadowScan"
+REPOSITORY = "Hunzee-VC/Nexus-ShadowScan"
 RULESETS = {23892853: "Protect main", 23913372: "Require CI and CodeQL"}
 _FIELDS = ("name", "target", "enforcement", "bypass_actors", "conditions", "rules")
 _CHECKS = set(REQUIRED_CHECKS)
+# Rule parameters GitHub's API began returning after the payloads were reviewed. The
+# ruleset's `updated_at` did not move when each appeared, so a value equal to the control's
+# off state (here: nobody is restricted from dismissing reviews, as before the field existed)
+# is compared as if the field were absent. Any other value is a settings change and is
+# reported as one; an enabled restriction is never dropped.
+_INERT_PARAMETERS: dict[str, dict[str, Any]] = {
+    "pull_request": {"dismissal_restriction": {"enabled": False, "allowed_actors": []}},
+}
 
 
 def _load(path: Path) -> Any:
@@ -103,7 +111,11 @@ def _payload(snapshot: Any, ruleset_id: int, *, allow_missing_bypass: bool = Fal
         )
     payload = copy.deepcopy({field: snapshot[field] for field in _FIELDS if field in snapshot})
     _scope(payload)
-    _rules(payload)
+    for name, rule in _rules(payload).items():
+        for parameter, inert in _INERT_PARAMETERS.get(name, {}).items():
+            parameters = rule.get("parameters")
+            if isinstance(parameters, dict) and _canonical(parameters.get(parameter)) == _canonical(inert):
+                del parameters[parameter]
     return payload
 
 

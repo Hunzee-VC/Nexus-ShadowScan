@@ -1269,7 +1269,7 @@
   "migration_manifest_sha256": "a653569d7ad56d1b4b1e45faccd62844046744a6dec61365fd046c53479575ed",
   "schema": 1,
   "source_commit": "0792106b8d2cc09517f7f4ee2eeabf4f8eb8da2d",
-  "source_repository": "https://github.com/aisecnomad/Nexus-ShadowScan",
+  "source_repository": "https://github.com/Hunzee-VC/Nexus-ShadowScan",
   "sources": {
     "cases": {
       "path": "benchmarks/shadowbench/cases/results/2026-10-11/metrics.json",

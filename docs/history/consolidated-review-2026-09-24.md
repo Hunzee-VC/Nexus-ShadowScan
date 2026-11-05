@@ -1,6 +1,6 @@
 # Consolidated hardening log, 24 September 2026
 
-Published from the retained [original hardening log](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/archive/reviews/consolidated-review-2026-09-24.md). Links are updated for the documentation site; the dated findings are historical, not current acceptance evidence.
+Published from the retained [original hardening log](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/archive/reviews/consolidated-review-2026-09-24.md). Links are updated for the documentation site; the dated findings are historical, not current acceptance evidence.
 
 > **Internal, AI-assisted hardening log. Not an independent review.**
 > This document was produced by the project's single maintainer with AI
@@ -14,7 +14,7 @@ Published from the retained [original hardening log](https://github.com/aisecnom
 > the engine and every connector; the cloud, identity and low-code collectors
 > against real tenant permissions rather than mocked responses; the dependency
 > lock, wheel build and container process; and the repository and CI settings
-> that this log takes as given. See [CONTRIBUTING.md](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/CONTRIBUTING.md)
+> that this log takes as given. See [CONTRIBUTING.md](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/CONTRIBUTING.md)
 > for the review policy and [deployment and migration](../production.md) for
 > the current rollout guide.
 

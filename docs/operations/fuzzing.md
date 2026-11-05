@@ -31,13 +31,13 @@ message names the invariant and the input's SHA-256 digest and length, and never
 ## One set of checks, three ways to run it
 
 The checks are plain functions of bytes, in
-[`tools/fuzz/targets.py`](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/tools/fuzz/targets.py).
+[`tools/fuzz/targets.py`](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/tools/fuzz/targets.py).
 
 * **Atheris** (`python -m tools.fuzz`) is the fuzzer proper. It runs on Linux x86_64 from the
   hash-locked engine described [below](#the-engine-lock) and instruments only the `shadowscan`
   modules.
 * **Hypothesis** runs the same functions in the ordinary suite
-  ([`tests/unit/test_fuzz_targets.py`](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/tests/unit/test_fuzz_targets.py)),
+  ([`tests/unit/test_fuzz_targets.py`](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/tests/unit/test_fuzz_targets.py)),
   on every platform and Python version CI covers. A change that breaks a target, or a refactor that
   leaves it testing nothing, fails `make test` instead of waiting for the next scheduled run.
 * **The seeds** are replayed as ordinary tests too, so every starting input is known to pass.
@@ -69,7 +69,7 @@ documented one.
    with the other two because it calls the same tokenizer.
 
 All three call sites now read the tokenizer through
-[`shadowscan/utils/python_tokens.py`](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/shadowscan/utils/python_tokens.py).
+[`shadowscan/utils/python_tokens.py`](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/shadowscan/utils/python_tokens.py).
 It turns any failure the tokenizer does not document into one `TokenizerFault`. The lexer then
 masks the rest of the file and reports itself incomplete, the redactor treats the rest of the text
 as undecided and withholds it, and the prefilter calls the module no import-only shim. An exception
@@ -132,14 +132,14 @@ python -m tools.fuzz lexing -max_total_time=300 -artifact_prefix="$work/crashes/
 
 `python -m tools.fuzz.seeds` builds the starting corpus in code, from the credentials and source
 snippets in
-[`tools/fuzz/seeds.py`](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/tools/fuzz/seeds.py),
+[`tools/fuzz/seeds.py`](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/tools/fuzz/seeds.py),
 and `--fixtures` adds the small files under `tests/fixtures`. Everything after the target name goes
 to libFuzzer. Unless you pass the same flag, `-max_len=8192`, `-timeout=30` (a hang) and
 `-rss_limit_mb=2048` apply, and a failing input goes to a new temporary directory.
 
 ## The Fuzz workflow
 
-[`fuzz.yml`](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/.github/workflows/fuzz.yml)
+[`fuzz.yml`](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/.github/workflows/fuzz.yml)
 runs each target on its own runner:
 
 * Sundays at 03:37 UTC for 900 seconds per target;
@@ -195,7 +195,7 @@ input by digest. The lexing input contains no credential, so it is uploaded as t
 
 ## The engine lock
 
-[`requirements-fuzz.lock`](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/requirements-fuzz.lock)
+[`requirements-fuzz.lock`](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/requirements-fuzz.lock)
 pins Atheris 3.1.0 with the SHA-256 of every file PyPI lists for it (three wheels, no source
 distribution; Atheris has no dependencies). It is installed with `--require-hashes
 --only-binary=:all:`, so pip never compiles libFuzzer or resolves the package from the live index.

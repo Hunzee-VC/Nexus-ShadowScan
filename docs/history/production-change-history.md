@@ -232,19 +232,19 @@ and observations in an offline export are not authenticated publisher evidence.
 Several of these rules were changed with the errors of the 2026-10-11
 ShadowBench estate run in view, so a later ShadowScan run on that estate is
 in-sample and does not measure them; see the estate README's
-[Bias and limits](https://github.com/aisecnomad/Nexus-ShadowScan/blob/0792106b8d2cc09517f7f4ee2eeabf4f8eb8da2d/benchmarks/shadowbench/estate/README.md#bias-and-limits).
+[Bias and limits](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/0792106b8d2cc09517f7f4ee2eeabf4f8eb8da2d/benchmarks/shadowbench/estate/README.md#bias-and-limits).
 
 ### October 14 repository rename, source distribution and OCSF vendor name (unreleased)
 
-The repository is renamed from `aisecnomad/Project-Nexus` to
-`aisecnomad/Nexus-ShadowScan`, so that its URL, the `NexusShadowScan`
+The repository is renamed from `aisecnomad/Project-Nexus` to `aisecnomad/Nexus-ShadowScan`,
+so that its URL, the `NexusShadowScan`
 distribution and the product name match. GitHub redirects web, API and Git
 URLs, and a reviewed 40-character commit SHA is unchanged by the rename, so
 existing pins keep resolving; update clone and `git+https` URLs, including
 copies of the consumer workflow examples, to the new name anyway. The GitHub
 Pages project site moves without a redirect. Attestations keep the repository
-name they were signed under: verify 0.1.2 with `--repo aisecnomad/Project-Nexus`
-and later releases with `--repo aisecnomad/Nexus-ShadowScan`.
+name they were signed under: verify 0.1.2 with `--repo aisecnomad/Project-Nexus`,
+and 0.1.3 and 0.1.4 with `--repo aisecnomad/Nexus-ShadowScan`.
 
 Reports change in one field. OCSF events carry `metadata.product.vendor_name`
 `Nexus ShadowScan` instead of `Project Nexus`; update SIEM parsers or filters that
@@ -1061,7 +1061,7 @@ check-provider bindings require administrator review instead of silent
 replacement. The available repository integration cannot apply administration
 writes; versioned payloads are not evidence of active enforcement. Human review,
 a fresh human-labeled holdout and scope-specific live tenant receipts remain
-required evidence. Existing [acceptance tooling](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/tools/acceptance/README.md)
+required evidence. Existing [acceptance tooling](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/tools/acceptance/README.md)
 checks supplied evidence; synthetic regression results cannot replace it.
 
 ### October 2 integration of #134 and hygiene review
@@ -1310,7 +1310,7 @@ disappearance of a comment-only finding as a remediation.
 The new regression cases are authored from observed defects. They do not replace
 the [fresh human-reviewed holdout](../evaluation.md#build-a-genuinely-held-out-field-set),
 independent review of the final candidate, or [live tenant canaries](../canaries.md).
-Run the existing [scope-specific acceptance verifier](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/tools/acceptance/README.md)
+Run the existing [scope-specific acceptance verifier](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/tools/acceptance/README.md)
 on real evidence for the intended population and tenant scopes. Record unmet
 requirements as unmet; do not substitute offline replays or AI-generated labels.
 
@@ -1415,7 +1415,7 @@ Complete AWS/Slack and separately credentialed permission-denied
 [tenant canaries](../canaries.md) in the authorized deployment scope. For other
 connectors, retain connector-specific live evidence. Bind those receipts and a
 fresh human-reviewed holdout to this exact source/signature revision with the
-[acceptance verifier](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/tools/acceptance/README.md).
+[acceptance verifier](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/tools/acceptance/README.md).
 Independent human review of the final revision remains required before release.
 Offline replay and the new CI checks cannot supply these attestations.
 
@@ -1639,7 +1639,7 @@ ruleset by declaring a job.
 
 The revised synthetic cases remain regression data. Freeze a fresh population,
 human labels and acceptance policy using [the holdout procedure](../evaluation.md#gate-a-frozen-holdout),
-then run the [scope-specific evidence gate](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/tools/acceptance/README.md).
+then run the [scope-specific evidence gate](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/tools/acceptance/README.md).
 For AWS or Slack deployments, retain complete and separately credentialed
 permission-denied receipts from [approved tenant canaries](../canaries.md).
 Other connectors need their own acceptance evidence. The existing bundled
@@ -1709,7 +1709,7 @@ and locally shadowed execution calls. Reconcile a fresh code
 baseline and review changed finding identities before using `--fail-on` as an
 enforcement gate. Offline source tests establish these paths, not runtime use.
 
-Use the [offline acceptance verifier](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/tools/acceptance/README.md) to check the
+Use the [offline acceptance verifier](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/tools/acceptance/README.md) to check the
 required evidence for the intended deployment scope. It checks artifact identity,
 freshness and declared review/metric requirements. It does not authenticate
 reviewers, prove that a supplied receipt came from a real tenant, or turn synthetic
@@ -1717,7 +1717,7 @@ tests into operational evidence. Keep receipts and human attestations in control
 audit storage and review their origin. Unsupported live connectors still require
 their own acceptance work; they cannot inherit an AWS or Slack result.
 
-The manually invoked [release-evidence workflow](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/.github/workflows/release.yml)
+The manually invoked [release-evidence workflow](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/.github/workflows/release.yml)
 requires successful main-branch CI and CodeQL runs for the exact selected commit.
 It rejects modified, untracked and ignored checkout files, builds from a clean
 `git archive`, writes the sdist and builds the universal wheel from it, checks
@@ -1732,7 +1732,7 @@ After merge and successful push CI, dispatch **Release candidate evidence** on
 `main` with `expected_commit` set to the full current main SHA, `ci_run_id`
 set to that commit's successful CI run ID, `codeql_run_id` set to its
 successful CodeQL run ID, and `ruleset_readback` set to an administrator's
-`gh api repos/aisecnomad/Nexus-ShadowScan/rulesets/23913372` output taken just
+`gh api repos/Hunzee-VC/Nexus-ShadowScan/rulesets/23913372` output taken just
 before dispatch. The workflow rejects stale commits, PR-only runs, failed
 checks and other workflows. GitHub withholds `bypass_actors` from the
 workflow's read-only token, so the build job accepts the readback only when it
@@ -2466,11 +2466,11 @@ against its expected issuer and allowed keys. This is signature evidence, not an
 authorization or token-acceptance decision. Key rotation during the same analysis
 requires a new scan.
 
-See the [consolidated hardening log](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/archive/reviews/consolidated-review-2026-09-24.md)
+See the [consolidated hardening log](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/archive/reviews/consolidated-review-2026-09-24.md)
 for the maintainer's verification notes and implementation choices. It is an
 internal, AI-assisted work log, not an independent review.
 
-The [round 2 production review](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/archive/reviews/production-review-2026-09-24-round2.md), also an
+The [round 2 production review](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/archive/reviews/production-review-2026-09-24-round2.md), also an
 internal AI-assisted work log rather than an independent review, records
 the later verified corrections to export sanitization, Bedrock/IAM/OCI collection,
 JWT classification, gateway detection and report rendering performance.
