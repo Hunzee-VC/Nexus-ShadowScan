@@ -13,8 +13,12 @@ git submodule update --init --depth 1 -- benchmark-suite
 python -m tools.benchmark_suite
 cd benchmark-suite
 python -m tools.verify_migration
-python -m pytest -q
+python -m pytest -q --capture=sys
 ```
+
+`--capture=sys` matches CI while the pinned companion has a test that pytest 9.2's
+default capture breaks; see
+[companion test capture mode](../docs/operations/ci.md#companion-test-capture-mode).
 
 The required companion CI job checks the exact commit pin and runs the moved
 harness tests against the candidate scanner. The weekly discovery benchmark

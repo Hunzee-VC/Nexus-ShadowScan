@@ -13,6 +13,30 @@ Counts and figures quoted in an entry are those of its date.
 
 ## Unreleased
 
+### pytest 9.2.0 and the companion suite's capture mode (November 5)
+
+Dependabot's #347 moves pytest from 9.1.1 to 9.2.0. This repository's own
+suite needed two fixes for 9.2, which landed with #344 (the descriptors on the
+redaction namespace and the scoped `os.fstat` stub). The remaining failure was
+in CI's `benchmark-tests` job, which runs the pinned Nexus ShadowBench
+companion's suite: its
+`test_realworld_nonroot_setup_uses_private_paths_and_preserves_umask` replaces
+`os.fstat` with a stub lacking `st_size` for its whole body, and pytest 9.2's
+fd-level capture calls `os.fstat` on its capture file when a test's call phase
+ends (run 41883114617, on the superseded #337, where the same bump first
+ran). That job now runs the companion suite with
+`--capture=sys`, which reads an in-memory buffer instead; every companion test
+still runs and asserts. This replaces the deferral the November 4 entry
+describes, which also named the stub `os.stat`; the companion stubs
+`os.fstat`. A companion patch that scopes the stub to the call under test was
+prepared against companion `main` (`0a3babf`, newer than the pin), and its
+target test passes there under pytest 9.1.1 and 9.2.0; it is not merged in the
+companion yet. Once the `benchmark-suite` pin moves to a companion commit that
+carries it, the flag goes. `docs/operations/ci.md` records this.
+`requirements-ci.lock` was regenerated with uv 0.13.4 and the documented
+command; against main it differs only in the pytest line and its hashes, which
+equal PyPI's published digests.
+
 ### Base image digest refresh and the Python pin dropped (November 5)
 
 - **Base image.** Both `FROM` lines move from

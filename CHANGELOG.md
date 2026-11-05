@@ -8,6 +8,12 @@ explain operator migrations. Earlier per-change entries are preserved in the
 
 ## Unreleased
 
+- The development toolchain moves to pytest 9.2.0 (#347). The repository's
+  own pytest 9.2 fixes landed earlier (the redaction-namespace descriptors and
+  the scoped `os.fstat` stub); CI's `benchmark-tests` job now runs the pinned
+  companion's suite with `--capture=sys`, because one companion test stubs
+  `os.fstat` for its whole body and pytest 9.2's fd-level capture calls it. The
+  flag goes when the companion pin moves past its fix.
 - The worker image moves both `FROM` lines to the current
   `chainguard/wolfi-base:latest` index
   `sha256:771146c2dfc880902a185f060c3db5571473c46b267edd98c3119c83068dfb61`
