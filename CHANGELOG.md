@@ -8,6 +8,13 @@ explain operator migrations. Earlier per-change entries are preserved in the
 
 ## Unreleased
 
+- Documentation correction: the SymBiote integration page showed companion
+  commands (`symbiote scan . -o boms/`, `symbiote export shadowscan`,
+  `symbiote import --format shadowscan`) that the companion does not provide.
+  It now names the commit it was checked against (Nexus SymBiote `18e4b441`,
+  command `nexus-symbiote`), shows only commands that exist there, and states
+  that ShadowScan accepts AgentBOM `specVersion: "0.1"` documents only; the
+  companion's current native AIBOM is refused as inventory, as before.
 - The repository was transferred from `aisecnomad/Nexus-ShadowScan` to
   `Hunzee-VC/Nexus-ShadowScan`, and the companion benchmark repository to
   `Hunzee-VC/Nexus-ShadowBench`. The governance tool's expected repository,
