@@ -173,8 +173,11 @@ field exists only on the current scale.
 ### SymBiote AgentBOM documents
 
 An [AgentBOM](integrations/symbiote.md) is the per-agent `specVersion: "0.1"`
-JSON that SymBiote produces. It is an operator-trusted document: verify it with
-SymBiote and review its subject identities before passing the file, or a
+JSON format of the SymBiote companion. The native AIBOM that current
+`nexus-symbiote` builds write is a different format, and `--inventory` refuses
+it (see [compatibility](integrations/symbiote.md#compatibility)). An AgentBOM
+is an operator-trusted document: verify it with the SymBiote build that
+produced it and review its subject identities before passing the file, or a
 directory of them, to `--inventory`. Each document contributes one entry, its
 subject agent. Only the subject's literal identities become approval bindings:
 its external references, its A2A card URL and a complete

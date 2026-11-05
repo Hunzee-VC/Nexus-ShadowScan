@@ -551,6 +551,51 @@ def test_documented_autonomy_table_matches_the_code_mapping():
     assert set(ISO_TO_LEVEL.values()) == {entry.number for entry in LEVELS}
 
 
+# --- Other SymBiote output formats ------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        # The native AIBOM that current nexus-symbiote builds write from `scan` and
+        # `import-shadowscan` (docs/integrations/symbiote.md, Compatibility).
+        {"metadata": {"spec_version": "1.0.0"}, "components": [], "dependencies": []},
+        {
+            "metadata": {"spec_version": "1.0.0", "tool_name": "nexus-symbiote"},
+            "components": [{"bom_ref": "agent:a", "component_type": "agent", "name": "a"}],
+            "dependencies": [],
+        },
+        # Its CycloneDX export, bare and with the top-level metadata a real export carries
+        # (which routes it through the Capability Card shape), and its SPDX export.
+        {"bomFormat": "CycloneDX", "specVersion": "1.7", "version": 1, "components": []},
+        {
+            "bomFormat": "CycloneDX",
+            "specVersion": "1.7",
+            "version": 1,
+            "metadata": {
+                "timestamp": "2026-11-05T00:00:00Z",
+                "tools": {"components": [{"type": "application", "name": "nexus-symbiote"}]},
+                "component": {"type": "application", "name": "claims-assistant"},
+            },
+            "components": [],
+        },
+        {"spdxVersion": "SPDX-2.3", "SPDXID": "SPDXRef-DOCUMENT", "name": "claims-assistant", "packages": []},
+    ],
+)
+def test_symbiote_documents_other_than_agentbom_0_1_are_refused(tmp_path, payload):
+    # Regression for the documented compatibility claim: a producer format the loader
+    # does not support fails inventory validation instead of loading as an empty inventory.
+    with pytest.raises(InventoryValidationError):
+        Inventory.load([_write(tmp_path, payload)])
+
+
+def test_a_newer_agentbom_spec_version_is_refused(tmp_path):
+    doc = _doc()
+    doc["specVersion"] = "0.2"
+    with pytest.raises(InventoryValidationError, match="expected 0.1"):
+        Inventory.load([_write(tmp_path, doc)])
+
+
 def test_two_snapshots_of_one_subject_in_a_directory_approve_nothing(tmp_path):
     # A history directory holds serial 1 and serial 2 of the same agent: both entries bind
     # the workload, and the matcher reports the ambiguity rather than choosing one.

@@ -90,8 +90,8 @@ the November 1 AgentBOM inventory import.
 - **New inventory input.** `--inventory` accepts SymBiote AgentBOM 0.1 JSON, a
   file or a directory of documents, alongside Capability Cards, `agents.yaml`
   lists and CSV. AgentBOM inventory import is an explicit operator trust
-  decision: verify the document with SymBiote and review its subject identities
-  before supplying it. The scanner validates structure and records
+  decision: verify the document with the SymBiote build that produced it and
+  review its subject identities before supplying it. The scanner validates structure and records
   `verification: not-verified`, without verifying a seal or adopting producer
   approval. Only literal subject references and complete
   `k8s:<cluster>/<namespace>/<kind>/<name>` identities become approval bindings;
