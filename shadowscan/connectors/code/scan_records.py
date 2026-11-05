@@ -293,12 +293,17 @@ def _env_values_file(name: str) -> bool:
     return _ENV_TEMPLATE_WORDS.isdisjoint(re.split(r"[._-]", lower))
 
 
-def _escaped_key(key: str) -> str:
-    """A pattern for ``key`` with any of its characters written as a JSON or TOML ``\\u`` escape."""
+def _escaped_key(key: str, *, escapes: str = "u00|U000000", fold: str = "") -> str:
+    """A pattern for ``key`` with any of its characters written as a JSON or TOML ``\\u`` escape.
+
+    ``escapes`` lists the escape prefixes of a two-digit character code (YAML's
+    double-quoted style adds ``\\x``); ``fold`` is a pattern admitted after each
+    character (``_YAML_FOLD``, as ``yaml.dump`` writes a long key).
+    """
     parts = []
     for character in key:
         digits = "".join(f"[{d.lower()}{d.upper()}]" if d.isalpha() else d for d in f"{ord(character):02x}")
-        parts.append(f"(?:{re.escape(character)}|\\\\(?:u00|U000000){digits})")
+        parts.append(f"(?:{re.escape(character)}|\\\\(?:{escapes}){digits}){fold}")
     return "".join(parts)
 
 
@@ -331,26 +336,76 @@ _TOML_TABLE_KEY = re.compile(
 _YAML_SCAN_LOADER: Any = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
 
 
+# The keys that make a parsed document an MCP configuration (``_document_declares_mcp``).
+_TABLE_KEY_NAMES = frozenset({"mcpServers", "mcp_servers"})
+
+
+# An optional YAML escaped line break with the next line's indentation, which folds a
+# double-quoted key across lines (``"mcp\\`` then ``Servers":``), as ``yaml.dump`` writes one.
+_YAML_FOLD = r"(?:\\\r?\n[ \t]{0,256})?"
+
+# The node properties a key may carry before its name, each followed by blanks: a tag
+# (``!!str mcpServers:``) or an anchor (``&servers mcpServers:``), as any client reads them.
+_YAML_KEY_PROPERTIES = r"(?:(?:![^\s{}\[\],]*|&[^\s{}\[\],]+)[ \t]+)*"
+
+
+def _yaml_key_shape(key: str) -> re.Pattern[str]:
+    """A pattern for ``key`` as a mapping key in YAML text the scanner did not read.
+
+    Where a client's YAML writes one: at a line start, after indentation, block
+    sequence entries and an explicit key indicator (``? mcpServers``), or in a
+    flow mapping after its brace or a comma; after a tag or an anchor the key
+    carries; bare or quoted, any character of a double-quoted key written as a
+    ``\\x``, ``\\u`` or ``\\U`` escape or followed by an escaped line break; a
+    colon after it, or its line's end after the explicit key indicator. Each
+    alternative reads a line once, left to right.
+    """
+    spelled = f"[\"']?{_YAML_FOLD}{_escaped_key(key, escapes='x|u00|U000000', fold=_YAML_FOLD)}[\"']?"
+    start = r"(?:^|[{,])[ \t]*(?:-[ \t]+)*"
+    named = f"{_YAML_KEY_PROPERTIES}{spelled}"
+    return re.compile(
+        rf"{start}(?:\?[ \t]+)?{named}[ \t]*:|{start}\?[ \t]+{named}[ \t]*(?:#.*)?$", re.MULTILINE
+    )
+
+
+# The key names that make a YAML document an MCP configuration, each as a key in unread text.
+_UNREAD_YAML_KEYS = {name: _yaml_key_shape(name) for name in (*sorted(_TABLE_KEY_NAMES), "mcp", "servers")}
+
+
+def _unread_yaml_keys(tail: str) -> set[str]:
+    """The server table key names that ``tail``, YAML text the scanner did not read, spells as keys."""
+    return {name for name, shape in _UNREAD_YAML_KEYS.items() if shape.search(tail) is not None}
+
+
 def _yaml_names_mcp_key(text: str) -> bool:
     """Whether a YAML mapping key in ``text`` names a server table, however the key is quoted or escaped.
 
     Read from the scanner's tokens, which undo quoting and escapes as the
     loader does, so a key is told from text in a string value (a heredoc, an
     OpenAPI description quoting a client's configuration). Text the scanner
-    cannot read is taken to name one.
+    cannot read is decided by the keys it read before it failed, together with
+    the key-shaped spellings in the text it did not read, from the end of the
+    last token it yielded (``_unread_yaml_keys``): a Spring Boot
+    ``application.yml`` whose ``mcp`` section names no server table and whose
+    stray last line breaks the parse is ordinary configuration, while a table
+    in the part the scanner did not read keeps the file an MCP configuration.
     """
     keys: set[str] = set()
     key = False
+    read = 0
     try:
         for token in yaml.scan(text, Loader=_YAML_SCAN_LOADER):
+            read = token.end_mark.index
+            if isinstance(token, (yaml.TagToken, yaml.AnchorToken)):
+                continue  # a key's tag or anchor precedes its name
             if key and isinstance(token, yaml.ScalarToken):
-                if token.value in ("mcpServers", "mcp_servers"):
+                if token.value in _TABLE_KEY_NAMES:
                     return True
                 keys.add(token.value)
             key = isinstance(token, yaml.KeyToken)
     except yaml.YAMLError:
-        return True
-    return {"mcp", "servers"} <= keys
+        keys |= _unread_yaml_keys(text[read:])
+    return not keys.isdisjoint(_TABLE_KEY_NAMES) or {"mcp", "servers"} <= keys
 
 
 def _names_mcp_key(rel: str, text: str) -> bool:

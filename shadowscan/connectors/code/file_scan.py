@@ -2370,9 +2370,8 @@ def _yaml_declares_mcp(text: str) -> bool | None:
     The text search for MCP keys also finds them inside string values: a
     workflow step that writes an MCP configuration with a heredoc, a template
     or a transcript. Read with the configuration loader, which accepts
-    non-string keys (a GitHub workflow's ``on:``), the structure decides. A
-    file this loader cannot read is left to the MCP parser, so its defect or
-    limit still marks coverage incomplete.
+    non-string keys (a GitHub workflow's ``on:``), the structure decides; a
+    file this loader cannot read is decided by its keys (``_names_mcp_key``).
     """
     try:
         data = strict_bounded_safe_load(text, require_string_keys=False)
@@ -2419,9 +2418,11 @@ def _content_declares_mcp(rel: str, text: str, document: Any) -> bool:
     a key the client would read, quoted or escaped, keeps the file a candidate
     (``_text_may_declare_mcp``), so its defect is recorded at full weight; a
     YAML file's structure, parsed only now that the text names a key, then
-    decides, and a file it cannot read goes to the MCP parser. Workflows keep
-    the text search: their servers are JSON strings in step inputs, which
-    ``_embedded_workflow_mcp`` reads.
+    decides, and one it cannot read is decided by its keys, as past the walk's
+    bounds (``_names_mcp_key``), so a Spring ``application.yml`` whose ``mcp``
+    section names no server table is ordinary configuration (``_scan_config``
+    warns of its syntax). Workflows keep the text search: their servers are
+    JSON strings in step inputs, which ``_embedded_workflow_mcp`` reads.
     """
     if _WORKFLOW_FILE.search(rel) is not None:
         return _mentions_mcp_keys(text)
@@ -2435,8 +2436,7 @@ def _content_declares_mcp(rel: str, text: str, document: Any) -> bool:
         return False
     if rel.endswith(_YAML_SUFFIXES):
         declared = _yaml_declares_mcp(text)
-        if declared is not None:
-            return declared
+        return _names_mcp_key(rel, text) if declared is None else declared
     return True
 
 
