@@ -155,6 +155,28 @@ deterministic and unrelated to any timeout, deadline or walk bound.
   pinned `spring-projects__spring-ai-examples` checkout that reproduced the
   failure exits 0 with the warning and the same 49 findings.
 
+### Redaction rules stay restorable under pytest 9.2's monkeypatch (November 4)
+
+Dependabot's dev-tools bump (#337) moves pytest from 9.1.1 to 9.2.0, whose
+`monkeypatch.setattr` records an attribute's original value from the target's
+own `__dict__` unless the target's type has a data descriptor for the name
+(pytest-dev/pytest#10644). `shadowscan.utils.redaction` is a namespace that
+forwards the names its driven `redaction_*` modules bind, so a rule patched
+through it had no `__dict__` entry: pytest recorded it as absent, and the undo
+deleted the rule from its binding module instead of restoring it. The first
+test to patch `_LONG_BLANK_RUN` then left every later sanitization pass in its
+process without the limit (12,188 failures and 12 errors in a local run of the
+suite under 9.2.0). The namespace's type now carries a data descriptor for each
+of the 417 names that only the driven modules bind: reading, writing and
+deleting go to the binding modules as before, and a tool that consults the type
+finds the bound value to restore. `tests/unit/test_redaction_namespace.py`
+patches a rule twice and deletes one through the namespace and checks that every
+binding module holds the original object after undo.
+A second test, `test_nofollow_any_closes_file_on_setup_errors`, replaced
+`os.fstat` with a failing stub for its whole duration; pytest 9.2's output capture
+reads `os.fstat` when a test's call phase ends, so the stub is now scoped to the
+open under test.
+
 ### SymBiote AgentBOM documents as an inventory source (#335; November 1)
 
 `--inventory` accepts operator-trusted AgentBOM 0.1 documents alongside
