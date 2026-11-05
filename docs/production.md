@@ -1044,6 +1044,19 @@ No settings were changed for this readback; it does not establish continuous
 historical enforcement, an independent approval of any PR, or release or
 deployment acceptance.
 
+On 2026-11-05, after the repository transfer, administrator readbacks of all
+three rulesets again showed them active with `bypass_actors: []` and no update
+since 2026-10-11. Both `main` rulesets match the committed `.update.json`
+payloads under `python -m tools.governance.rulesets verify`. Their
+`pull_request` rules now carry GitHub's `dismissal_restriction` parameter in
+its off state (`{"enabled": false, "allowed_actors": []}`), which the
+governance tool compares as absent. The complete responses are retained in
+[the November 5 snapshot directory](https://github.com/Hunzee-VC/Nexus-ShadowScan/tree/main/.github/rulesets/observed/2026-11-05),
+and the [merge policy](operations/merge-policy.md#november-5-readback) records
+the check results. This readback is point-in-time evidence too; it does not
+establish continuous enforcement, an independent approval of any PR, or
+release or deployment acceptance.
+
 Classic branch protection is not readable through the app
 integration. Read and retain the current configuration before changing it,
 and compare it against the [versioned merge policy](operations/merge-policy.md):

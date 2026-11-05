@@ -8,6 +8,12 @@ explain operator migrations. Earlier per-change entries are preserved in the
 
 ## Unreleased
 
+- A 2026-11-05 administrator readback of all three rulesets is recorded under
+  `.github/rulesets/observed/2026-11-05/` (active, no bypass actors, no update
+  since 2026-10-11, matching the committed policy with GitHub's new
+  `dismissal_restriction` parameter in its off state), and a test checks the
+  retained responses against the committed payloads.
+
 - The repository was transferred from `aisecnomad/Nexus-ShadowScan` to
   `Hunzee-VC/Nexus-ShadowScan`, and the companion benchmark repository to
   `Hunzee-VC/Nexus-ShadowBench`. The governance tool's expected repository,

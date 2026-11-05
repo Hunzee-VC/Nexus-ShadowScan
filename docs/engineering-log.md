@@ -13,6 +13,40 @@ Counts and figures quoted in an entry are those of its date.
 
 ## Unreleased
 
+### Ruleset readback after the transfer (November 5)
+
+A 2026-11-05 administrator readback of all three rulesets is retained under
+`.github/rulesets/observed/2026-11-05/`, pretty-printed like the October 18 and
+October 26 sets with every field value as GitHub returned it. All three are
+active with `bypass_actors: []`, and their `updated_at` values are unchanged
+since 2026-10-11 (06:45:21.472, 06:45:33.038 and 06:45:44.195 UTC). `source`
+and `_links` now name `Hunzee-VC/Nexus-ShadowScan`. The `pull_request` rule of
+both `main` rulesets carries `dismissal_restriction` as
+`{"enabled": false, "allowed_actors": []}`, the off state that
+`tools/governance/rulesets.py` compares as absent since the transfer change;
+apart from that parameter, `source` and `_links`, the responses are identical to
+the October 26 set. Against the committed `.update.json` payloads, `verify`
+passes and `observe` records `complete` for both `main` rulesets;
+`python -m tools.governance_check` passes the review/CI ruleset and reports
+`status_checks_required` for `Protect main`, which carries no status-check
+rule, as on October 18 and October 26. The
+[merge policy](operations/merge-policy.md#november-5-readback) and the
+[merge gate and review status](production.md#merge-gate-and-review-status)
+section record it.
+
+`tests/test_governance_rulesets.py` gains
+`test_november_5_readback_matches_the_committed_payloads`, which runs `verify`,
+`observe` and `prepare_payload` on the retained responses as recorded: the
+first retained readback that carries the new parameter, so the off-state
+comparison is exercised on GitHub's own output as well as on a constructed
+readback. The rules-for-branch response read on the same day is not retained,
+as no earlier readback retained one.
+
+These are documentation and test changes; no scanner behaviour changes. A
+readback is point-in-time evidence: it is not evidence of continuous
+enforcement, of an independent approval of any pull request, or of release or
+deployment acceptance.
+
 ### Repository transfer to the Hunzee-VC organization (November 4)
 
 The repository was transferred from `aisecnomad/Nexus-ShadowScan` to

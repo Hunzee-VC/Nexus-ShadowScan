@@ -79,6 +79,36 @@ readback. Like every readback, it is a point-in-time observation: it is not
 evidence of continuous enforcement, of an independent approval of any pull
 request, or of release or deployment acceptance.
 
+## November 5 readback
+
+On 2026-11-05, administrator readbacks of all three rulesets again showed them
+active with `bypass_actors: []`. GitHub reports no change to any of them since
+2026-10-11: `Protect main` (23892853) at 06:45:21.472 UTC, `Require CI and
+CodeQL` (23913372) at 06:45:33.038 UTC and `Immutable release tags` (24723135)
+at 06:45:44.195 UTC. Their `source` is now `Hunzee-VC/Nexus-ShadowScan`, after
+the repository transfer. The `pull_request` rule of both `main` rulesets also
+carries a `dismissal_restriction` parameter that the October 26 responses lack.
+Its value is `{"enabled": false, "allowed_actors": []}`, the off state, which
+the governance tool compares as if the field were absent. Apart from that
+parameter, the new `source` and the `_links` that follow it, the responses are
+identical to the October 26 set.
+
+Against the committed `.update.json` payloads,
+`python -m tools.governance.rulesets verify` prints "Readback JSON matches the
+reviewed active policy; evidence origin requires verification." for both `main`
+rulesets, and `observe` records each as `complete` ("Complete ruleset settings
+match; this does not establish review or acceptance."). For the review/CI
+ruleset, `python -m tools.governance_check` prints "Snapshot meets the minimum
+merge policy; freshness and human review need separate verification." For
+`Protect main` it prints "Merge policy check failed: status_checks_required",
+as on October 18 and October 26, because that ruleset carries no status-check
+rule. The complete
+[November 5 responses](https://github.com/Hunzee-VC/Nexus-ShadowScan/tree/main/.github/rulesets/observed/2026-11-05)
+are retained beside the October 26 set. No settings were changed for this
+readback. Like every readback, it is a point-in-time observation: it is not
+evidence of continuous enforcement, of an independent approval of any pull
+request, or of release or deployment acceptance.
+
 ## Apply with repository administration access
 
 From the reviewed checkout, use an administrator-authenticated GitHub CLI.
