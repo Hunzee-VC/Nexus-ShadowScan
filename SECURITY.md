@@ -628,6 +628,16 @@ coverage, even when a response includes an empty collection field.
   account constraint on the approval. Unknown site identity leaves the scan
   incomplete and generated cards unbound; site fields in untrusted exports
   cannot supply or override that trusted scope.
+* A SymBiote AgentBOM is operator-trusted inventory, read with the same bounded
+  UTF-8 reader and strict JSON and YAML loaders as other inventory. Each entity
+  collection it reads is bounded at 10,000 entries, and a malformed document is
+  an inventory validation error. Only literal subject identities become approval
+  bindings: external reference URLs, the A2A card URL and a complete
+  `k8s:<cluster>/<namespace>/<kind>/<name>` workload identity. Tool-server
+  endpoints, package purls and workload UIDs are recorded as provenance only and
+  approve nothing. The entry records `verification: not-verified`. Seals, Merkle
+  trees and producer approvals are never verified or adopted; the Merkle root is
+  only checked for agreement with the snapshot digest.
 * Configuration rejects missing or empty required environment substitutions,
   duplicate YAML keys, unknown top-level/options fields and invalid gate levels.
   Explicit `${VAR:-default}` fallbacks remain an operator policy decision.

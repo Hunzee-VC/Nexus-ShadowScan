@@ -482,14 +482,45 @@ def test_top_level_list_is_not_an_agentbom(tmp_path):
 
 
 @pytest.mark.parametrize("marker", ["specVersion", "snapshot", "subject"])
-def test_document_missing_a_marker_is_not_an_agentbom(tmp_path, marker):
-    # Without every marker the document is read as a plain ``agents:`` list, whose field
-    # check refuses the other top-level keys: fail-closed, although the message names the
-    # plain shape rather than the missing marker.
+def test_document_missing_one_marker_names_the_missing_marker(tmp_path, marker):
+    # Two markers make the document an AgentBOM candidate, so the error names the missing
+    # marker instead of steering the operator to delete the others as unsupported fields.
     doc = _doc()
     del doc[marker]
+    path = _write(tmp_path, doc)
+    expected = (
+        f"invalid inventory {path}: document 1.{marker}: "
+        "missing; an AgentBOM document requires specVersion, snapshot and subject"
+    )
+    with pytest.raises(InventoryValidationError) as caught:
+        Inventory.load([path])
+    assert str(caught.value) == expected
+
+
+@pytest.mark.parametrize("marker", ["specVersion", "snapshot", "subject"])
+def test_document_with_only_one_marker_keeps_the_plain_shape_error(tmp_path, marker):
+    # One marker is not enough to read the document as an AgentBOM: the plain ``agents:``
+    # shape refuses the extra top-level field, as before, and nothing is approved.
+    doc = {"agents": _doc()["agents"], marker: _doc()[marker]}
     with pytest.raises(InventoryValidationError, match="unsupported field; allowed fields: agents"):
         Inventory.load([_write(tmp_path, doc)])
+
+
+@pytest.mark.parametrize("marker", ["specVersion", "snapshot", "subject"])
+def test_document_missing_one_marker_without_agents_names_the_missing_marker(tmp_path, marker):
+    # Without ``agents`` the document would otherwise be refused as a simple entry.
+    doc = {name: value for name, value in _doc().items() if name in ("specVersion", "snapshot", "subject")}
+    del doc[marker]
+    with pytest.raises(InventoryValidationError, match=rf"document 1\.{marker}: missing; an AgentBOM"):
+        Inventory.load([_write(tmp_path, doc)])
+
+
+def test_card_with_two_markers_keeps_the_card_shape(tmp_path):
+    # A card does not restrict its top-level fields, so two markers alone do not turn a
+    # valid card into an invalid AgentBOM.
+    doc = {"metadata": {"agent_id": "billing-bot"}, "specVersion": "0.1", "subject": "agent:billing-bot"}
+    inventory = Inventory.load([_write(tmp_path, doc)])
+    assert [entry.agent_id for entry in inventory.entries] == ["billing-bot"]
 
 
 # --- Autonomy ladder and snapshot history ----------------------------------------
@@ -518,6 +549,51 @@ def test_documented_autonomy_table_matches_the_code_mapping():
     assert documented == ISO_TO_LEVEL
     assert names == {entry.number: entry.name for entry in LEVELS}
     assert set(ISO_TO_LEVEL.values()) == {entry.number for entry in LEVELS}
+
+
+# --- Other SymBiote output formats ------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        # The native AIBOM that current nexus-symbiote builds write from `scan` and
+        # `import-shadowscan` (docs/integrations/symbiote.md, Compatibility).
+        {"metadata": {"spec_version": "1.0.0"}, "components": [], "dependencies": []},
+        {
+            "metadata": {"spec_version": "1.0.0", "tool_name": "nexus-symbiote"},
+            "components": [{"bom_ref": "agent:a", "component_type": "agent", "name": "a"}],
+            "dependencies": [],
+        },
+        # Its CycloneDX export, bare and with the top-level metadata a real export carries
+        # (which routes it through the Capability Card shape), and its SPDX export.
+        {"bomFormat": "CycloneDX", "specVersion": "1.7", "version": 1, "components": []},
+        {
+            "bomFormat": "CycloneDX",
+            "specVersion": "1.7",
+            "version": 1,
+            "metadata": {
+                "timestamp": "2026-11-05T00:00:00Z",
+                "tools": {"components": [{"type": "application", "name": "nexus-symbiote"}]},
+                "component": {"type": "application", "name": "claims-assistant"},
+            },
+            "components": [],
+        },
+        {"spdxVersion": "SPDX-2.3", "SPDXID": "SPDXRef-DOCUMENT", "name": "claims-assistant", "packages": []},
+    ],
+)
+def test_symbiote_documents_other_than_agentbom_0_1_are_refused(tmp_path, payload):
+    # Regression for the documented compatibility claim: a producer format the loader
+    # does not support fails inventory validation instead of loading as an empty inventory.
+    with pytest.raises(InventoryValidationError):
+        Inventory.load([_write(tmp_path, payload)])
+
+
+def test_a_newer_agentbom_spec_version_is_refused(tmp_path):
+    doc = _doc()
+    doc["specVersion"] = "0.2"
+    with pytest.raises(InventoryValidationError, match="expected 0.1"):
+        Inventory.load([_write(tmp_path, doc)])
 
 
 def test_two_snapshots_of_one_subject_in_a_directory_approve_nothing(tmp_path):

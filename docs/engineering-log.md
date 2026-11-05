@@ -13,6 +13,70 @@ Counts and figures quoted in an entry are those of its date.
 
 ## Unreleased
 
+### AgentBOM recognition, security controls and governance test follow-up to #343 (November 5)
+
+This follows up #343, the SymBiote AgentBOM import.
+
+- **Recognition of incomplete documents.** `is_agentbom()` required all three
+  markers (`specVersion`, `snapshot`, `subject`). A document missing one fell
+  through to the plain `agents:` shape and failed with "unsupported field;
+  allowed fields: agents", which points the operator at deleting fields
+  instead of adding the missing one. A top-level mapping with two of the
+  markers is now read as an AgentBOM, and `summarize()` reports the missing
+  marker at `document N.<marker>` with the fixed message "missing; an AgentBOM
+  document requires specVersion, snapshot and subject". The plain `agents:`
+  and simple-entry shapes refuse every marker as an unsupported field, so no
+  document they accepted is now refused. A Capability Card does not restrict
+  its top-level fields, so a mapping with `metadata` and without `agents`
+  keeps the card shape unless all three markers are present. A mapping with at
+  most one marker keeps the plain-shape error. `tests/unit/test_registry_agentbom.py`
+  replaces the test that pinned the old message with tests for each missing
+  marker, with and without `agents`, for a single marker and for a card with
+  two markers. `docs/integrations/symbiote.md` describes the rule.
+- **Security controls.** `SECURITY.md`, "Other implemented controls", lists
+  the AgentBOM controls: operator-trusted inventory, the bounded reader, the
+  10,000-entry collection bound, literal subject bindings only, components,
+  purls and workload UIDs as provenance, `verification: not-verified`, and no
+  verification or adoption of seals, Merkle trees or producer approvals.
+- **Governance test.** `tests/test_governance_audit.py` derives the
+  repository name, including the fake `gh` allowlist, from
+  `tools.governance.rulesets.REPOSITORY` instead of repeating it, so a future
+  rename changes one constant. Its assertions are unchanged.
+
+### Ruleset readback after the transfer (November 5)
+
+A 2026-11-05 administrator readback of all three rulesets is retained under
+`.github/rulesets/observed/2026-11-05/`, pretty-printed like the October 18 and
+October 26 sets with every field value as GitHub returned it. All three are
+active with `bypass_actors: []`, and their `updated_at` values are unchanged
+since 2026-10-11 (06:45:21.472, 06:45:33.038 and 06:45:44.195 UTC). `source`
+and `_links` now name `Hunzee-VC/Nexus-ShadowScan`. The `pull_request` rule of
+both `main` rulesets carries `dismissal_restriction` as
+`{"enabled": false, "allowed_actors": []}`, the off state that
+`tools/governance/rulesets.py` compares as absent since the transfer change;
+apart from that parameter, `source` and `_links`, the responses are identical to
+the October 26 set. Against the committed `.update.json` payloads, `verify`
+passes and `observe` records `complete` for both `main` rulesets;
+`python -m tools.governance_check` passes the review/CI ruleset and reports
+`status_checks_required` for `Protect main`, which carries no status-check
+rule, as on October 18 and October 26. The
+[merge policy](operations/merge-policy.md#november-5-readback) and the
+[merge gate and review status](production.md#merge-gate-and-review-status)
+section record it.
+
+`tests/test_governance_rulesets.py` gains
+`test_november_5_readback_matches_the_committed_payloads`, which runs `verify`,
+`observe` and `prepare_payload` on the retained responses as recorded: the
+first retained readback that carries the new parameter, so the off-state
+comparison is exercised on GitHub's own output as well as on a constructed
+readback. The rules-for-branch response read on the same day is not retained,
+as no earlier readback retained one.
+
+These are documentation and test changes; no scanner behaviour changes. A
+readback is point-in-time evidence: it is not evidence of continuous
+enforcement, of an independent approval of any pull request, or of release or
+deployment acceptance.
+
 ### Repository transfer to the Hunzee-VC organization (November 4)
 
 The repository was transferred from `aisecnomad/Nexus-ShadowScan` to
