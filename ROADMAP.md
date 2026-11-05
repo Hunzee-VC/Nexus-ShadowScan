@@ -27,8 +27,9 @@ fail-closed trust model.
   the GitHub Actions binding on every required check, last-push approval and
   review-thread resolution live-required, but also four `always` bypass
   actors on both rulesets. The
-  [2026-10-18](docs/operations/merge-policy.md#october-18-readback) and
-  [2026-10-26](docs/operations/merge-policy.md#october-26-readback) readbacks
+  [2026-10-18](docs/operations/merge-policy.md#october-18-readback),
+  [2026-10-26](docs/operations/merge-policy.md#october-26-readback) and
+  [2026-11-05](docs/operations/merge-policy.md#november-5-readback) readbacks
   show `bypass_actors: []` on both `main` rulesets and on the release-tag
   ruleset, with settings matching the committed payloads. A readback is a
   point-in-time observation, not evidence of continuous enforcement; repeat it
