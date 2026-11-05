@@ -77,6 +77,74 @@ readback is point-in-time evidence: it is not evidence of continuous
 enforcement, of an independent approval of any pull request, or of release or
 deployment acceptance.
 
+### Base image digest refresh and the Python pin dropped (November 5)
+
+- **Base image.** Both `FROM` lines move from
+  `sha256:88a20e2d017bd20cdc0cb3910de603e7bea9512a6c351a8dd3c9df212ab03d73`,
+  which Dependabot's #336 proposed and #344 brought in,
+  to `sha256:771146c2dfc880902a185f060c3db5571473c46b267edd98c3119c83068dfb61`,
+  the `Docker-Content-Digest` that `mirror.gcr.io` returns today for
+  `chainguard/wolfi-base:latest` under an OCI image index `Accept` header. The
+  index lists two platforms: linux/amd64 `sha256:79233fc1de44…` and
+  linux/arm64 `sha256:aa1e85889690…`, and is annotated as created
+  2026-11-03 14:11 UTC. The `sha256:88a20e2d…` index that #336 proposed was
+  the tag's digest when Dependabot read it; the mirror returns it with a
+  created annotation of 2026-10-28 20:49 UTC, so the new digest is the newer
+  one. A `docker pull` of the new digest through the
+  mirror verified its content;
+  the amd64 image ships apk-tools 2.14.13-r0, glibc 2.44-r13, libbrotli
+  1.2.1-r3, openssl-4.0 4.0.3-r8 and wolfi-keys 1-r14, and reads packages from
+  `https://apk.cgr.dev/chainguard`, as the previous digest does.
+- **Python pin.** Both stages pinned `python-3.12` and `python-3.12-base` to
+  `3.12.15-r0` because `3.12.15-r1` (2026-10-02) had no SHA-224. The pins are
+  dropped; both stages install the packages unpinned, as the Dockerfile's rule
+  for apk packages says. The claim that a missing SHA-224 still fails the
+  build was checked by a source read and a local simulation against pip
+  26.2.2, the version in `requirements-ci.lock`; the version of Wolfi's
+  `py3.12-pip` was not read. `BuildTracker._entry_path` names a tracker entry
+  with `hashlib.sha224`, but the preparer enters the tracker only when the
+  distribution's `build_tracker_id` is set, which is the case for a source
+  tree or sdist and not for a wheel or an installed distribution. The cache
+  and self-version-check SHA-224 paths are skipped under `--no-cache-dir`. With
+  `hashlib.sha224` and `hashlib.new("sha224")` made to raise, a
+  `--no-cache-dir --require-hashes --only-binary=:all:` install of a
+  hash-pinned wheel succeeded, and a `pip wheel --no-cache-dir --no-deps
+  --no-build-isolation` of a local `pyproject.toml` project failed with
+  "unsupported hash type sha224". In this Dockerfile the two wheel-only lock
+  installs therefore do not need SHA-224; the `pip wheel` of `/opt/shadowscan`
+  does, and that step stops the build. The exception comment is replaced by a
+  note of when the pin was dropped and which step fails if SHA-224 goes
+  missing again. The pull request's `container-security` job (run
+  41997525782) then installed `python-3.12` and `python-3.12-base`
+  `3.12.16_git20261030-r0` in both stages, so the image moves from CPython
+  3.12.15 to 3.12.16; its `pip wheel --no-build-isolation` of
+  `/opt/shadowscan` built the package wheel, and the Trivy scan of the exact
+  image found no blocking finding. That meets the condition the old exception
+  comment set for dropping the pin.
+  `docs/production.md` no longer describes the pin as current.
+- **Tests.**
+  `test_dockerfile_stages_keep_the_image_digest_and_python_pins_in_sync`
+  required the pin in both stages. Its checks now live in
+  `_assert_dockerfile_stages_in_sync`, which accepts either no
+  `python-3.12`/`python-3.12-base` pin in either stage or exactly one
+  identical revision in both, and keeps the digest assertions and their
+  messages. New parametrized cases cover both accepted shapes and reject a pin
+  in one stage only, different revisions, a `python-3.12-base` drift and two
+  revisions in one stage, each by its specific message.
+  `test_container_updates_installed_base_packages_before_dependency_install`
+  now matches the `python-3.12-base` package with or without a pin and requires
+  it to carry the interpreter's pin.
+- **Verification.** The image was not built here. A local Docker daemon
+  pulled both base digests through `mirror.gcr.io`, but `apk upgrade` in each
+  stage stopped with "DNS lookup error" for `apk.cgr.dev`, and the session's
+  proxy refuses that host (HTTP 403 on CONNECT). That is an environment limit
+  and says nothing about the packages. CI's `container-security` job on the
+  pull request is the authoritative test: it builds the image (the build
+  stage's source wheel build fails if the unpinned interpreter lacks SHA-224),
+  runs the smoke checks against the built image ID, and scans that exact
+  image with the digest-verified Trivy for HIGH and CRITICAL OS and Python
+  findings.
+
 ### Repository transfer to the Hunzee-VC organization (November 4)
 
 The repository was transferred from `aisecnomad/Nexus-ShadowScan` to

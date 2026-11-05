@@ -394,15 +394,20 @@ a separate build environment. That environment builds the package wheel with
 `--no-build-isolation` and is not copied. The image runs as UID/GID 65532. Both
 stages pin the same multi-arch `chainguard/wolfi-base:latest` image index by
 its literal digest; Python 3.12 and Git are Wolfi packages, and pip stays in
-the build stage. Both stages also pin Wolfi's `python-3.12` to one package
-revision for now; see
-[October 2 integration of #134](history/production-change-history.md#october-2-integration-of-134-and-hygiene-review).
+the build stage. Both stages install Wolfi's current `python-3.12` without a
+revision pin. The `3.12.15-r0` pin held from October 2
+([October 2 integration of #134](history/production-change-history.md#october-2-integration-of-134-and-hygiene-review))
+was dropped on November 5. pip names a build-tracker entry with SHA-224 only
+for a requirement it builds from source. In this image that is the package
+wheel built from the source tree, so that step fails and the image does not
+build if a Wolfi revision loses SHA-224 again. The wheel-only installs of the
+two locks do not use SHA-224. Any future pin must be identical in both stages.
 Because apk reads the live Wolfi repository, this image is not byte-for-byte
 reproducible. Retain the built image by immutable digest for repeatable
 deployment. Reproducible rebuilds additionally require an immutable package
 repository snapshot and a validated reproducible build process; a rebuild
-cadence alone does not supply either. Keep both `FROM` digests and Python package
-pins identical across the build and runtime stages.
+cadence alone does not supply either. Keep both `FROM` digests, and any Python
+package pin, identical across the build and runtime stages.
 The image build checks that Git is 2.45 or newer for history enrichment.
 Review that exact digest and any Dependabot refresh before deployment:
 
@@ -468,9 +473,10 @@ Dependabot's weekly docker update proposes the newer digest of the
 - Check that both `FROM` lines moved together.
   `tests/test_repository_policy.py::test_container_stages_share_one_reviewed_base_digest`
   fails a Dockerfile whose two stages name different digests.
-- Check that the `apk` Python pin (`python-3.12` and `python-3.12-base` at the
-  same revision in both stages) still installs on the new base; the image build
-  fails otherwise, and the pin carries its own exception note in the Dockerfile.
+- Check that `python-3.12` and `python-3.12-base` still install on the new
+  base and, if a revision pin is ever reintroduced, that both stages name the
+  same one; the image build fails otherwise, and the source wheel build fails
+  if the interpreter lacks SHA-224 (see the note in the Dockerfile).
 - Treat the pull request's green `container-security` job as the build-and-scan
   evidence: it builds the image from the proposed digest and runs the Trivy
   scan with a fresh database against that exact image. A red job means the

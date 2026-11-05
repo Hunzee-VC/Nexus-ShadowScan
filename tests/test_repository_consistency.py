@@ -1385,8 +1385,7 @@ def test_docs_toolchain_is_hash_locked_everywhere_it_is_installed() -> None:
         assert "mkdocs-material==" not in _read(workflow), f"{workflow.name} pins mkdocs outside the lock"
 
 
-def test_dockerfile_stages_keep_the_image_digest_and_python_pins_in_sync() -> None:
-    dockerfile = _read(ROOT / "Dockerfile")
+def _assert_dockerfile_stages_in_sync(dockerfile: str) -> None:
     from_lines = [line for line in dockerfile.splitlines() if re.match(r"^\s*FROM\s+", line, re.IGNORECASE)]
     assert len(from_lines) == 2, f"Dockerfile FROM drift: expected 2 stages, found {len(from_lines)}"
     images = [re.match(r"^\s*FROM\s+(\S+)", line, re.IGNORECASE).group(1) for line in from_lines]
@@ -1407,11 +1406,19 @@ def test_dockerfile_stages_keep_the_image_digest_and_python_pins_in_sync() -> No
             for package, revision in pin_pattern.findall(line):
                 pins.setdefault(package, set()).add(revision)
         stage_pins.append(pins)
+    # The runtime copies a virtual environment bound to the build interpreter, so
+    # the stages either both leave python-3.12 unpinned or pin one revision.
     for package in ("python-3.12", "python-3.12-base"):
         build_revisions = stage_pins[0].get(package, set())
         runtime_revisions = stage_pins[1].get(package, set())
-        assert build_revisions, f"Dockerfile {package} pin is missing from the build stage"
-        assert runtime_revisions, f"Dockerfile {package} pin is missing from the runtime stage"
+        if not build_revisions and not runtime_revisions:
+            continue
+        assert build_revisions, (
+            f"Dockerfile {package} pin is missing from the build stage but set in the runtime stage"
+        )
+        assert runtime_revisions, (
+            f"Dockerfile {package} pin is missing from the runtime stage but set in the build stage"
+        )
         assert len(build_revisions) == len(runtime_revisions) == 1, (
             f"Dockerfile {package} pin drift: each stage must use exactly one revision"
         )
@@ -1419,6 +1426,97 @@ def test_dockerfile_stages_keep_the_image_digest_and_python_pins_in_sync() -> No
             f"Dockerfile {package} revision drift: build={sorted(build_revisions)}, "
             f"runtime={sorted(runtime_revisions)}"
         )
+
+
+def test_dockerfile_stages_keep_the_image_digest_and_python_pins_in_sync() -> None:
+    _assert_dockerfile_stages_in_sync(_read(ROOT / "Dockerfile"))
+
+
+def _pin_python(stage: int, revision: str, base_revision: str | None = None) -> Any:
+    """A Dockerfile mutation that pins python-3.12 (and its base package) in one stage (0 build, 1 runtime)."""
+
+    def mutate(dockerfile: str) -> str:
+        head, *stages = re.split(r"(?m)(?=^FROM\s+)", dockerfile)
+        new = stages[stage].replace(
+            "apk add --no-cache python-3.12 python-3.12-base ",
+            f"apk add --no-cache python-3.12={revision} python-3.12-base={base_revision or revision} ",
+            1,
+        )
+        assert new != stages[stage], f"apk add python-3.12 line not found in Dockerfile stage {stage}"
+        stages[stage] = new
+        return head + "".join(stages)
+
+    return mutate
+
+
+def _replace_in_dockerfile(old: str, new: str) -> Any:
+    """A Dockerfile mutation that replaces text the Dockerfile must contain."""
+
+    def mutate(dockerfile: str) -> str:
+        assert old in dockerfile, f"Dockerfile text not found: {old!r}"
+        return dockerfile.replace(old, new, 1)
+
+    return mutate
+
+
+@pytest.mark.parametrize(
+    "mutations",
+    (
+        pytest.param((), id="neither-stage-pins"),
+        pytest.param(
+            (_pin_python(0, "3.12.15-r9"), _pin_python(1, "3.12.15-r9")), id="both-pin-one-revision"
+        ),
+    ),
+)
+def test_dockerfile_python_pin_check_accepts_matching_stages(mutations: tuple[Any, ...]) -> None:
+    dockerfile = _read(ROOT / "Dockerfile")
+    for mutate in mutations:
+        dockerfile = mutate(dockerfile)
+    _assert_dockerfile_stages_in_sync(dockerfile)
+
+
+@pytest.mark.parametrize(
+    "mutations,message",
+    (
+        pytest.param(
+            (_pin_python(0, "3.12.15-r9"),),
+            "python-3.12 pin is missing from the runtime stage",
+            id="build-only-pin",
+        ),
+        pytest.param(
+            (_pin_python(1, "3.12.15-r9"),),
+            "python-3.12 pin is missing from the build stage",
+            id="runtime-only-pin",
+        ),
+        pytest.param(
+            (_pin_python(0, "3.12.15-r9"), _pin_python(1, "3.12.15-r8")),
+            "python-3.12 revision drift",
+            id="different-revisions",
+        ),
+        pytest.param(
+            (_pin_python(0, "3.12.15-r9", "3.12.15-r8"), _pin_python(1, "3.12.15-r9")),
+            "python-3.12-base revision drift",
+            id="base-package-drift",
+        ),
+        pytest.param(
+            (
+                _replace_in_dockerfile(
+                    "python-3.12 python-3.12-base py3.12-pip",
+                    "python-3.12=3.12.15-r9 python-3.12=3.12.15-r8 python-3.12-base py3.12-pip",
+                ),
+                _pin_python(1, "3.12.15-r9"),
+            ),
+            "python-3.12 pin drift: each stage must use exactly one revision",
+            id="two-revisions-in-one-stage",
+        ),
+    ),
+)
+def test_dockerfile_python_pin_check_rejects_stage_drift(mutations: tuple[Any, ...], message: str) -> None:
+    dockerfile = _read(ROOT / "Dockerfile")
+    for mutate in mutations:
+        dockerfile = mutate(dockerfile)
+    with pytest.raises(AssertionError, match=re.escape(message)):
+        _assert_dockerfile_stages_in_sync(dockerfile)
 
 
 @pytest.mark.parametrize(
