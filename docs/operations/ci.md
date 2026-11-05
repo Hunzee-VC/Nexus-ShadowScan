@@ -154,3 +154,25 @@ shadowscan scan -c shadowscan.yaml --incremental --fail-on high
 ```
 
 The repository's own `audit.yml` workflow also runs `pip-audit` against every hash lock weekly and on demand, independent of commits.
+
+## Hand-pinned scanner tools
+
+Dependabot's docker entry covers the repository's own `Dockerfile` only; it
+does not follow a workflow's `container:` image or a binary a step downloads.
+Two scanner pins in the repository's workflows therefore move only by hand:
+
+- Trivy: the `container-security` job in `.github/workflows/ci.yml` downloads
+  the release asset named by `TRIVY_VERSION` (`0.74.0`) and verifies it
+  against `TRIVY_SHA256`, both resolved on 2026-10-02.
+- The `semgrep/semgrep` image the optional Semgrep workflow runs in, pinned in
+  `.github/workflows/semgrep.yml` by its registry index digest
+  (`sha256:529ee8a2…`, tag `1.180.0`, 2026-10-07).
+
+The vulnerability database is not pinned with the scanner: every
+`container-security` run downloads a fresh one and fails unless it was updated
+within 48 hours (`python -m tools.container.verify database`), so these pins
+age the scanner, not its data. Review them by hand with the weekly base-image
+digest review
+([production guide](../production.md#reviewing-a-dependabot-base-image-digest))
+and refresh each version and digest together, as the comment beside each pin
+says.
