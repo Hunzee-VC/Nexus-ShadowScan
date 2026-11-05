@@ -1524,16 +1524,24 @@ def test_container_scan_uses_verified_tool_fresh_database_and_exact_image() -> N
 def test_container_updates_installed_base_packages_before_dependency_install() -> None:
     dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
     build, runtime = dockerfile.split("\nFROM ", 2)[1:]
-    # The interpreter may carry a temporary revision pin, identical in both stages.
-    python = r"python-3\.12(?:=(?P<pin>\S+) python-3\.12-base=(?P=pin))?"
+    # The interpreter may carry a revision pin, identical in both stages.
+    python = r"python-3\.12(?:=(?P<pin>\S+))? python-3\.12-base(?:=(?P<base>\S+))?"
     build_add = re.search(rf"&& apk add --no-cache {python} py3\.12-pip\n", build)
     runtime_add = re.search(rf"&& apk add --no-cache {python} git ", runtime)
-    assert build_add and runtime_add, "both stages install python-3.12 (and pip or git) with apk"
+    assert build_add and runtime_add, (
+        "both stages install python-3.12 and python-3.12-base (and pip or git) with apk"
+    )
+    assert build_add["pin"] == build_add["base"], (
+        "the build stage pins python-3.12 and its base package apart"
+    )
+    assert runtime_add["pin"] == runtime_add["base"], (
+        "the runtime stage pins python-3.12 and its base package apart"
+    )
     assert build_add["pin"] == runtime_add["pin"], "the build and runtime interpreters must match"
     # The base image pins every package it ships to an exact version in
     # /etc/apk/world; without --available, `apk upgrade` holds them there and a
     # fixed base package never reaches the image. The reset must precede the
-    # deliberate Python pins, and each stage upgrades exactly once.
+    # Python packages, and each stage upgrades exactly once.
     for stage, install in ((build, build_add), (runtime, runtime_add)):
         commands = "\n".join(line for line in stage.splitlines() if not line.lstrip().startswith("#"))
         assert commands.count("apk upgrade") == 1

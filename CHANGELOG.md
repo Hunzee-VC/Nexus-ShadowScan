@@ -8,6 +8,18 @@ explain operator migrations. Earlier per-change entries are preserved in the
 
 ## Unreleased
 
+- The worker image moves both `FROM` lines to the current
+  `chainguard/wolfi-base:latest` index
+  `sha256:771146c2dfc880902a185f060c3db5571473c46b267edd98c3119c83068dfb61`
+  (linux/amd64 and linux/arm64, created 2026-11-03), replacing the 2026-10-28
+  index that #336 brought in, and drops the temporary `python-3.12`
+  3.12.15-r0 pin in both stages, so the worker runs Wolfi's current CPython
+  3.12.16. The consistency test now
+  requires the two stages to agree: neither pins the interpreter, or both pin
+  one identical revision. CI's `container-security` job builds the image,
+  whose source wheel build fails without SHA-224, and scans that exact image;
+  on the pull request it installed 3.12.16, built the wheel and passed.
+
 - An inventory document with two of the AgentBOM `specVersion`, `snapshot` and
   `subject` fields is read as an AgentBOM, and the validation error names the
   missing field instead of refusing the others as unsupported. It still fails

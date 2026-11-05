@@ -32,9 +32,8 @@
 # byte-for-byte reproducible. Retain built images by immutable digest for
 # repeatable deployment; reproducible rebuilds additionally need an immutable
 # package-repository snapshot and a validated reproducible build process.
-# Both FROM lines and both
-# apk python-3.12 and python-3.12-base pins MUST stay identical across the build
-# and runtime stages.
+# Both FROM lines MUST stay identical across the build and runtime stages, and so
+# must any apk python-3.12 or python-3.12-base revision pin.
 # To refresh by hand, run
 #   docker buildx imagetools inspect chainguard/wolfi-base:latest
 # and copy the top-level image index Digest into both FROM lines after
@@ -42,7 +41,7 @@
 # Anonymous Docker Hub pulls are rate limited. CI pulls this digest through the
 # mirror.gcr.io pull-through cache; a digest pull is content-verified, so any
 # builder can do the same (docs/production.md).
-FROM chainguard/wolfi-base:latest@sha256:88a20e2d017bd20cdc0cb3910de603e7bea9512a6c351a8dd3c9df212ab03d73 AS build
+FROM chainguard/wolfi-base:latest@sha256:771146c2dfc880902a185f060c3db5571473c46b267edd98c3119c83068dfb61 AS build
 
 # apk packages are deliberately not version-pinned here: Wolfi is a rolling
 # distribution, and a pinned package stops receiving security fixes. The base
@@ -50,21 +49,24 @@ FROM chainguard/wolfi-base:latest@sha256:88a20e2d017bd20cdc0cb3910de603e7bea9512
 # /etc/apk/world (libbrotlicommon1=1.2.0-r6, for example), and a plain
 # `apk upgrade` holds those versions, so a fix to a base package never reached
 # the image until the digest moved. --available resets the versioned world
-# entries (apk-upgrade(8), apk-tools 2.14) before the Python pins below are
+# entries (apk-upgrade(8), apk-tools 2.14) before the packages below are
 # added; it also prunes world entries no repository still offers. The base
 # image digest fixes the package set the build starts from; apk still reads the
 # live Wolfi repository and checks its signatures against the keys in the base
 # image, so the image is not byte-for-byte reproducible from this file alone.
 #
-# Temporary exception: python-3.12 3.12.15-r1, published on 2026-10-02, has no
-# SHA-224 or SHA3-224 (no builtin _sha2 module, and its OpenSSL refuses both),
-# while pip uses SHA-224 for its cache keys, so every pip install fails on it.
-# Both stages stay on 3.12.15-r0, the last revision that built this image (the
-# runtime copies a virtual environment bound to its interpreter). Drop both pins
-# once a newer revision passes `python3.12 -c "import hashlib; hashlib.sha224(b'')"`.
+# The python-3.12 and python-3.12-base 3.12.15-r0 pins, held since 2026-10-02
+# because 3.12.15-r1 had no SHA-224, were dropped on 2026-11-05. pip names a
+# build-tracker entry with SHA-224 only for a requirement it builds from
+# source. The wheel-only --no-cache-dir installs of the two locks below do not
+# use SHA-224; the `pip wheel --no-build-isolation` of /opt/shadowscan does, so
+# if a Wolfi revision loses SHA-224 again, that step fails and the image does
+# not build.
+# Both stages install the same unpinned interpreter (the runtime copies a
+# virtual environment bound to it); any future pin must be identical in both.
 # hadolint ignore=DL3018
 RUN apk upgrade --no-cache --available \
-    && apk add --no-cache python-3.12=3.12.15-r0 python-3.12-base=3.12.15-r0 py3.12-pip
+    && apk add --no-cache python-3.12 python-3.12-base py3.12-pip
 
 WORKDIR /opt/shadowscan
 COPY pyproject.toml requirements.lock requirements-build.lock README.md LICENSE NOTICE /opt/shadowscan/
@@ -90,7 +92,7 @@ RUN python3.12 -m venv --without-pip /opt/venv \
         /opt/wheel/nexusshadowscan-*.whl \
     && python3.12 -m pip --python /opt/venv/bin/python check
 
-FROM chainguard/wolfi-base:latest@sha256:88a20e2d017bd20cdc0cb3910de603e7bea9512a6c351a8dd3c9df212ab03d73
+FROM chainguard/wolfi-base:latest@sha256:771146c2dfc880902a185f060c3db5571473c46b267edd98c3119c83068dfb61
 
 LABEL org.opencontainers.image.source="https://github.com/Hunzee-VC/Nexus-ShadowScan" \
       org.opencontainers.image.description="ShadowScan disposable scan worker" \
@@ -100,10 +102,10 @@ LABEL org.opencontainers.image.source="https://github.com/Hunzee-VC/Nexus-Shadow
 # and the build tools stay in the build stage. The worker never needs to gain
 # privileges, so no file keeps a setuid or setgid bit; the build fails if one
 # remains. The base image provides the nonroot account (65532).
-# python-3.12 is pinned with the build stage (see there).
+# python-3.12 matches the build stage (see there).
 # hadolint ignore=DL3018
 RUN apk upgrade --no-cache --available \
-    && apk add --no-cache python-3.12=3.12.15-r0 python-3.12-base=3.12.15-r0 git \
+    && apk add --no-cache python-3.12 python-3.12-base git \
     && find / -xdev -type f -perm /6000 -exec chmod a-s {} + \
     && test -z "$(find / -xdev -type f -perm /6000 -print -quit)" \
     && mkdir -p /work /output \
