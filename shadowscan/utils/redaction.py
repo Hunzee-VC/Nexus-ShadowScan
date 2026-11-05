@@ -1571,7 +1571,52 @@ _POLICY_BINDINGS: tuple[tuple[dict[str, Any], str], ...] = tuple(
 )
 
 
+class _ForwardedName:
+    """A name that only the driven modules bind, as a data descriptor of this module's type.
+
+    Reading, writing and deleting go to the modules that bind the name, as
+    the namespace's attribute hooks do for every name. The descriptor exists
+    for tools that record an attribute's original value before replacing it:
+    pytest's monkeypatch (9.2 and later) consults the target's type for a data
+    descriptor and otherwise reads the target's own ``__dict__``, which holds
+    no forwarded name, so without one it recorded the rule as absent and its
+    undo deleted the rule from the binding module instead of restoring it.
+    """
+
+    __slots__ = ("name",)
+
+    def __init__(self, name: str) -> None:
+        self.name = name
+
+    def __get__(self, instance: _RedactionNamespace | None, owner: type | None = None) -> Any:
+        if instance is None:
+            return self
+        for module in instance._binders.get(self.name, ()):
+            namespace = vars(module)
+            if self.name in namespace:
+                return namespace[self.name]
+        raise AttributeError(f"module {instance.__name__!r} has no attribute {self.name!r}")
+
+    def __set__(self, instance: _RedactionNamespace, value: Any) -> None:
+        for module in instance._binders.get(self.name, ()):
+            setattr(module, self.name, value)
+
+    def __delete__(self, instance: _RedactionNamespace) -> None:
+        binders = [module for module in instance._binders.get(self.name, ()) if self.name in vars(module)]
+        if not binders:
+            raise AttributeError(f"module {instance.__name__!r} has no attribute {self.name!r}")
+        for module in binders:
+            delattr(module, self.name)
+
+
 _RedactionNamespace._binders = _binding_modules()
+# Each name that only the driven modules bind is a data descriptor of this
+# module's type, so a tool that records an attribute before replacing it
+# finds the bound value rather than an absent ``__dict__`` entry.
+for _forwarded, _binding in _RedactionNamespace._binders.items():
+    if sys.modules[__name__] not in _binding:
+        setattr(_RedactionNamespace, _forwarded, _ForwardedName(_forwarded))
+del _forwarded, _binding
 # From here on, setting or deleting a name on this module writes every module
 # that binds it. Patch rules through shadowscan.utils.redaction only: a name
 # set on a redaction_* module directly changes that module alone, and the

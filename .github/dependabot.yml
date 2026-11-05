@@ -8,6 +8,12 @@
 # tools/benchmark_evidence.json, and the npm lock and Dockerfile under
 # tests/fixtures/ are static scanner inputs, never installed or built (see
 # docs/operations/security-alert-triage.md).
+# Security updates for npm and Go are alert-driven from GitHub's dependency
+# graph, not from an entry here. Alerts on the benchmark manifests removed in
+# #281 are dismissed with the rationale recorded in
+# docs/operations/security-alert-triage.md, never configured away: an npm or
+# gomod entry for a directory that is not on main would only add a weekly
+# "package.json not found" failure.
 version: 2
 updates:
   - package-ecosystem: pip
@@ -81,4 +87,6 @@ updates:
       - docker
     # The Dockerfile pins chainguard/wolfi-base:latest by digest in both stages;
     # Dependabot proposes the newer digest of that tag. Review it and keep both
-    # FROM lines equal (tests/test_repository_policy.py checks they are).
+    # FROM lines equal (tests/test_repository_policy.py checks they are). How to
+    # review a proposal, including when the tag has already moved past it, is in
+    # docs/production.md under "Reviewing a Dependabot base-image digest".

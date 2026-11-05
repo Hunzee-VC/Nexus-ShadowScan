@@ -11,14 +11,14 @@ explain operator migrations. Earlier per-change entries are preserved in the
 - The worker image moves both `FROM` lines to the current
   `chainguard/wolfi-base:latest` index
   `sha256:771146c2dfc880902a185f060c3db5571473c46b267edd98c3119c83068dfb61`
-  (linux/amd64 and linux/arm64, created 2026-11-03), newer than the
-  2026-10-28 index Dependabot's #336 proposed, and drops the temporary
-  `python-3.12` 3.12.15-r0 pin in both stages. The consistency test now
+  (linux/amd64 and linux/arm64, created 2026-11-03), replacing the 2026-10-28
+  index that #336 brought in, and drops the temporary `python-3.12`
+  3.12.15-r0 pin in both stages, so the worker runs Wolfi's current CPython
+  3.12.16. The consistency test now
   requires the two stages to agree: neither pins the interpreter, or both pin
   one identical revision. CI's `container-security` job builds the image,
-  whose source wheel build fails without SHA-224, and scans that exact image.
-  The SHA-224 condition for the drop is confirmed by that job's build on the
-  pull request; do not merge unless it passes.
+  whose source wheel build fails without SHA-224, and scans that exact image;
+  on the pull request it installed 3.12.16, built the wheel and passed.
 
 - The repository was transferred from `aisecnomad/Nexus-ShadowScan` to
   `Hunzee-VC/Nexus-ShadowScan`, and the companion benchmark repository to
@@ -31,6 +31,23 @@ explain operator migrations. Earlier per-change entries are preserved in the
   the consistency test treats the former name like the earlier one. Releases
   0.1.3 and 0.1.4 keep the name their attestations carry:
   verify them with `--repo aisecnomad/Nexus-ShadowScan`.
+
+- A YAML file the configuration loader cannot read is MCP configuration by
+  its keys (those read before the failure, and a key-shaped server table
+  spelling in the rest), not by any mention of `mcp`: a Spring Boot
+  `application.yml` with a stray properties line, which has left every scan
+  of `spring-projects/spring-ai-examples` incomplete since 0.1.3, is ordinary
+  configuration again, with the structured-check warning and the same
+  findings; one whose unreadable part spells a server table still fails
+  closed.
+
+- The 2026-11-03/04 Dependabot security-update failures on the benchmark
+  manifest removed in #281 are recorded in the alert triage page, with the
+  dismissal to apply and the rule that an alert on a manifest absent from
+  `main` is dismissed rather than configured away; the rollout guide explains
+  how to review a Dependabot base-image digest, the CI guide lists the
+  hand-pinned Trivy and Semgrep scanners, and the workflow inventory no longer
+  says Scorecard starts on ruleset changes.
 
 - Operator-trusted SymBiote AgentBOM 0.1 documents load as inventory with
   strict structural validation and literal subject bindings. Complete Kubernetes

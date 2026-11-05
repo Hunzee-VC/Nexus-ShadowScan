@@ -41,7 +41,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Checkmarx One scan
-        uses: checkmarx/ast-github-action@7006afa846f6d23e3e9d351a001b9d8e59c3fb8c # 2.3.46
+        uses: checkmarx/ast-github-action@58c998c5d78b3ecfa51e7cbde852d5565d5dea0b # 2.3.47
         with:
           base_uri: ${{ vars.CX_BASE_URI }}
           cx_client_id: ${{ secrets.CX_CLIENT_ID }}
