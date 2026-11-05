@@ -8,6 +8,10 @@ explain operator migrations. Earlier per-change entries are preserved in the
 
 ## Unreleased
 
+- An inventory document with two of the AgentBOM `specVersion`, `snapshot` and
+  `subject` fields is read as an AgentBOM, and the validation error names the
+  missing field instead of refusing the others as unsupported. It still fails
+  closed; a Capability Card keeps its shape.
 - The repository was transferred from `aisecnomad/Nexus-ShadowScan` to
   `Hunzee-VC/Nexus-ShadowScan`, and the companion benchmark repository to
   `Hunzee-VC/Nexus-ShadowBench`. The governance tool's expected repository,

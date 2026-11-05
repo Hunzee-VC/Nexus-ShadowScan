@@ -32,7 +32,9 @@ entry approves it. Remove superseded snapshots before scanning.
 
 A document is recognized by its top-level `specVersion`, `snapshot` and
 `subject` fields with supported `specVersion: "0.1"`, and contributes **one entry:
-the subject agent**. An AgentBOM's `agents` list contains its own entity records,
+the subject agent**. A document with two of the three fields is also read as an
+AgentBOM, and the validation error names the missing one; a Capability Card
+(`metadata` without `agents`) keeps the card shape unless all three are present. An AgentBOM's `agents` list contains its own entity records,
 not inventory entries. The mapping, implemented in `shadowscan/agentbom.py`:
 
 | Inventory field | AgentBOM source |

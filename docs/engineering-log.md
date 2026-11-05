@@ -13,6 +13,36 @@ Counts and figures quoted in an entry are those of its date.
 
 ## Unreleased
 
+### AgentBOM recognition, security controls and governance test follow-up to #343 (November 5)
+
+This follows up #343, the SymBiote AgentBOM import.
+
+- **Recognition of incomplete documents.** `is_agentbom()` required all three
+  markers (`specVersion`, `snapshot`, `subject`). A document missing one fell
+  through to the plain `agents:` shape and failed with "unsupported field;
+  allowed fields: agents", which points the operator at deleting fields
+  instead of adding the missing one. A top-level mapping with two of the
+  markers is now read as an AgentBOM, and `summarize()` reports the missing
+  marker at `document N.<marker>` with the fixed message "missing; an AgentBOM
+  document requires specVersion, snapshot and subject". The plain `agents:`
+  and simple-entry shapes refuse every marker as an unsupported field, so no
+  document they accepted is now refused. A Capability Card does not restrict
+  its top-level fields, so a mapping with `metadata` and without `agents`
+  keeps the card shape unless all three markers are present. A mapping with at
+  most one marker keeps the plain-shape error. `tests/unit/test_registry_agentbom.py`
+  replaces the test that pinned the old message with tests for each missing
+  marker, with and without `agents`, for a single marker and for a card with
+  two markers. `docs/integrations/symbiote.md` describes the rule.
+- **Security controls.** `SECURITY.md`, "Other implemented controls", lists
+  the AgentBOM controls: operator-trusted inventory, the bounded reader, the
+  10,000-entry collection bound, literal subject bindings only, components,
+  purls and workload UIDs as provenance, `verification: not-verified`, and no
+  verification or adoption of seals, Merkle trees or producer approvals.
+- **Governance test.** `tests/test_governance_audit.py` derives the
+  repository name, including the fake `gh` allowlist, from
+  `tools.governance.rulesets.REPOSITORY` instead of repeating it, so a future
+  rename changes one constant. Its assertions are unchanged.
+
 ### Repository transfer to the Hunzee-VC organization (November 4)
 
 The repository was transferred from `aisecnomad/Nexus-ShadowScan` to

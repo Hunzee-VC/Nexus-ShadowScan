@@ -482,14 +482,45 @@ def test_top_level_list_is_not_an_agentbom(tmp_path):
 
 
 @pytest.mark.parametrize("marker", ["specVersion", "snapshot", "subject"])
-def test_document_missing_a_marker_is_not_an_agentbom(tmp_path, marker):
-    # Without every marker the document is read as a plain ``agents:`` list, whose field
-    # check refuses the other top-level keys: fail-closed, although the message names the
-    # plain shape rather than the missing marker.
+def test_document_missing_one_marker_names_the_missing_marker(tmp_path, marker):
+    # Two markers make the document an AgentBOM candidate, so the error names the missing
+    # marker instead of steering the operator to delete the others as unsupported fields.
     doc = _doc()
     del doc[marker]
+    path = _write(tmp_path, doc)
+    expected = (
+        f"invalid inventory {path}: document 1.{marker}: "
+        "missing; an AgentBOM document requires specVersion, snapshot and subject"
+    )
+    with pytest.raises(InventoryValidationError) as caught:
+        Inventory.load([path])
+    assert str(caught.value) == expected
+
+
+@pytest.mark.parametrize("marker", ["specVersion", "snapshot", "subject"])
+def test_document_with_only_one_marker_keeps_the_plain_shape_error(tmp_path, marker):
+    # One marker is not enough to read the document as an AgentBOM: the plain ``agents:``
+    # shape refuses the extra top-level field, as before, and nothing is approved.
+    doc = {"agents": _doc()["agents"], marker: _doc()[marker]}
     with pytest.raises(InventoryValidationError, match="unsupported field; allowed fields: agents"):
         Inventory.load([_write(tmp_path, doc)])
+
+
+@pytest.mark.parametrize("marker", ["specVersion", "snapshot", "subject"])
+def test_document_missing_one_marker_without_agents_names_the_missing_marker(tmp_path, marker):
+    # Without ``agents`` the document would otherwise be refused as a simple entry.
+    doc = {name: value for name, value in _doc().items() if name in ("specVersion", "snapshot", "subject")}
+    del doc[marker]
+    with pytest.raises(InventoryValidationError, match=rf"document 1\.{marker}: missing; an AgentBOM"):
+        Inventory.load([_write(tmp_path, doc)])
+
+
+def test_card_with_two_markers_keeps_the_card_shape(tmp_path):
+    # A card does not restrict its top-level fields, so two markers alone do not turn a
+    # valid card into an invalid AgentBOM.
+    doc = {"metadata": {"agent_id": "billing-bot"}, "specVersion": "0.1", "subject": "agent:billing-bot"}
+    inventory = Inventory.load([_write(tmp_path, doc)])
+    assert [entry.agent_id for entry in inventory.entries] == ["billing-bot"]
 
 
 # --- Autonomy ladder and snapshot history ----------------------------------------
