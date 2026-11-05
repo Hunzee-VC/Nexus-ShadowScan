@@ -126,9 +126,12 @@ def test_nofollow_any_closes_file_on_setup_errors(tmp_path, darwin_opens, monkey
     def failed(*args, **kwargs):
         raise OSError(errno.EIO, "setup failed")
 
-    monkeypatch.setattr(os, failure, failed)
-    with pytest.raises(OSError, match="setup failed"), open_confined_file(source):
-        pass
+    # The stub lives only around the open under test: pytest reads os.fstat
+    # itself when the test's call phase ends (its output capture, 9.2 and later).
+    with monkeypatch.context() as scoped:
+        scoped.setattr(os, failure, failed)
+        with pytest.raises(OSError, match="setup failed"), open_confined_file(source):
+            pass
     assert len(descriptors) == 1
     with pytest.raises(OSError) as exc:
         fstat(descriptors[0])

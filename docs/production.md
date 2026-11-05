@@ -410,6 +410,9 @@ Review that exact digest and any Dependabot refresh before deployment:
 docker build --tag shadowscan:reviewed .
 ```
 
+A Dependabot proposal to move the digest is reviewed as described in
+[Reviewing a Dependabot base-image digest](#reviewing-a-dependabot-base-image-digest).
+
 Retain the reviewed base and built image digests. The build context is an
 allowlist (`.dockerignore`) of package sources, signature and mapping data,
 packaging inputs and the runtime/build locks. Distribution packages from `apk`
@@ -447,6 +450,33 @@ scan uses sampled API mode and is incomplete. Keep runtime secrets out of the bu
 
 For record replay, read `exports/manifest.json` and use the `filename` for the
 intended connector instance; export names are not a fixed `cloud_aws.jsonl`.
+
+### Reviewing a Dependabot base-image digest
+
+Dependabot's weekly docker update proposes the newer digest of the
+`chainguard/wolfi-base:latest` tag in both `FROM` lines. Before approving one:
+
+- Compare the proposed digest with the tag's current image index:
+  `docker buildx imagetools inspect chainguard/wolfi-base:latest` prints the
+  top-level index digest (the multi-arch OCI index, not a per-architecture
+  manifest) and its platforms. Chainguard rebuilds the tag almost daily, so a
+  weekly proposal can already lag it: #336, opened 2026-11-02, proposed
+  `sha256:88a20e2d…`, and on 2026-11-03 the tag moved on to
+  `sha256:771146c2…`. A lagging digest is acceptable only if it is the one you
+  reviewed and will pin; otherwise comment `@dependabot recreate` on the pull
+  request so that it proposes the current digest, and review that one.
+- Check that both `FROM` lines moved together.
+  `tests/test_repository_policy.py::test_container_stages_share_one_reviewed_base_digest`
+  fails a Dockerfile whose two stages name different digests.
+- Check that the `apk` Python pin (`python-3.12` and `python-3.12-base` at the
+  same revision in both stages) still installs on the new base; the image build
+  fails otherwise, and the pin carries its own exception note in the Dockerfile.
+- Treat the pull request's green `container-security` job as the build-and-scan
+  evidence: it builds the image from the proposed digest and runs the Trivy
+  scan with a fresh database against that exact image. A red job means the
+  new base is not accepted, whatever the digest comparison said.
+
+Record the digest you reviewed with the built image digest, as above.
 
 ## Explicit security policy
 

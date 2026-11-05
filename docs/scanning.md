@@ -183,7 +183,12 @@ that are never silent:
   table key appears in it. So does a readable JSON, TOML or YAML file there
   whose parse failed (a syntax error, a duplicate key, a nesting limit): a
   quoted (`'mcpServers':`) or escaped key keeps it MCP configuration, so its
-  defect is recorded at full weight. An analysis limit reached in a file that
+  defect is recorded at full weight; a YAML file the loader cannot read
+  counts when the keys the YAML scanner read before it failed, or a
+  key-shaped spelling in the text it did not read, name a table, so a Spring
+  Boot `application.yml` with an `mcp` section but no server table and a
+  stray properties line is ordinary configuration (a warning, which strict
+  accounting counts). An analysis limit reached in a file that
   is MCP configuration by its content (a 100-deep array beside
   `mcpServers` in `tests/fixtures/tools.json`) is never discounted or
   declared either. Text with a UTF-8, UTF-16 or UTF-32 byte-order mark is
