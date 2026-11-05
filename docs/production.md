@@ -90,8 +90,8 @@ the November 1 AgentBOM inventory import.
 - **New inventory input.** `--inventory` accepts SymBiote AgentBOM 0.1 JSON, a
   file or a directory of documents, alongside Capability Cards, `agents.yaml`
   lists and CSV. AgentBOM inventory import is an explicit operator trust
-  decision: verify the document with SymBiote and review its subject identities
-  before supplying it. The scanner validates structure and records
+  decision: verify the document with the SymBiote build that produced it and
+  review its subject identities before supplying it. The scanner validates structure and records
   `verification: not-verified`, without verifying a seal or adopting producer
   approval. Only literal subject references and complete
   `k8s:<cluster>/<namespace>/<kind>/<name>` identities become approval bindings;
@@ -1073,6 +1073,19 @@ The complete responses are retained in
 No settings were changed for this readback; it does not establish continuous
 historical enforcement, an independent approval of any PR, or release or
 deployment acceptance.
+
+On 2026-11-05, after the repository transfer, administrator readbacks of all
+three rulesets again showed them active with `bypass_actors: []` and no update
+since 2026-10-11. Both `main` rulesets match the committed `.update.json`
+payloads under `python -m tools.governance.rulesets verify`. Their
+`pull_request` rules now carry GitHub's `dismissal_restriction` parameter in
+its off state (`{"enabled": false, "allowed_actors": []}`), which the
+governance tool compares as absent. The complete responses are retained in
+[the November 5 snapshot directory](https://github.com/Hunzee-VC/Nexus-ShadowScan/tree/main/.github/rulesets/observed/2026-11-05),
+and the [merge policy](operations/merge-policy.md#november-5-readback) records
+the check results. This readback is point-in-time evidence too; it does not
+establish continuous enforcement, an independent approval of any PR, or
+release or deployment acceptance.
 
 Classic branch protection is not readable through the app
 integration. Read and retain the current configuration before changing it,

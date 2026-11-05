@@ -18,9 +18,9 @@ from tools.governance_check import GITHUB_ACTIONS_APP_ID, check_ruleset, require
 
 ROOT = Path(__file__).resolve().parents[1]
 # The observed snapshots are GitHub's responses as recorded: the 2026-10-10 ones
-# before the repository was renamed from its first name, the dated ones before it
-# was transferred. They stay as recorded; GitHub now reports the current name in
-# `source`, so tests read them as it returns them.
+# before the repository was renamed from its first name, the 2026-10-18 and
+# 2026-10-26 sets before it was transferred, and the 2026-11-05 set under the
+# current name. They stay as recorded; tests read each as GitHub returned it.
 FORMER_REPOSITORIES = ("aisecnomad/Project-Nexus", "aisecnomad/Nexus-ShadowScan")
 
 
@@ -162,6 +162,24 @@ def test_readback_with_an_off_dismissal_restriction_matches_the_reviewed_payload
             observe_readback(readback, expected, ruleset_id=ruleset_id)
         planned = _rule(prepare_payload(readback, ruleset_id=ruleset_id), "pull_request")["parameters"]
         assert planned["dismissal_restriction"] == restriction
+
+
+@pytest.mark.parametrize("ruleset_id", RULESETS)
+def test_november_5_readback_matches_the_committed_payloads(ruleset_id: int) -> None:
+    # The first retained readback after the transfer, and the first that carries
+    # `dismissal_restriction`; the October 26 response for the same ruleset lacks it.
+    readback = json.loads((ROOT / ".github/rulesets/observed/2026-11-05" / f"{ruleset_id}.json").read_text())
+    earlier = json.loads((ROOT / ".github/rulesets/observed/2026-10-26" / f"{ruleset_id}.json").read_text())
+    expected = json.loads((ROOT / ".github/rulesets" / f"{ruleset_id}.update.json").read_text())
+    assert readback["source"] == REPOSITORY and readback["id"] == ruleset_id
+    assert readback["updated_at"] == earlier["updated_at"]
+    assert "dismissal_restriction" not in _rule(earlier, "pull_request")["parameters"]
+    review = _rule(readback, "pull_request")["parameters"]
+    assert review["dismissal_restriction"] == {"enabled": False, "allowed_actors": []}
+    verify_readback(readback, expected, ruleset_id=ruleset_id)
+    observed = observe_readback(readback, expected, ruleset_id=ruleset_id)
+    assert observed["status"] == "complete" and observed["complete_readback_verified"] is True
+    assert prepare_payload(readback, ruleset_id=ruleset_id) == expected
 
 
 @pytest.mark.parametrize("ruleset_id", RULESETS)

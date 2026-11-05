@@ -24,7 +24,7 @@ The inventory can be supplied as:
 * a CSV with columns ``agent_id, name, owner, resources`` (resources separated by ``|``)
   and an optional ``autonomy_level``
 * **SymBiote AgentBOM documents** – operator-trusted per-agent bill-of-materials JSON
-  that `SymBiote <https://github.com/aisecnomad/SymBiote>`_ produces
+  in the AgentBOM 0.1 format of `Nexus SymBiote <https://github.com/Hunzee-VC/Nexus-Symbiote>`_
   (recognized by top-level ``specVersion``/``snapshot``/``subject``); the
   subject supplies one entry with literal identity bindings. Seals are not
   verified here and component presence does not confer approval. See :mod:`shadowscan.agentbom`

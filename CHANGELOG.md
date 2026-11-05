@@ -8,6 +8,25 @@ explain operator migrations. Earlier per-change entries are preserved in the
 
 ## Unreleased
 
+- An inventory document with two of the AgentBOM `specVersion`, `snapshot` and
+  `subject` fields is read as an AgentBOM, and the validation error names the
+  missing field instead of refusing the others as unsupported. It still fails
+  closed; a Capability Card keeps its shape.
+
+- Documentation correction: the SymBiote integration page showed companion
+  commands (`symbiote scan . -o boms/`, `symbiote export shadowscan`,
+  `symbiote import --format shadowscan`) that the companion does not provide.
+  It now names the commit it was checked against (Nexus SymBiote `18e4b441`,
+  command `nexus-symbiote`), shows only commands that exist there, and states
+  that ShadowScan accepts AgentBOM `specVersion: "0.1"` documents only; the
+  companion's current native AIBOM is refused as inventory, as before.
+
+- A 2026-11-05 administrator readback of all three rulesets is recorded under
+  `.github/rulesets/observed/2026-11-05/` (active, no bypass actors, no update
+  since 2026-10-11, matching the committed policy with GitHub's new
+  `dismissal_restriction` parameter in its off state), and a test checks the
+  retained responses against the committed payloads.
+
 - The repository was transferred from `aisecnomad/Nexus-ShadowScan` to
   `Hunzee-VC/Nexus-ShadowScan`, and the companion benchmark repository to
   `Hunzee-VC/Nexus-ShadowBench`. The governance tool's expected repository,

@@ -35,8 +35,21 @@ Invalid = Callable[[Path, str, str], Exception]
 
 
 def is_agentbom(doc: Any) -> bool:
-    """Recognize emitted companion documents before the plain agents-list shape."""
-    return isinstance(doc, dict) and all(marker in doc for marker in AGENTBOM_MARKERS)
+    """Recognize emitted companion documents before the plain agents-list shape.
+
+    A mapping with two of the three markers is also read as an AgentBOM, so that
+    :func:`summarize` names the missing marker instead of the plain shape refusing
+    the others. The plain ``agents:`` and simple-entry shapes refuse every marker
+    as an unsupported field, so this rejects nothing they would accept. A card
+    (``metadata`` without ``agents``) does not restrict its top-level fields and
+    keeps its own shape unless all three markers are present.
+    """
+    if not isinstance(doc, dict):
+        return False
+    present = sum(marker in doc for marker in AGENTBOM_MARKERS)
+    if present == len(AGENTBOM_MARKERS):
+        return True
+    return present == len(AGENTBOM_MARKERS) - 1 and ("agents" in doc or "metadata" not in doc)
 
 
 class _Reader:
@@ -102,6 +115,15 @@ class _Reader:
         elif item not in (None, "", [], {}, False):
             raise self.error(field, "an absent-verified claim must be empty")
         return None
+
+
+_MISSING_MARKER = "missing; an AgentBOM document requires specVersion, snapshot and subject"
+
+
+def _require_markers(doc: dict[str, Any], reader: _Reader) -> None:
+    for marker in AGENTBOM_MARKERS:
+        if marker not in doc:
+            raise reader.error(marker, _MISSING_MARKER)
 
 
 def _snapshot(doc: dict[str, Any], subject: str, reader: _Reader) -> dict[str, Any]:
@@ -219,6 +241,7 @@ def _component_resources(servers: dict[str, dict[str, Any]], reader: _Reader) ->
 def summarize(doc: dict[str, Any], path: Path, location: str, invalid: Invalid) -> dict[str, Any]:
     """Return subject inventory fields, never treating components or seals as approval."""
     reader = _Reader(path, location, invalid)
+    _require_markers(doc, reader)
     subject = reader.entity_id(doc.get("subject"), "subject")
     snapshot = _snapshot(doc, subject, reader)
     agents = reader.entities(doc, "agents")

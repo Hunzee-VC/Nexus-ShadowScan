@@ -13,6 +13,8 @@ from pathlib import Path
 import pytest
 import yaml
 
+from tools.governance.rulesets import REPOSITORY
+
 ROOT = Path(__file__).resolve().parents[1]
 RULESET_IDS = (23892853, 23913372)
 
@@ -36,7 +38,7 @@ def test_scheduled_audit_reports_scoped_assurance_without_admin_writes(tmp_path:
     workflow = yaml.safe_load((ROOT / ".github/workflows/audit.yml").read_text())
     job = workflow["jobs"]["merge-policy"]
     assert workflow["permissions"] == {"contents": "read"}
-    # Pinned to the immutable repository ID of Hunzee-VC/Nexus-ShadowScan
+    # Pinned to the immutable repository ID of the repository that REPOSITORY names
     # (formerly `aisecnomad/Nexus-ShadowScan` and `aisecnomad/Project-Nexus`), so a
     # rename or transfer cannot skip the audit job.
     assert job["if"] == "github.repository_id == '1174915264' && github.ref == 'refs/heads/main'"
@@ -51,7 +53,7 @@ def test_scheduled_audit_reports_scoped_assurance_without_admin_writes(tmp_path:
             **payload,
             "id": ruleset_id,
             "source_type": "Repository",
-            "source": "Hunzee-VC/Nexus-ShadowScan",
+            "source": REPOSITORY,
         }
     ruleset = snapshots["23913372"]
     if change in {"disabled", "missing_bypass_and_disabled"}:
@@ -79,8 +81,8 @@ def test_scheduled_audit_reports_scoped_assurance_without_admin_writes(tmp_path:
         "import json, os, sys\n"
         "from pathlib import Path\n"
         "args = sys.argv[1:]\n"
-        "allowed = {'repos/Hunzee-VC/Nexus-ShadowScan/rulesets/23892853', "
-        "'repos/Hunzee-VC/Nexus-ShadowScan/rulesets/23913372'}\n"
+        f"allowed = {{'repos/{REPOSITORY}/rulesets/23892853', "
+        f"'repos/{REPOSITORY}/rulesets/23913372'}}\n"
         "if len(args) != 2 or args[0] != 'api' or args[1] not in allowed:\n"
         "    raise SystemExit('Only the two read-only ruleset requests are allowed')\n"
         "with Path(os.environ['AUDIT_REQUEST_LOG']).open('a') as log:\n"
@@ -102,7 +104,7 @@ def test_scheduled_audit_reports_scoped_assurance_without_admin_writes(tmp_path:
     env = dict(os.environ)
     env.update(
         PATH=os.pathsep.join((str(fake_bin), str(Path(sys.executable).parent), env.get("PATH", ""))),
-        GITHUB_REPOSITORY="Hunzee-VC/Nexus-ShadowScan",
+        GITHUB_REPOSITORY=REPOSITORY,
         RUNNER_TEMP=str(runner_temp),
         GITHUB_STEP_SUMMARY=str(tmp_path / "summary.md"),
         AUDIT_RESPONSES=str(inputs),
@@ -115,9 +117,7 @@ def test_scheduled_audit_reports_scoped_assurance_without_admin_writes(tmp_path:
     assert (result.returncode == 0) is (change in {"none", "missing_bypass"}), result.stdout + result.stderr
     observed = requests.read_text().splitlines()
     assert observed[0].endswith("/23892853")
-    assert set(observed).issubset(
-        {f"repos/Hunzee-VC/Nexus-ShadowScan/rulesets/{number}" for number in RULESET_IDS}
-    )
+    assert set(observed).issubset({f"repos/{REPOSITORY}/rulesets/{number}" for number in RULESET_IDS})
     assert len(observed) == 2  # One bad ruleset must not hide the other's status.
     reports = {
         number: json.loads(
