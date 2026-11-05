@@ -87,6 +87,104 @@ the same refs, so the submodule URL follows.
   entry names the repository URL. No claim of independent review is made for
   this change.
 
+### An unreadable YAML is MCP configuration by its keys, not by any mention of `mcp` (November 4)
+
+The weekly discovery benchmark has failed since its 2026-10-21 run on
+`spring-projects/spring-ai-examples`. Its
+`model-context-protocol/client-starter/starter-webflux-client/src/main/resources/test.application.yml`
+is a Spring Boot `application.yml` whose last line is a properties line
+(`ai.user.input=...`), which no YAML loader reads, and whose
+`spring.ai.mcp.client.stdio` section names the file that holds the servers
+(`servers-configuration: classpath:/mcp-servers-config.json`) rather than a
+server table. Since 44ff4726 (#261, October 18; first shipped in 0.1.3) a scan
+of that repository exits 3 with `unparsed-input 1` and the error
+`code.filesystem: <file>: invalid MCP configuration syntax`, where 0.1.2
+exited 0 with the warning `invalid structured configuration syntax; structured
+checks skipped`; both report the same 49 findings. The failure is
+deterministic and unrelated to any timeout, deadline or walk bound.
+
+- **Cause.** #261 moved the decision about a structured file with no parse
+  held into `_content_declares_mcp`, which keeps any file whose bytes may
+  spell a server table key a candidate (`_MCP_KEY_BYTES`: here the bare
+  `mcp:` key, and `mcp-servers` inside the value
+  `classpath:/mcp-servers-config.json`, so the file still exits 3 with the
+  key renamed) and, for a YAML file the configuration loader cannot read,
+  returned True unconditionally, so the server parser ran and its syntax
+  error was recorded at full weight. `_yaml_names_mcp_key`, written in the
+  same round to tell a key from prose in a string value, likewise returned
+  True on any `yaml.YAMLError`, although it had already read every key of
+  this document (`mcp`, `client`, `stdio`, `servers-configuration`) without
+  finding a table. Before #261 the text check required both `mcp:` and
+  `servers:`, so the file was ordinary configuration.
+- **Rule now applied.** A YAML file the configuration loader cannot read is
+  decided as a document past the walk's bounds is, by its keys
+  (`_names_mcp_key`): the keys the YAML scanner read before it failed,
+  together with the key-shaped spellings in the text it did not read, from
+  the end of the last token it yielded (`_unread_yaml_keys`, which also
+  covers the tokens libyaml holds back while a simple key is unresolved).
+  A spelling counts as `mcpServers:`, `mcp_servers:`, or `mcp:` with
+  `servers:`, at a line start (after indentation, block sequence entries or
+  an explicit key indicator) or in a flow mapping, bare or quoted, with any
+  character of a double-quoted key written as a `\x`, `\u` or `\U` escape
+  or followed by an escaped line break, as the byte check reads them; a tag
+  or an anchor before the key (`!!str mcpServers:`, `&t mcpServers:`) names
+  the same key, in the tokens read and in the unread text. A file
+  whose readable keys or unreadable part spell a table is still MCP
+  configuration: its syntax error stays a full-weight `unparsed-input` error
+  and the scan incomplete, under a test path and the `ci` profile too, so the
+  #261 rule and its tests hold. A file whose keys name no table is ordinary
+  configuration, whose syntax error is the structured-check warning that
+  strict accounting still counts. JSON and TOML files with no parse held,
+  undecodable files and dedicated MCP names are decided as before.
+  `file_scan.py` stays at its 2,450-line ratchet; the new helpers live in
+  `scan_records.py`.
+- **Tests** in `tests/unit/test_coverage_configuration_spellings.py`
+  (section E2, beside the #261 parse-failure test): the Spring-shaped file,
+  with `mcp:` and with only the path in a value, under a product and a test
+  path and both profiles, is ordinary configuration with the warning and a
+  complete scan, and strict accounting counts it as `unparsed-input`;
+  seventeen unreadable files that spell a table before or after the break
+  (plain, quoted, escaped, folded, listed, explicit and flow keys, keys
+  carrying a tag or an anchor, `mcp:` with a tab-indented `servers:`, an
+  unterminated quote, a control character) stay
+  MCP configuration with the full-weight error under both paths and
+  profiles; and `_yaml_names_mcp_key` is asserted directly on each text, on
+  prose and a path after the break, and on a bare key without a colon. The
+  code-connector suites, the regex-linearity sweep (the new patterns read
+  each line once) and the evaluation corpora pass. The scan of the
+  pinned `spring-projects__spring-ai-examples` checkout that reproduced the
+  failure exits 0 with the warning and the same 49 findings.
+
+### Redaction rules stay restorable under pytest 9.2's monkeypatch (November 4)
+
+Dependabot's dev-tools bump (#337) proposed moving pytest from 9.1.1 to 9.2.0, whose
+`monkeypatch.setattr` records an attribute's original value from the target's
+own `__dict__` unless the target's type has a data descriptor for the name
+(pytest-dev/pytest#10644). `shadowscan.utils.redaction` is a namespace that
+forwards the names its driven `redaction_*` modules bind, so a rule patched
+through it had no `__dict__` entry: pytest recorded it as absent, and the undo
+deleted the rule from its binding module instead of restoring it. The first
+test to patch `_LONG_BLANK_RUN` then left every later sanitization pass in its
+process without the limit (12,188 failures and 12 errors in a local run of the
+suite under 9.2.0). The namespace's type now carries a data descriptor for each
+of the 417 names that only the driven modules bind: reading, writing and
+deleting go to the binding modules as before, and a tool that consults the type
+finds the bound value to restore. `tests/unit/test_redaction_namespace.py`
+patches a rule twice and deletes one through the namespace and checks that every
+binding module holds the original object after undo.
+A second test, `test_nofollow_any_closes_file_on_setup_errors`, replaced
+`os.fstat` with a failing stub for its whole duration; pytest 9.2's output capture
+reads `os.fstat` when a test's call phase ends, so the stub is now scoped to the
+open under test.
+
+The bump itself is deferred: CI's `benchmark-tests` job runs the pinned
+Nexus-ShadowBench companion's own suite with this lock's pytest, and under 9.2.0
+its `tests/unit/test_benchmark_realworld_review2.py` stubs `os.stat` with an
+object that has no `st_size`, which the same capture reads (run 41883114617).
+pytest stays at 9.1.1 and #337 takes only ruff 0.17.3 and mypy 2.4.1, with the
+matching pre-commit revisions; both fixes above are correct under 9.1.1 and are
+what 9.2 needs once the companion test is fixed and its pin moves.
+
 ### SymBiote AgentBOM documents as an inventory source (#335; November 1)
 
 `--inventory` accepts operator-trusted AgentBOM 0.1 documents alongside

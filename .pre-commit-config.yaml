@@ -40,7 +40,7 @@ repos:
         args: [--branch=main]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: f368fb366ff7f2f808dd324b83a6d32267799e19 # v0.17.2
+    rev: 25bcf95026b96e2dd3c0aec3090c3d6ef6ca2e6c # v0.17.3
     hooks:
       # CI lints and formats Python only; the format hook would also rewrite
       # Python blocks in Markdown.
@@ -53,7 +53,7 @@ repos:
   # requirements-ci-constraints.txt so the hooks run the same versions as CI.
   # The immutable revs are the commits to which those reviewed tags resolve.
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 2834ec6639549dd6796205c8f011dedcd587288b # v2.4.0
+    rev: ad26ebfa797fcb9b8f83275937c1c1d6e126719c # v2.4.1
     hooks:
       - id: mypy
         files: ^(shadowscan|tools)/

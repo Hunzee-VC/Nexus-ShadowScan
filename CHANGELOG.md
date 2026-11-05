@@ -20,6 +20,23 @@ explain operator migrations. Earlier per-change entries are preserved in the
   0.1.3 and 0.1.4 keep the name their attestations carry:
   verify them with `--repo aisecnomad/Nexus-ShadowScan`.
 
+- A YAML file the configuration loader cannot read is MCP configuration by
+  its keys (those read before the failure, and a key-shaped server table
+  spelling in the rest), not by any mention of `mcp`: a Spring Boot
+  `application.yml` with a stray properties line, which has left every scan
+  of `spring-projects/spring-ai-examples` incomplete since 0.1.3, is ordinary
+  configuration again, with the structured-check warning and the same
+  findings; one whose unreadable part spells a server table still fails
+  closed.
+
+- The 2026-11-03/04 Dependabot security-update failures on the benchmark
+  manifest removed in #281 are recorded in the alert triage page, with the
+  dismissal to apply and the rule that an alert on a manifest absent from
+  `main` is dismissed rather than configured away; the rollout guide explains
+  how to review a Dependabot base-image digest, the CI guide lists the
+  hand-pinned Trivy and Semgrep scanners, and the workflow inventory no longer
+  says Scorecard starts on ruleset changes.
+
 - Operator-trusted SymBiote AgentBOM 0.1 documents load as inventory with
   strict structural validation and literal subject bindings. Complete Kubernetes
   identities reconcile with the shipped connector; dependency endpoints, purls
