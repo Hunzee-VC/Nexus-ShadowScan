@@ -508,7 +508,13 @@ jobs:
           ruff format --check tests tools benchmarks
           MYPYPATH=.. mypy tools benchmarks
           git ls-files -z | xargs -0 python tools/check_secrets.py
-          python -m pytest -q -n auto --dist worksteal
+          # --capture=sys: the pinned companion's
+          # test_realworld_nonroot_setup_uses_private_paths_and_preserves_umask
+          # stubs os.fstat for its whole body, and pytest 9.2's fd-level capture
+          # calls os.fstat when a test's call phase ends. Sys-level capture keeps
+          # every companion test running and asserting; drop the flag once the
+          # pin moves past the companion's fix (docs/operations/ci.md).
+          python -m pytest -q -n auto --dist worksteal --capture=sys
 
   gate:
     name: CI gate

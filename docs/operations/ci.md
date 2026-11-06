@@ -176,3 +176,22 @@ digest review
 ([production guide](../production.md#reviewing-a-dependabot-base-image-digest))
 and refresh each version and digest together, as the comment beside each pin
 says.
+
+## Companion test capture mode
+
+CI's `benchmark-tests` job runs the pinned Nexus ShadowBench companion's own
+suite with `--capture=sys`. At the current pin, the companion test
+`tests/unit/test_benchmark_realworld_review2.py::test_realworld_nonroot_setup_uses_private_paths_and_preserves_umask`
+replaces `os.fstat` with a stub that has no `st_size` for its whole body.
+pytest 9.2's default file-descriptor capture calls `os.fstat` on its capture
+file when a test's call phase ends, so under fd capture that test fails after
+its assertions pass. Sys-level capture reads from an in-memory buffer and makes
+no such call. Every companion test still runs and asserts. What changes is where
+output written straight to a file descriptor goes: in the job's pytest-xdist
+workers, output to file descriptor 2 reaches the job log and output to file
+descriptor 1 is discarded (it points at `/dev/null` there), instead of
+appearing in a failing test's report. A test that asks for `capfd` still
+captures at file-descriptor level. The companion fix scopes the stub to the call under
+test. Once the `benchmark-suite` pin moves to a companion commit that carries
+it, drop the flag. Running the companion suite locally under pytest 9.2 needs
+the same flag until then.
