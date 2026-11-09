@@ -11,7 +11,7 @@ For installation and the first scan, start with the [quick start](../getting-sta
   <a href="https://github.com/Hunzee-VC/Nexus-ShadowScan/actions/workflows/ci.yml"><img src="https://github.com/Hunzee-VC/Nexus-ShadowScan/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://github.com/Hunzee-VC/Nexus-ShadowScan/actions/workflows/codeql.yml"><img src="https://github.com/Hunzee-VC/Nexus-ShadowScan/actions/workflows/codeql.yml/badge.svg" alt="CodeQL"></a>
   <a href="https://scorecard.dev/viewer/?uri=github.com/Hunzee-VC/Nexus-ShadowScan"><img src="https://api.scorecard.dev/projects/github.com/Hunzee-VC/Nexus-ShadowScan/badge" alt="OpenSSF Scorecard"></a>
-  <a href="https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License: Apache-2.0"></a>
+  <a href="https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-blue.svg" alt="License: Apache-2.0 OR MIT"></a>
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.11%E2%80%933.14-blue.svg" alt="Python 3.11-3.14"></a>
   <a href="https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/CONTRIBUTING.md#quality-gates"><img src="https://img.shields.io/badge/coverage-%E2%89%A580%25-brightgreen.svg" alt="Coverage >= 80%"></a>
   <a href="https://github.com/Hunzee-VC/Nexus-ShadowScan/tree/main/docs"><img src="https://img.shields.io/badge/docs-source-blue.svg" alt="Docs"></a>
@@ -810,4 +810,4 @@ See [SECURITY.md](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/SECURI
 
 ## License
 
-Apache-2.0. See [LICENSE](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/LICENSE) and [NOTICE](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/NOTICE).
+Licensed under either Apache-2.0 or MIT, at your choice. See [LICENSE](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/LICENSE) (Apache-2.0), [LICENSE-MIT](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/LICENSE-MIT) (MIT), and [NOTICE](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/NOTICE).
