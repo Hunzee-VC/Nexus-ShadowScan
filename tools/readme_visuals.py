@@ -201,14 +201,16 @@ def render_banner() -> str:
             for index, line in enumerate(textwrap.wrap(sentence, 68, break_on_hyphens=False))
         ),
         f'<g font-family="{MONO}" font-size="20">',
-        f"  {_rect(90, 436, 160, 48, '#162544', '#2b4270', rx=24)}",
-        f"  {_t(170, 466, _license(), size=20, fill='#c9d4ea', text_anchor='middle')}",
-        f"  {_rect(268, 436, 380, 48, '#2a2210', '#6b4e12', rx=24)}",
-        f"  {_t(458, 466, f'pip install {_package_name()}', size=20, fill='#f4b942', text_anchor='middle')}",
-        f"  {_rect(666, 436, 240, 48, '#0d2818', '#1a5c32', rx=24)}",
-        f"  {_t(786, 466, f'{n_connectors} connectors', size=20, fill='#3ddc97', text_anchor='middle')}",
-        f"  {_rect(924, 436, 240, 48, '#1a1028', '#3d2268', rx=24)}",
-        f"  {_t(1044, 466, f'{n_sigs} signatures', size=20, fill='#a78bfa', text_anchor='middle')}",
+        # The licence pill is wider than the others: "Apache-2.0 OR MIT" is
+        # 17 characters, and the following pills shift right to make room.
+        f"  {_rect(90, 436, 230, 48, '#162544', '#2b4270', rx=24)}",
+        f"  {_t(205, 466, _license(), size=20, fill='#c9d4ea', text_anchor='middle')}",
+        f"  {_rect(338, 436, 380, 48, '#2a2210', '#6b4e12', rx=24)}",
+        f"  {_t(528, 466, f'pip install {_package_name()}', size=20, fill='#f4b942', text_anchor='middle')}",
+        f"  {_rect(736, 436, 240, 48, '#0d2818', '#1a5c32', rx=24)}",
+        f"  {_t(856, 466, f'{n_connectors} connectors', size=20, fill='#3ddc97', text_anchor='middle')}",
+        f"  {_rect(994, 436, 240, 48, '#1a1028', '#3d2268', rx=24)}",
+        f"  {_t(1114, 466, f'{n_sigs} signatures', size=20, fill='#a78bfa', text_anchor='middle')}",
         "</g>",
     ]
     defs = (
