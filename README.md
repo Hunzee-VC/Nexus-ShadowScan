@@ -8,7 +8,7 @@
   <a href="https://scorecard.dev/viewer/?uri=github.com/Hunzee-VC/Nexus-ShadowScan"><img src="https://api.scorecard.dev/projects/github.com/Hunzee-VC/Nexus-ShadowScan/badge" alt="OpenSSF Scorecard"></a>
   <a href="https://pypi.org/project/NexusShadowScan/"><img src="https://img.shields.io/pypi/v/NexusShadowScan.svg" alt="PyPI: NexusShadowScan"></a>
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.11%E2%80%933.14-blue.svg" alt="Python 3.11-3.14"></a>
-  <a href="https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License: Apache-2.0"></a>
+  <a href="https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0%20OR%20MIT-blue.svg" alt="License: Apache-2.0 OR MIT"></a>
 </p>
 
 <p align="center"><strong>Discover evidence of shadow AI agents across your organization and reconcile it against your inventory of approved agents.</strong></p>
@@ -346,4 +346,4 @@ credentials, personal data, and sensitive information even after redaction.
 
 ## License
 
-Apache-2.0. See [LICENSE](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/LICENSE) and [NOTICE](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/NOTICE).
+Licensed under either Apache-2.0 or MIT, at your choice. See [LICENSE](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/LICENSE) (Apache-2.0), [LICENSE-MIT](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/LICENSE-MIT) (MIT), and [NOTICE](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/NOTICE).

@@ -434,7 +434,7 @@ in public issues.
 ## Developer Certificate of Origin
 
 By contributing to this project, you certify that you have the right to submit
-the work under the Apache-2.0 license and that you agree to the
+the work under either the Apache-2.0 or the MIT license and that you agree to the
 [Developer Certificate of Origin](https://developercertificate.org/) (DCO).
 
 You can sign off your commits with `git commit -s`, which adds a
@@ -466,5 +466,5 @@ A GitHub-signed squash is not a guaranteed substitute for signed PR history.
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the
-Apache-2.0 license.
+By contributing, you agree that your contributions will be licensed under
+either the Apache-2.0 or the MIT license, at the licensee's choice.
