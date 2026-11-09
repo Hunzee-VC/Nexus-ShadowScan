@@ -36,6 +36,7 @@ def _sdist_files() -> dict[str, bytes]:
         "pyproject.toml": b'[project]\nname = "NexusShadowScan"\n',
         "README.md": b"# Nexus ShadowScan\n",
         "LICENSE": b"Apache License\n",
+        "LICENSE-MIT": b"MIT License\n",
         "NOTICE": b"Nexus ShadowScan\n",
         "setup.cfg": b"[egg_info]\n",
         **PACKAGE,
@@ -48,6 +49,7 @@ def _wheel_files() -> dict[str, bytes]:
         f"{DIST_INFO}/METADATA": METADATA,
         f"{DIST_INFO}/WHEEL": WHEEL,
         f"{DIST_INFO}/licenses/LICENSE": b"Apache License\n",
+        f"{DIST_INFO}/licenses/LICENSE-MIT": b"MIT License\n",
         f"{DIST_INFO}/licenses/NOTICE": b"Nexus ShadowScan\n",
         f"{DIST_INFO}/RECORD": b"",
     }
@@ -206,7 +208,7 @@ def _without(name: str) -> dict[str, bytes]:
     return files
 
 
-@pytest.mark.parametrize("name", ["PKG-INFO", "pyproject.toml", "README.md", "LICENSE", "NOTICE"])
+@pytest.mark.parametrize("name", ["PKG-INFO", "pyproject.toml", "README.md", "LICENSE", "LICENSE-MIT", "NOTICE"])
 def test_sdist_must_carry_build_inputs_and_licence_notices(tmp_path: Path, name: str) -> None:
     with pytest.raises(ValueError, match=f"sdist is missing {name}"):
         verify_distributions(_pair(tmp_path / "dist", sdist=_without(name)))
@@ -250,6 +252,9 @@ def test_wheel_must_not_declare_extra_tags(tmp_path: Path) -> None:
         pytest.param({"shadowscan/extra.py": b"x = 1\n"}, "different package files", id="wheel-only-module"),
         pytest.param({"other/module.py": b"x = 1\n"}, "outside shadowscan/", id="foreign-top-level"),
         pytest.param({f"{DIST_INFO}/licenses/NOTICE": b"other\n"}, "NOTICE differs", id="changed-notice"),
+        pytest.param(
+            {f"{DIST_INFO}/licenses/LICENSE-MIT": b"other\n"}, "LICENSE-MIT differs", id="changed-license-mit"
+        ),
         pytest.param(
             {f"{DIST_INFO}/METADATA": METADATA + b"changed description\n"},
             "METADATA differs from sdist PKG-INFO",

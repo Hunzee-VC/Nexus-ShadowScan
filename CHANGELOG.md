@@ -8,6 +8,7 @@ explain operator migrations. Earlier per-change entries are preserved in the
 
 ## Unreleased
 
+- Dual-license the project under Apache-2.0 OR MIT, at the licensee's choice: add `LICENSE-MIT` (Copyright 2026 Nexus ShadowScan contributors), set `license = "Apache-2.0 OR MIT"` in `pyproject.toml`, and update the README, product guide, contributing guide, citation, OpenSSF evidence and release-distribution checks to match.
 - The development toolchain moves to pytest 9.2.0 (#347). The repository's
   own pytest 9.2 fixes landed earlier (the redaction-namespace descriptors and
   the scoped `os.fstat` stub); CI's `benchmark-tests` job now runs the pinned
