@@ -132,11 +132,70 @@ _CellSpans = tuple[tuple[int, int], ...]
 # What opens a comment in the languages the lexer masks; every other masked
 # span is a string literal, which the model-identifier pass reads.
 _COMMENT_OPENERS = ("#", "//", "/*", "<!--", "=begin")
+_NOT_LINE_BREAK = re.compile(r"[^\n]")
 
 
 def _comment_spans(text: str, ignored: Sequence[tuple[int, int]]) -> list[tuple[int, int]]:
     """The comment spans among the lexer's ``ignored`` spans of ``text`` (strings are kept)."""
     return [(start, end) for start, end in ignored if text.startswith(_COMMENT_OPENERS, start)]
+
+
+def _python_docstring_spans(text: str, ignored: Sequence[tuple[int, int]]) -> list[tuple[int, int]]:
+    """The strings among the lexer's ``ignored`` spans of Python ``text`` that are a whole statement.
+
+    A string that is a statement of its own is a docstring or a block of prose left in the code: it
+    documents, and nothing reads it. Only a string outside every bracket that fills its lines counts,
+    so an argument, an element or a continued value written on a line of its own stays code. Unbalanced
+    brackets leave every later string as code.
+    """
+    spans: list[tuple[int, int]] = []
+    depth = previous = 0
+    for start, end in ignored:
+        code = text[previous:start]
+        depth += sum(map(code.count, "([{")) - sum(map(code.count, ")]}"))
+        previous = end
+        if not depth and not text.startswith(_COMMENT_OPENERS, start) and _fills_its_lines(text, start, end):
+            spans.append((start, end))
+    return spans
+
+
+def _fills_its_lines(text: str, start: int, end: int) -> bool:
+    """Whether ``text[start:end]`` begins a logical line and only a comment follows it there."""
+    line_start = text.rfind("\n", 0, start) + 1
+    line_end = text.find("\n", end)
+    after = text[end : len(text) if line_end < 0 else line_end].strip()
+    return (
+        not text[line_start:start].strip()
+        and (not after or after.startswith("#"))
+        and not text[:line_start].rstrip("\r\n").endswith("\\")
+    )
+
+
+def _prose_spans(
+    text: str, ignored: Sequence[tuple[int, int]], language: str | None
+) -> list[tuple[int, int]]:
+    """The comments and, in Python, the docstrings among the lexer's ``ignored`` spans of ``text``.
+
+    Prose about the code names hosts, variables and models the code may never use: a note that a
+    service "must never call api.openai.com" is not a call. String literals the code reads are kept.
+    """
+    spans = _comment_spans(text, ignored)
+    if language == "python":
+        spans = sorted({*spans, *_python_docstring_spans(text, ignored)})
+    return spans
+
+
+def _without_spans(text: str, spans: Sequence[tuple[int, int]]) -> str:
+    """Blank ``spans`` of ``text``, preserving character offsets and source lines."""
+    if not spans:
+        return text
+    parts: list[str] = []
+    previous = 0
+    for start, end in spans:
+        parts.extend((text[previous:start], _NOT_LINE_BREAK.sub(" ", text[start:end])))
+        previous = end
+    parts.append(text[previous:])
+    return "".join(parts)
 
 
 def _strip_comment(text: str) -> str:

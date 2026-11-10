@@ -8,6 +8,15 @@ explain operator migrations. Earlier per-change entries are preserved in the
 
 ## Unreleased
 
+- Comments and Python docstrings in source files are no longer evidence of
+  a host, an environment-variable name or a model identifier. Two comment
+  lines saying a service must never call `api.openai.com` and that
+  `OPENAI_API_KEY` is blocked produced a 0.99-confidence "LLM usage: OpenAI,
+  Anthropic" finding for a file that calls neither. String literals the code
+  reads count as before, so a provider table in source is still usage
+  evidence. Findings that rested on such prose alone are absent from the next
+  report. Engineering log: "Prose in source files is not usage evidence".
+
 - The development toolchain moves to pytest 9.2.0 (#347). The repository's
   own pytest 9.2 fixes landed earlier (the redaction-namespace descriptors and
   the scoped `os.fstat` stub); CI's `benchmark-tests` job now runs the pinned

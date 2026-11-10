@@ -281,7 +281,10 @@ October 8 cases cover import-bound Go agent constructors, .NET tool definition
 versus invocation, and Python comprehension reachability. October 9 cases cover
 guarded optional Python imports: a passing or exiting `ImportError` handler,
 alternative import paths of one class, and a local fallback class that keeps
-the construction uncertain. These authored cases
+the construction uncertain. November 10 cases cover provider hosts, key
+variables and a model named only in Python comments, Python docstrings and Go
+comments, and a raw HTTP call that keeps its finding beside such prose. These
+authored cases
 are regression evidence, not new independent annotation.
 It was written after observing
 the defects and is not a fresh holdout. The existing independent corpus and its

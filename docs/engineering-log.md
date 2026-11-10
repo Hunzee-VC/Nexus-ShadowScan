@@ -13,6 +13,64 @@ Counts and figures quoted in an entry are those of its date.
 
 ## Unreleased
 
+### Prose in source files is not usage evidence (November 10)
+
+- **Defect.** In a source file the code connector matched signature hosts and
+  environment-variable names over the whole text, comments included. A Python
+  file whose only mention of a provider was two comment lines ("This service
+  must never call api.openai.com or api.anthropic.com" and "OPENAI_API_KEY and
+  ANTHROPIC_API_KEY are blocked at the proxy") produced one "LLM usage: OpenAI,
+  Anthropic" finding at confidence 0.99; the same two lines as Go comments did
+  too. A domain signal weighs up to 0.9 wherever it is found, and two
+  independent ones reach 0.99 through the noisy-OR. Code patterns, imports and
+  model identifiers already skipped what the lexer masks; these two signal
+  types did not.
+- **Change.** `_match_source` records a lexed file's prose spans
+  (`_SourceFile.prose`): the comments among the lexer's ignored spans and, in
+  Python, the string literals that are a whole statement (a module, class or
+  function docstring, or a string left as a statement). `_scan_content` blanks
+  those spans, keeping offsets and line breaks, before it matches environment
+  variables and hosts, and the model-identifier pass skips them as it skipped
+  comments. A Python string counts as a statement only outside every bracket,
+  when nothing but whitespace precedes it on its line, nothing but a comment
+  follows it there and the previous line does not end in a backslash. An
+  argument, a list element or a dictionary value written on a line of its own
+  therefore stays code, and so does every string after unbalanced brackets.
+- **Behavior that changes with it.** A host named only in a source comment
+  was a weak hint: `# weights: https://huggingface.co/...` beside an OpenAI
+  import listed `provider.huggingface` under `potential_providers`. It is now
+  not read, so that entry disappears; the same link in a string still lists
+  it. Three existing tests placed their host in a comment and now place it in
+  the code of the same line: the weak-mention test in
+  `test_code_filesystem_precision.py` and two netrc excerpt cases in
+  `test_credential_file_redaction.py`, which still require the comment's text
+  in the reported excerpt and the password in no report format.
+- **Unchanged.** String literals the code reads count as before: a host in an
+  assignment, a call argument or a table. Scanning the `shadowscan` package
+  itself still yields one high-risk "LLM usage" finding, now from 81 evidence
+  items and 14 providers instead of 117 and 16, because its catalogs are
+  Python tables of hosts, variable names and model identifiers. A provider
+  table in a gateway is real usage and reads the same, so telling the two
+  apart is a labelling decision, not a lexical one; `catalogs.py` keeps
+  "source code and manifests are never catalogs". Documentation strings of
+  other languages that are string literals, such as Elixir's `@moduledoc`,
+  are not treated as prose. Configuration files are matched as before.
+- **Not changed, for the record.** The same review noted that the examples in
+  `openai/swarm` are not reported as agents, because `from swarm import Agent`
+  resolves to the repository's own `swarm` package. That is the local-module
+  rule working as tested: nothing in the checkout distinguishes OpenAI's
+  package from an unrelated one of that name, and the signature already
+  refuses the bare PyPI name for that reason.
+- **Evidence.** `tests/unit/test_source_prose_evidence.py` covers the four
+  inputs above end to end, a raw HTTP call that keeps its finding and its code
+  line numbers beside a comment and a docstring, and the statement rule on
+  eight strings the code reads. `review_corpus.json` gains three negatives and
+  one positive. The line count of `file_scan.py` is unchanged at its ratchet
+  value. This was developed where the pinned dependencies could not be
+  installed: the suite and the corpora ran against stand-ins for `regex` and
+  `rich`, with the same failing set as `main` there, and the pull request's CI
+  run is the first run under the locked environment.
+
 ### pytest 9.2.0 and the companion suite's capture mode (November 5)
 
 Dependabot's #347 moves pytest from 9.1.1 to 9.2.0. This repository's own
