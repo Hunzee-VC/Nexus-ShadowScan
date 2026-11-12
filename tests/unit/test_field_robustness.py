@@ -74,9 +74,9 @@ def test_block_comments_keep_line_numbers():
 
 def test_lenient_json_is_linear_on_large_documents():
     body = "{\n" + "".join(f'  "k{i}": "v // {i}", // c\n' for i in range(50_000)) + '  "end": 0,\n}\n'
-    started = time.perf_counter()
+    started = time.process_time()
     assert load_json_lenient(body)["k7"] == "v // 7"
-    assert time.perf_counter() - started < 5
+    assert time.process_time() - started < 5
 
 
 @pytest.mark.parametrize(

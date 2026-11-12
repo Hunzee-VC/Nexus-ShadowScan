@@ -101,10 +101,10 @@ def test_sexagesimal_integer_cannot_cost_quadratic_time():
     # YAML 1.1 builds "1:1:1:..." by repeated big-integer multiplication: 80 KB takes about
     # 0.5 s and the cost quadruples per doubling, so unbounded this 400 KB scalar takes ~10 s.
     hostile = "v: " + ":".join(["1"] * 200_000)
-    started = time.perf_counter()
+    started = time.process_time()
     with pytest.raises(YAMLResourceLimitError, match="number length limit"):
         bounded_safe_load(hostile)
-    assert time.perf_counter() - started < 2.0
+    assert time.process_time() - started < 2.0
     # An explicit tag takes the same path, and the message never repeats the value.
     with pytest.raises(YAMLResourceLimitError) as excinfo:
         bounded_safe_load("v: !!int " + "7" * 20_000)

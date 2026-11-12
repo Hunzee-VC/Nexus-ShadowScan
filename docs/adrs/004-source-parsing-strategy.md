@@ -82,3 +82,9 @@ and deadline enforcement equivalent to today's budgets.
 - The complexity of `source_ranges.py` stays until B is adopted.
 - The development lock grows by the tree-sitter wheels, and the differential
   test needs triage whenever a grammar and a lexer legitimately disagree.
+
+## Status (2026-11-12)
+
+Still **Proposed**. No decision (adopt / defer / reject) has been recorded
+since the 2026-10-01 proposal, including after the field-scan evidence it
+cites. This note records the status only; it is not a decision.

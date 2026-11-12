@@ -199,9 +199,15 @@ Run `shadowscan --help` or `shadowscan <command> --help` for the installed versi
 | Gateway logs | `shadowscan gateway access.log litellm-spend.jsonl` |
 | JWTs: human, service or agent | `shadowscan jwt --file tokens.txt --jwks-url https://idp.example.com/jwks.json` |
 | Every connector in a configuration | `shadowscan scan -c shadowscan.yaml` |
+| Run one connector ad-hoc | `shadowscan run cloud.aws --set regions=us-east-1` |
 | Compare JSON reports | `shadowscan diff baseline.json current.json` |
+| Combine reports from several scans | `shadowscan merge team-a.json team-b.json -o fleet.json` |
 | Browse a JSON report | `shadowscan triage report.json` |
 | Fleet dashboard | `shadowscan dashboard report.json -o dashboard.html` |
+| Findings per governance control | `shadowscan controls report.json` |
+| Validate the sanctioned inventory | `shadowscan inventory check agent-card.yaml` |
+| Snapshot an MCP registry | `shadowscan mcp-registry snapshot -o mcp-snapshot.json` |
+| Inspect detection signatures | `shadowscan signatures list` |
 | Available connectors | `shadowscan connectors` |
 
 Exit codes:

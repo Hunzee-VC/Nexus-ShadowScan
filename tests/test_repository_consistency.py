@@ -1426,6 +1426,8 @@ def test_docs_toolchain_is_hash_locked_everywhere_it_is_installed() -> None:
     locked = {name.lower(): version for name, version in pins}
     for requirement in _pyproject()["project"]["optional-dependencies"]["docs"]:
         name, _, floor = requirement.partition(">=")
+        # A "<next-major" cap (",<10") is not part of the floor the lock pins.
+        floor = floor.split(",")[0]
         # The lock pins the distribution; an extra ("mkdocstrings[python]")
         # names its handler, locked under its own name.
         name = name.partition("[")[0]
