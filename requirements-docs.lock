@@ -8,7 +8,8 @@
 # platformdirs was aligned to the reviewed CI pin and its published artifact
 # hashes on 2026-10-14 (4.13.0 on 2026-10-15; 4.13.3 on 2026-10-19; 4.13.4 on
 # 2026-10-21; 4.13.5 on 2026-10-26; 4.14.0 on 2026-11-04; 4.14.3 on
-# 2026-11-05) so the combined development install remains resolvable.
+# 2026-11-05; 4.14.5 on 2026-11-12) so the combined development install
+# remains resolvable.
 #
 # Install with --require-hashes --only-binary=:all: so the docs build never
 # resolves from the live index on a version pin alone. Dependabot does not
@@ -351,9 +352,9 @@ paginate==0.5.7 \
 pathspec==1.1.1 \
     --hash=sha256:17db5ecd524104a120e173814c90367a96a98d07c45b2e10c2f3919fff91bf5a \
     --hash=sha256:a00ce642f577bf7f473932318056212bc4f8bfdf53128c78bbd5af0b9b20b189
-platformdirs==4.14.3 \
-    --hash=sha256:021add1ab113483edbcd4694f5fbb2d688b893ea30d35e1155bb371cf4be0be8 \
-    --hash=sha256:cba2d05fe5e18b26b1fa6f376b8e6234c012abe1f8696c486fface7d0054e931
+platformdirs==4.14.5 \
+    --hash=sha256:32e9921db7385aa8169bee4fe9501923e5715ba9fb7ea3b9c69b0d8e0639f7a1 \
+    --hash=sha256:8e778c6fa421516f4d3369449f8df3b0e1b72c0e0005fe88e3ec772d0a14e750
 pygments==2.21.0 \
     --hash=sha256:2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9 \
     --hash=sha256:610ca751c9bc2492b38eb9a38a7fbc93edbbb2d7182edaf34e66ae493dee5c8c
