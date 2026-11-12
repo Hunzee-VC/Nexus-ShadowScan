@@ -222,9 +222,9 @@ def test_many_empty_tool_constructions_keep_bounded_linear_identity_work(monkeyp
     names = named_construction_spans(text)
     assert len(names) == 500
     regions = {}
-    started = time.monotonic()
+    started = time.process_time()
     assert named_construction_spans(text, verified_spans=set(names), tool_regions=regions) == names
-    assert time.monotonic() - started < 3
+    assert time.process_time() - started < 3
     assert regions == dict.fromkeys(names, ToolRegions())
 
 

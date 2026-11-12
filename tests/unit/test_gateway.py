@@ -450,12 +450,12 @@ def test_gateway_numeric_helpers_only_yield_finite_numbers():
 
 
 def test_text_line_parsers_are_linear_on_hostile_input():
-    started = time.monotonic()
+    started = time.process_time()
     hostile = "Bearer " + "e" * 200_000 + " status=200"
     assert parse_text_line(hostile) == {"status": "200"}
     unterminated = '1.2.3.4 - - [10/Oct/2000:13:55:36 -0700] "GET ' + "/a" * 100_000
     assert parse_text_line(unterminated) is None
-    assert time.monotonic() - started < 2
+    assert time.process_time() - started < 2
     normal = 'ts=2026-01-01T00:00:00Z method=POST path="/v1/chat/completions" status=200 ua="langchain/0.3"'
     assert parse_text_line(normal) == {
         "ts": "2026-01-01T00:00:00Z",
@@ -625,12 +625,12 @@ def test_unparseable_event_times_are_counted_not_silently_dropped(tmp_path, run_
 
 
 def test_logfmt_quoted_values_are_parsed_in_linear_time():
-    started = time.monotonic()
+    started = time.process_time()
     with pytest.raises(ValueError):
         parse_text_line('a=1 ua="' + 'x\\"' * 40_000)  # unterminated after 120 KB of escapes
     assert parse_text_line('a=1 ua="' + "\\\\" * 60_000 + '"')["ua"] == "\\" * 60_000
     assert len(parse_text_line(" ".join(f"k{i}=v" for i in range(20_000)))) == 20_000
-    assert time.monotonic() - started < 2
+    assert time.process_time() - started < 2
 
 
 def test_gateway_json_fallback_reports_a_corrupt_document_once(index, tmp_path):

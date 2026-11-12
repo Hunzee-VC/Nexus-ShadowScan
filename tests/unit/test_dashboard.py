@@ -1011,14 +1011,18 @@ def _history_directory(directory: Path, reports: int, findings: int) -> None:
 
 def test_history_time_grows_linearly_within_the_documented_budget(tmp_path):
     # docs/operations/dashboard.md documents the budget; SHADOWSCAN_HISTORY_FINDINGS raises the size.
+    # CPU time, not wall time (see tests/perf.py): under a parallel run or coverage tracing the
+    # wall clock measures the machine, not the code, and this test failed at 17.8 s wall against a
+    # 16 s budget on a loaded runner while passing in 8.18 s alone. The linearity assertion is
+    # the load-relative guard; the absolute budget below is now a CPU-time budget.
     count = int(os.environ.get("SHADOWSCAN_HISTORY_FINDINGS", "5000"))
     timings = []
     for size in (count // 4, count):
         directory = tmp_path / f"history-{size}"
         _history_directory(directory, 10, size)
-        started = time.perf_counter()
+        started = time.process_time()
         summary = load_history(directory)
-        timings.append(time.perf_counter() - started)
+        timings.append(time.process_time() - started)
         assert len(summary["pairs"]) == 9 and all(pair["comparable"] for pair in summary["pairs"])
         assert all(pair["counts"] == {"new": 0, "resolved": 0, "changed": 0} for pair in summary["pairs"])
     quarter, elapsed = timings
@@ -1245,11 +1249,11 @@ def _large_result(count: int, monkeypatch: pytest.MonkeyPatch) -> ScanResult:
 
 
 def _render(result: ScanResult) -> tuple[float, dict[str, Any], str, str]:
-    started = time.perf_counter()
+    started = time.process_time()
     inventory = build_inventory(result, name="fleet.json")
     page = render_dashboard(inventory)
     document = render_inventory_json(inventory)
-    return time.perf_counter() - started, inventory, page, document
+    return time.process_time() - started, inventory, page, document
 
 
 def test_a_large_fleet_renders_within_the_documented_budget(monkeypatch):
