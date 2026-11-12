@@ -833,6 +833,31 @@ def test_container_build_is_digest_pinned_hash_locked_and_non_root() -> None:
     assert not _violations(ROOT / ".dockerignore")
 
 
+def test_container_build_carries_every_declared_license_file_and_the_license_expression() -> None:
+    # The image builds its wheel from this context. setuptools silently drops a
+    # license-files entry that is not there, so a file missing from the context
+    # or the build stage's COPY ships a wheel whose License-Expression names a
+    # licence whose text it does not carry.
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
+    patterns = [
+        line.strip()
+        for line in (ROOT / ".dockerignore").read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.startswith("#")
+    ]
+    dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
+    packaging_inputs = re.findall(r"^COPY (?!--)([^\n]+) /opt/shadowscan/$", dockerfile, re.M)
+    assert len(packaging_inputs) == 1, "the build stage copies its packaging inputs in one COPY"
+    copied = packaging_inputs[0].split()
+    assert project["license-files"]
+    for name in project["license-files"]:
+        assert (ROOT / name).is_file(), f"{name} is declared in license-files but missing"
+        assert _build_context_includes(patterns, name), (
+            f".dockerignore leaves {name} out of the build context"
+        )
+        assert name in copied, f"the Dockerfile build stage does not copy {name}"
+    assert f'org.opencontainers.image.licenses="{project["license"]}"' in dockerfile
+
+
 def test_build_context_matcher_follows_docker_pattern_rules() -> None:
     patterns = ["**", "!shadowscan/**/*.py", "!shadowscan/data/**/*.yaml", "shadowscan/data/private/*.yaml"]
     included = {

@@ -8,13 +8,20 @@ explain operator migrations. Earlier per-change entries are preserved in the
 
 ## Unreleased
 
-- Dual-license the project under Apache-2.0 OR MIT, at the licensee's choice: add `LICENSE-MIT` (Copyright 2026 Nexus ShadowScan contributors), set `license = "Apache-2.0 OR MIT"` in `pyproject.toml`, and update the README, product guide, contributing guide, citation, OpenSSF evidence and release-distribution checks to match.
 - The development toolchain moves to pytest 9.2.0 (#347). The repository's
   own pytest 9.2 fixes landed earlier (the redaction-namespace descriptors and
   the scoped `os.fstat` stub); CI's `benchmark-tests` job now runs the pinned
   companion's suite with `--capture=sys`, because one companion test stubs
   `os.fstat` for its whole body and pytest 9.2's fd-level capture calls it. The
   flag goes when the companion pin moves past its fix.
+- Dual-license the project under Apache-2.0 OR MIT, at the licensee's choice:
+  add `LICENSE-MIT` (Copyright 2026 Nexus ShadowScan contributors), set
+  `license = "Apache-2.0 OR MIT"` in `pyproject.toml` (a PEP 639 expression,
+  so the superseded licence classifiers are not declared), and update the
+  README, product guide, contributing guide, citation, `NOTICE`, OpenSSF
+  evidence and release-distribution checks to match. The worker image's build
+  context and build stage now carry `LICENSE-MIT`, and its
+  `org.opencontainers.image.licenses` label reads `Apache-2.0 OR MIT`.
 - The worker image moves both `FROM` lines to the current
   `chainguard/wolfi-base:latest` index
   `sha256:771146c2dfc880902a185f060c3db5571473c46b267edd98c3119c83068dfb61`

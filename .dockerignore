@@ -14,6 +14,7 @@
 !requirements-build.lock
 !README.md
 !LICENSE
+!LICENSE-MIT
 !NOTICE
 !agent-card.yaml
 !shadowscan/**/*.py

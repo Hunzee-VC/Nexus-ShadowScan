@@ -208,7 +208,9 @@ def _without(name: str) -> dict[str, bytes]:
     return files
 
 
-@pytest.mark.parametrize("name", ["PKG-INFO", "pyproject.toml", "README.md", "LICENSE", "LICENSE-MIT", "NOTICE"])
+@pytest.mark.parametrize(
+    "name", ["PKG-INFO", "pyproject.toml", "README.md", "LICENSE", "LICENSE-MIT", "NOTICE"]
+)
 def test_sdist_must_carry_build_inputs_and_licence_notices(tmp_path: Path, name: str) -> None:
     with pytest.raises(ValueError, match=f"sdist is missing {name}"):
         verify_distributions(_pair(tmp_path / "dist", sdist=_without(name)))

@@ -66,6 +66,7 @@ ADVISORY_URL = "https://github.com/Hunzee-VC/Nexus-ShadowScan/security/advisorie
 COMMUNITY_FILES = (
     "README.md",
     "LICENSE",
+    "LICENSE-MIT",
     "NOTICE",
     "CODE_OF_CONDUCT.md",
     "CONTRIBUTING.md",
