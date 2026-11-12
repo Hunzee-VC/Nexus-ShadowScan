@@ -184,13 +184,14 @@ identifiers, so it is as confidential as the reports behind it.
 
 A regression test builds the document and renders both outputs for 20,000
 synthetic findings and for a quarter as many. Four times the findings must
-take less than eight times as long (a step that grew with the square of the
-input would take sixteen), and the full run must stay within
-`30 + 150 × findings / 100,000` seconds, a ceiling generous enough for
+take less than eight times as long in CPU time (`time.process_time()`; see
+`tests/perf.py`) -- a step that grew with the square of the input would take
+sixteen -- and the full run must stay within
+`30 + 150 × findings / 100,000` CPU-seconds, a ceiling generous enough for
 coverage tracing on a shared CI runner. Without coverage tracing, on a
-shared four-CPU machine, 100,000 findings took about 22 seconds (a 3.4 MB
-page and a 170 MB JSON document); most of that is the per-finding sanitizer
-check. Run the full-size case with:
+shared four-CPU machine, 100,000 findings took about 22 seconds of wall time
+(a 3.4 MB page and a 170 MB JSON document); most of that is the per-finding
+sanitizer check. Run the full-size case with:
 
 ```console
 SHADOWSCAN_DASHBOARD_FINDINGS=100000 python -m pytest tests/unit/test_dashboard.py -k budget
@@ -198,9 +199,10 @@ SHADOWSCAN_DASHBOARD_FINDINGS=100000 python -m pytest tests/unit/test_dashboard.
 
 History has its own regression test: ten reports at 5,000 findings and at a
 quarter as many must scale linearly, and the full run must stay within
-`10 + 120 × reports × findings / 1,000,000` seconds. Without coverage
-tracing, on the same machine, 104 weekly reports of 10,000 findings each
-(8.5 MB per report) took about 74 seconds. Raise the test's size with
+`10 + 120 × reports × findings / 1,000,000` CPU-seconds (`time.process_time()`;
+see `tests/perf.py`). Without coverage tracing, on the same machine, 104
+weekly reports of 10,000 findings each (8.5 MB per report) took about 74
+seconds of wall time. Raise the test's size with
 `SHADOWSCAN_HISTORY_FINDINGS`.
 
 The coverage panel and `sources[].coverage` grow with the connector runs the

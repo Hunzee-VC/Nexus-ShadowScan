@@ -520,9 +520,9 @@ def test_glob_front_matter_rewrite_is_linear_in_blank_runs():
         ("list line", f"globs:\n{blanks}x", f"globs:\n{blanks}x"),
     ]
     for label, front, expected in cases:
-        started = time.perf_counter()
+        started = time.process_time()
         fixed = _quote_glob_values(front)
-        elapsed = time.perf_counter() - started
+        elapsed = time.process_time() - started
         # Linear string work takes milliseconds. The backtracking patterns
         # took minutes per line at this size, holding the GIL past the
         # connector deadline, which then discarded every finding.

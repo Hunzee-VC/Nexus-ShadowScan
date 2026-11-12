@@ -643,9 +643,9 @@ def test_text_output_never_echoes_imported_drift_values(tmp_path):
 def test_text_output_of_a_long_title_with_drift_is_not_quadratic(tmp_path):
     title = "a" * 50_000
     before, after = _record(_make(title=title)), _record(_make(title=title, permissions=["x"]))
-    started = time.perf_counter()
+    started = time.process_time()
     result = _diff(tmp_path, _report(before), _report(after), "--fail-on-drift", "capability")
-    elapsed = time.perf_counter() - started
+    elapsed = time.process_time() - started
     assert result.exit_code == 2, result.output
     assert title in "".join(result.output.split())
     assert elapsed < 1.0, elapsed

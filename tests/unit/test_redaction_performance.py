@@ -509,10 +509,10 @@ def test_quadratic_tokenizer_versions_pay_for_each_line_copy(monkeypatch):
     from shadowscan.utils.redaction import SanitizationLimitError
 
     monkeypatch.setattr(redaction_statements, "_TOKEN_COPIES_LINE", True)
-    started = time.perf_counter()
+    started = time.process_time()
     with pytest.raises(SanitizationLimitError):
         sanitize_text("cookie=a, " * 40_000)
-    assert time.perf_counter() - started < 30.0
+    assert time.process_time() - started < 30.0
     assert sanitize_text(f'api_key = "{SECRET}"\nmodel = "x"') == f'api_key = "{REDACTED}"\nmodel = "x"'
 
 

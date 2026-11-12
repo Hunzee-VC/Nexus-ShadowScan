@@ -1614,9 +1614,9 @@ def test_unclosed_escaped_quotes_cost_linear_time_and_keep_other_findings(tmp_pa
     hostile = '{"k": "Mozilla/5.0 ' + '\\"' * 30_000 + "\n"
     write(tmp_path, "settings.json", hostile)
     write(tmp_path, "app.py", "from openai import OpenAI\nclient = OpenAI()\n")
-    started = time.perf_counter()
+    started = time.process_time()
     assert _crawler_ua_text(hostile) == (hostile, "")
     findings, stats = scan(run_connector, tmp_path)
-    assert time.perf_counter() - started < 5
+    assert time.process_time() - started < 5
     assert any("provider.openai" in {e.signature for e in f.evidence} for f in findings)
     assert not stats.errors and not stats.incomplete

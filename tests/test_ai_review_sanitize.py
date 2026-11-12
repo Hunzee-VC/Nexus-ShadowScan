@@ -238,10 +238,10 @@ def test_a_long_blank_run_after_a_key_header_is_scanned_in_linear_time() -> None
     # The blank runs before a footerless key's base64 lines could be split
     # between two quantifiers, which made the scan quadratic in the run's length.
     header = "-----BEGIN " + "PRIVATE KEY-----"
-    started = time.perf_counter()
+    started = time.process_time()
     for blank in (" ", "\t", "\\n "):
         redact(header + "\n" + blank * 40_000 + "!")
-    assert time.perf_counter() - started < 5
+    assert time.process_time() - started < 5
 
 
 def test_workflow_commands_are_neutralized() -> None:
