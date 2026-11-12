@@ -38,6 +38,7 @@ from urllib.parse import unquote
 
 import pytest
 import yaml
+from packaging.licenses import InvalidLicenseExpression, canonicalize_license_expression
 
 from shadowscan.config import ScanConfig
 from shadowscan.connectors import ConnectorContext, builtin_connector_names, get_connector_class
@@ -744,15 +745,24 @@ def test_citation_matches_the_package_metadata() -> None:
     assert citation["url"] == project["urls"]["Documentation"]
 
 
+def _spdx_expression(value: object) -> str | None:
+    """``value`` as a canonical SPDX licence expression, or None for a prose note."""
+    try:
+        return canonicalize_license_expression(str(value))
+    except InvalidLicenseExpression:
+        return None
+
+
 def test_third_party_catalog_licences_are_credited_in_notice() -> None:
     # A catalog drawn from licensed third-party material keeps that licence; the
-    # project's grant does not cover it, so NOTICE must name it. Prose licence
-    # notes (own-words labels, public domain) are not SPDX identifiers.
+    # project's grant does not cover it, so NOTICE must name it. A prose licence
+    # note (own-words labels, public domain) is not an SPDX expression; a compound
+    # expression ("Apache-2.0 WITH LLVM-exception", "CC-BY-SA-4.0 OR MIT") is.
     notice = _read(ROOT / "NOTICE")
     licensed = {
-        path.name: str(licence)
+        path.name: expression
         for path in sorted((ROOT / "shadowscan/mappings/data/frameworks").glob("*.yaml"))
-        if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9.+-]*", str(licence := _load_yaml(path).get("licence", "")))
+        if (expression := _spdx_expression(_load_yaml(path).get("licence", "")))
     }
     assert licensed, "no catalog records an SPDX licence; the MITRE ATLAS and OWASP catalogs do"
     for name, licence in licensed.items():

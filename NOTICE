@@ -25,8 +25,17 @@ Third-party material:
     (https://github.com/GenAI-Security-Project/GenAI-LLM-Top10), licensed
     under CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/).
 
+    The titles reproduced from these catalogs in
+    docs/concepts/mappings-reference.md keep the same licenses.
+
+    The source repository also holds third-party material that the package
+    does not ship, each part recorded with its own license: the evaluation
+    corpora under tools/evaluation/ (THIRD_PARTY_NOTICES.md and
+    independent_licenses/) and the SARIF schema fixture under
+    tests/fixtures/sarif/ (its README.md).
+
 Unless required by applicable law or agreed to in writing, software
 distributed under these licenses is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the license you choose for the specific language governing permissions
-and limitations under that license.
+See the applicable license for the specific language governing permissions
+and limitations under it.

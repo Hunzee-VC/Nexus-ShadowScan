@@ -22,6 +22,8 @@ explain operator migrations. Earlier per-change entries are preserved in the
   evidence and release-distribution checks to match. The worker image's build
   context and build stage now carry `LICENSE-MIT`, and its
   `org.opencontainers.image.licenses` label reads `Apache-2.0 OR MIT`.
+  Third-party material keeps its own licence: the MITRE ATLAS and OWASP
+  mapping catalogs are credited in `NOTICE` and excluded from the grant.
 - The worker image moves both `FROM` lines to the current
   `chainguard/wolfi-base:latest` index
   `sha256:771146c2dfc880902a185f060c3db5571473c46b267edd98c3119c83068dfb61`

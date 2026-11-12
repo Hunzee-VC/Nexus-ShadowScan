@@ -474,6 +474,7 @@ Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
 dual licensed under Apache-2.0 OR MIT, at the licensee's choice, without any
 additional terms or conditions. A change to the third-party material listed in
-`NOTICE` is licensed under that material's own licence instead: Apache-2.0 for
+`NOTICE` is licensed under that material's own licence instead, as `NOTICE`
+records it: for example Apache-2.0 for
 `shadowscan/mappings/data/frameworks/mitre-atlas.yaml` and CC BY-SA 4.0 for
 `owasp-llm.yaml` and `owasp-asi.yaml`.
