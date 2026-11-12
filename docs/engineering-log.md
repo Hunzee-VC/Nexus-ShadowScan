@@ -40,6 +40,19 @@ Counts and figures quoted in an entry are those of its date.
   every other language are unchanged: their comments are still evidence, and
   the model-identifier pass still skips the comment spans the lexer finds by
   text prefix, as on `main`.
+- **Classification only where it can change a result.** Host and variable
+  names are matched in the whole text first, as for any file (`_Prose.evidence`).
+  Only a match on a line where the lexer masked a comment or a string makes the
+  file be classified and matched again without its prose. Blanking only removes
+  matches, so the result is the same as always classifying. The
+  model-identifier pass classifies only once it finds a model stem, and a text
+  with neither `#` nor a quote is never parsed. Classifying every Python file
+  added about a quarter to the analysis of a 160 KB module of 90,000 syntax
+  nodes, and on CI's Python 3.12 runner that took
+  `test_a_module_of_90000_nodes_is_bound` past its 2-second budget. Gated, that
+  module is not classified at all, and the 960 KB files used for timing scan in
+  `main`'s time. Matching hosts and variable names costs a tenth to a fifth of
+  classifying, which is why it runs first.
 - **First version, withdrawn after review.** The November 10 version
   recognized prose by what a lexer span's text starts with (`#`, `//`, `/*`,
   `<!--`, `=begin`) in every lexed language, and Python docstrings by counting
@@ -92,7 +105,9 @@ Counts and figures quoted in an entry are those of its date.
   the Go scope test and the statement rule on eleven strings the code reads,
   f-strings among them. Further tests cover the cases that leave prose unknown
   (a syntax error, a bare carriage return, a NUL, Python 2), the `__doc__` rule,
-  budget charging and stopping, and a 1.1 MB file classified within 5 s.
+  budget charging and stopping, a 1.1 MB file classified within 5 s, and the
+  gate: a file whose matches avoid its prose is matched once and not
+  classified, and one with a match on a masked line is matched again.
   `review_corpus.json` keeps the Python comment and docstring negatives and
   the raw HTTP call positive. It drops the Go negative and gains an f-string
   positive that fails on the first version. The extracted classifier gives

@@ -5,11 +5,12 @@ from __future__ import annotations
 import json
 import time
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
 from shadowscan.connectors.code.source_ranges import noncode_ranges
-from shadowscan.connectors.code.source_text import _prose_spans, _python_prose_spans, _without_spans
+from shadowscan.connectors.code.source_text import _Prose, _prose_spans, _python_prose_spans, _without_spans
 
 OPENAI = "https://api.openai.com/v1/models"
 PY_COMMENTS = (
@@ -334,3 +335,75 @@ def test_a_large_file_is_classified_fast():
     assert time.process_time() - started < 5
     # A docstring and a comment for each handler.
     assert spans is not None and len(spans) == 28_000
+
+
+class _HostIndex:
+    """A stand-in signature index: every line that names api.openai.com is one host match."""
+
+    def __init__(self) -> None:
+        self.texts: list[str] = []
+
+    def match_envs_in_text(self, text: str) -> list[SimpleNamespace]:
+        return []
+
+    def match_domains_in_text(self, text: str, *, skip_line=None, source=False) -> list[SimpleNamespace]:
+        self.texts.append(text)
+        return [
+            SimpleNamespace(line=n) for n, line in enumerate(text.split("\n"), 1) if "api.openai.com" in line
+        ]
+
+
+def _evidence(source: str) -> tuple[list[int], int, int]:
+    """The host lines found in ``source``, how often it was matched and how often classification checked."""
+    checks: list[None] = []
+    ignored, _ = noncode_ranges(source, "python", ".py")
+    prose = _Prose(source, ignored, ".py", False, lambda: checks.append(None))
+    index = _HostIndex()
+    _, hosts, _ = prose.evidence(source, index, None, source=True)  # type: ignore[arg-type]
+    return [host.line for host in hosts], len(index.texts), len(checks)
+
+
+def test_a_file_whose_matches_avoid_its_prose_is_neither_classified_nor_matched_twice():
+    # A large module pays for parsing only when a host or variable name sits on a masked line.
+    assert _evidence("import os\nx = 1  # local only\n") == ([], 1, 0)
+    assert _evidence("api.openai.com.ping()\n# a comment elsewhere\n") == ([1], 1, 0)
+
+
+def test_a_match_on_a_masked_line_is_matched_again_without_the_prose():
+    lines, matched, checks = _evidence("# api.openai.com is blocked\nx = 1\n")
+    assert (lines, matched) == ([], 2) and checks
+    lines, matched, checks = _evidence('URL = "https://api.openai.com"  # api.openai.com\n')
+    assert (lines, matched) == ([1], 2) and checks
+
+
+def test_other_files_are_never_classified():
+    checks: list[None] = []
+    prose = _Prose("# api.openai.com\n", [(0, 16)], ".go", False, lambda: checks.append(None))
+    _, hosts, _ = prose.evidence("# api.openai.com\n", _HostIndex(), None, source=True)  # type: ignore[arg-type]
+    assert [host.line for host in hosts] == [1]
+    assert not checks
+    assert [
+        host.line for host in _Prose().evidence("api.openai.com\n", _HostIndex(), None, source=False)[1]
+    ] == [1]  # type: ignore[arg-type]
+
+
+def test_the_model_pass_classifies_on_first_read_and_only_once():
+    checks: list[None] = []
+    source = "x = 1  # gpt-4o\n"
+    ignored, _ = noncode_ranges(source, "python", ".py")
+    prose = _Prose(source, ignored, ".py", False, lambda: checks.append(None))
+    assert not checks
+    assert list(prose) == [(7, 15)] and len(prose) == 1 and prose[0] == (7, 15)
+    classified = len(checks)
+    assert classified
+    assert list(prose) == [(7, 15)]
+    assert len(checks) == classified
+
+
+def test_text_without_comments_or_quotes_is_not_parsed():
+    def spent() -> None:
+        raise AssertionError("parsed")
+
+    assert (
+        _python_prose_spans("def handler(request):\n    return client.chat(model=request.m)\n", spent) == []
+    )

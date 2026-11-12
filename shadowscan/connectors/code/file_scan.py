@@ -120,9 +120,8 @@ from shadowscan.connectors.code.source_text import (
     _YAML_SUFFIXES,
     _cell_noncode_ranges,
     _CellSpans,
-    _crawler_ua_text,
     _notebook_binder_source,
-    _prose_spans,
+    _Prose,
     _quote_glob_values,
     _quote_plain_values,
     _redacted_source,
@@ -1162,17 +1161,13 @@ class FileScanner:
                 self._scan_model_literals(file, content_text, [], source=False)
         catalog_limits: list[str] = []
         if not is_nonexecutable and not file.is_mcp and not self.triage:
-            variables = self.index.match_envs_in_text(evidence_text := file.without_prose(content_text))
-            for m in variables:
-                self._record_content(file, m, self._lazy_excerpt(file, m.line))
             # Source code is never a rule list: `|| "https://api.openai.com"` continues an expression and
-            # `host, err := ...` unpacks a result. Crawler user-agent values are blanked in place, so
-            # domain_text keeps the original line structure the rule-list filter reads.
+            # `host, err := ...` unpacks a result. A Python file's prose is no evidence (_Prose.evidence).
             skip = None if file.ext in SOURCE_EXTENSIONS else HostLineFilter(content_text)
-            domain_text, ua_text = _crawler_ua_text(evidence_text)
-            for m in self.index.match_domains_in_text(
-                domain_text, skip_line=skip, source=file.ext in SOURCE_EXTENSIONS
-            ):
+            variables, hosts, ua_text = file.prose.evidence(
+                content_text, self.index, skip, source=file.ext in SOURCE_EXTENSIONS
+            )
+            for m in (*variables, *hosts):
                 self._record_content(file, m, self._lazy_excerpt(file, m.line))
             if ua_text:
                 ua_hosts = [str(m.value) for m in self.index.match_domains_in_text(ua_text)]
@@ -1251,7 +1246,7 @@ class FileScanner:
                 f"code.filesystem: {file.rel}: incomplete source lexical analysis",
                 reason="unparsed-input",
             )
-        file.prose, file.blank_prose = _prose_spans(content_text, ignored, ext, ambiguous, _pattern_timeout)
+        file.prose = _Prose(content_text, ignored, ext, ambiguous, _pattern_timeout)
         imports = self.index.match_imports(content_text, lang, ignore_spans=ignored, scan=file.literals)
         for m in imports:
             if lang == "python":

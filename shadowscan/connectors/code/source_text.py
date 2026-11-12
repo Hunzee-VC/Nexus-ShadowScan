@@ -20,7 +20,7 @@ import warnings
 from bisect import bisect_left, bisect_right
 from collections.abc import Callable, Iterator, Sequence
 from itertools import accumulate
-from typing import Any
+from typing import TYPE_CHECKING, Any, overload
 
 import regex
 import yaml
@@ -36,6 +36,9 @@ from shadowscan.utils.safe_yaml import (
     YAMLResourceLimitError,
     strict_bounded_safe_load,
 )
+
+if TYPE_CHECKING:
+    from shadowscan.signatures.matcher import Match, SignatureIndex
 
 # One quoted value, matched from its opening quote; none spans a line break.
 _QUOTED_VALUE = {
@@ -176,6 +179,96 @@ def _prose_spans(
     return _comment_spans(text, ignored), False
 
 
+def _unchecked() -> None:
+    """A budget check that never stops: for spans classified outside a scan."""
+
+
+class _Prose(Sequence[tuple[int, int]]):
+    """A source file's prose spans (:func:`_prose_spans`), classified only when a pass could lose to them.
+
+    As a sequence these are the spans the model-identifier pass skips, classified on first use: that
+    pass reads them only once it finds a model stem in the file. :meth:`evidence` matches variable
+    names and hosts in the whole text, as for any other file, and classifies only when a match lies
+    on a line where the lexer masked a comment or a string. Blanking prose only removes matches, so
+    the result is the same, and a large module that names no host in its prose does not pay for
+    parsing and tokenizing it.
+    """
+
+    __slots__ = ("_ambiguous", "_check", "_ext", "_ignored", "_resolved", "_text")
+
+    def __init__(
+        self,
+        text: str = "",
+        ignored: Sequence[tuple[int, int]] = (),
+        ext: str = "",
+        ambiguous: bool = True,
+        check: Callable[[], object] = _unchecked,
+    ) -> None:
+        self._text, self._ignored, self._ext, self._ambiguous, self._check = (
+            text,
+            ignored,
+            ext,
+            ambiguous,
+            check,
+        )
+        self._resolved: tuple[list[tuple[int, int]], bool] | None = None
+
+    def resolve(self) -> tuple[list[tuple[int, int]], bool]:
+        """The prose spans and whether they are exact, classified once."""
+        if self._resolved is None:
+            self._resolved = _prose_spans(self._text, self._ignored, self._ext, self._ambiguous, self._check)
+        return self._resolved
+
+    @overload
+    def __getitem__(self, index: int) -> tuple[int, int]: ...
+
+    @overload
+    def __getitem__(self, index: slice) -> Sequence[tuple[int, int]]: ...
+
+    def __getitem__(self, index: int | slice) -> tuple[int, int] | Sequence[tuple[int, int]]:
+        return self.resolve()[0][index]
+
+    def __len__(self) -> int:
+        return len(self.resolve()[0])
+
+    def evidence(
+        self, text: str, index: SignatureIndex, skip_line: Callable[[str], bool] | None, *, source: bool
+    ) -> tuple[list[Match], list[Match], str]:
+        """The variable-name and host matches of ``text`` outside exact prose, and its user-agent text."""
+        found = _variables_and_hosts(text, index, skip_line, source)
+        if text is not self._text or self._ext != ".py" or self._ambiguous or not self._masks(found):
+            return found
+        spans, exact = self.resolve()
+        if not exact or not spans:
+            return found
+        return _variables_and_hosts(_without_spans(text, spans), index, skip_line, source)
+
+    def _masks(self, found: tuple[list[Match], list[Match], str]) -> bool:
+        """Whether a match lies on a line where the lexer masked a comment or a string."""
+        matches = [*found[0], *found[1]]
+        if not matches:
+            return False
+        newlines = [match.start() for match in _LINE_FEED.finditer(self._text)]
+        masked: set[int] = set()
+        for start, end in self._ignored:
+            first, last = bisect_right(newlines, start), bisect_right(newlines, max(start, end - 1))
+            masked.update(range(first + 1, last + 2))
+        return any(match.line is None or match.line in masked for match in matches)
+
+
+def _variables_and_hosts(
+    text: str, index: SignatureIndex, skip_line: Callable[[str], bool] | None, source: bool
+) -> tuple[list[Match], list[Match], str]:
+    """The variable-name and host matches of ``text``, and the crawler user-agent text set apart from it.
+
+    Crawler user-agent values are blanked in place, so the host text keeps the original line
+    structure the rule-list filter reads.
+    """
+    host_text, ua_text = _crawler_ua_text(text)
+    hosts = index.match_domains_in_text(host_text, skip_line=skip_line, source=source)
+    return index.match_envs_in_text(text), hosts, ua_text
+
+
 def _python_prose_spans(text: str, check: Callable[[], object]) -> list[tuple[int, int]] | None:
     """The comment and docstring spans of Python ``text``; None when they cannot be known exactly.
 
@@ -186,8 +279,11 @@ def _python_prose_spans(text: str, check: Callable[[], object]) -> list[tuple[in
     prose. Nothing is known when the text does not parse or tokenize, when a span found does not
     begin and end the way its kind must, or when the text has a bare carriage return, which Python
     reads as a line break and this mapping does not. The work is linear in the text and is charged to
-    the input's execution budget through ``check``, which raises once the budget is spent.
+    the input's execution budget through ``check``, which raises once the budget is spent. A text
+    with neither a ``#`` nor a quote has no prose, and is neither parsed nor tokenized.
     """
+    if "#" not in text and '"' not in text and "'" not in text:
+        return []
     if "\r" in text and "\r" in text.replace("\r\n", ""):
         return None
     check()

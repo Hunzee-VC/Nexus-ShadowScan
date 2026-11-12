@@ -31,7 +31,7 @@ from shadowscan.connectors.code.instruction_content import ContentHit
 from shadowscan.connectors.code.manifests import Dep
 from shadowscan.connectors.code.mcp_config import mcp_server_holders
 from shadowscan.connectors.code.skill_audit import InstructionAudit
-from shadowscan.connectors.code.source_text import _YAML_SUFFIXES, _CellSpans, _without_spans
+from shadowscan.connectors.code.source_text import _YAML_SUFFIXES, _CellSpans, _Prose
 from shadowscan.models import Finding, Kind
 from shadowscan.signatures import Match, Signature
 from shadowscan.signatures.loader import builtin_signature_dir
@@ -136,11 +136,9 @@ class _SourceFile:
     # The text and context excerpts are cut from; created with the file (see _ExcerptSource).
     excerpts: _ExcerptSource = field(default_factory=lambda: _ExcerptSource("", Path(), None, None))
     literals: LiteralScan | None = None  # the signature literals found in ``text``, scanned once
-    # Prose spans of a lexed source file, which the model-identifier pass skips: its comments and,
-    # in Python, its docstrings. Only spans known by token kind and syntax (``blank_prose``) may also
-    # hide hosts and variable names; the lexer's other comment spans are found by text prefix.
-    prose: list[tuple[int, int]] = field(default_factory=list)
-    blank_prose: bool = False
+    # A lexed source file's prose, its comments and, in Python, its docstrings, classified on first
+    # use (``_Prose``); any other file has none.
+    prose: _Prose = field(default_factory=_Prose)
     card_kind: str | None = None  # agent manifest kind suggested by the path
     card_valid: bool = False
     card_incomplete: bool = False  # a recognizable card that misses required declarations
@@ -156,10 +154,6 @@ class _SourceFile:
     reexport_pending: bool = False  # queued for re-export analysis after the walk
     # Tool regions a project-level construction, registration or dispatch path may also reach.
     project_tool_regions: list[tuple[int, int]] = field(default_factory=list)
-
-    def without_prose(self, text: str) -> str:
-        """``text`` with this file's exactly known prose blanked; offsets and lines are kept."""
-        return _without_spans(text, self.prose) if self.blank_prose else text
 
     @property
     def name(self) -> str:
