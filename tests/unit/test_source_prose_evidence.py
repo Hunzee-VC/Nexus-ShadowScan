@@ -337,54 +337,53 @@ def test_a_large_file_is_classified_fast():
     assert spans is not None and len(spans) == 28_000
 
 
-class _HostIndex:
-    """A stand-in signature index: every line that names api.openai.com is one host match."""
+class _KeyIndex:
+    """A stand-in signature index: every line that names OPENAI_API_KEY is one variable match."""
 
     def __init__(self) -> None:
         self.texts: list[str] = []
 
     def match_envs_in_text(self, text: str) -> list[SimpleNamespace]:
-        return []
-
-    def match_domains_in_text(self, text: str, *, skip_line=None, source=False) -> list[SimpleNamespace]:
         self.texts.append(text)
         return [
-            SimpleNamespace(line=n) for n, line in enumerate(text.split("\n"), 1) if "api.openai.com" in line
+            SimpleNamespace(line=n) for n, line in enumerate(text.split("\n"), 1) if "OPENAI_API_KEY" in line
         ]
+
+    def match_domains_in_text(self, text: str, *, skip_line=None, source=False) -> list[SimpleNamespace]:
+        return []
 
 
 def _evidence(source: str) -> tuple[list[int], int, int]:
-    """The host lines found in ``source``, how often it was matched and how often classification checked."""
+    """The variable lines found in ``source``, how often it was matched and how often classification checked."""
     checks: list[None] = []
     ignored, _ = noncode_ranges(source, "python", ".py")
     prose = _Prose(source, ignored, ".py", False, lambda: checks.append(None))
-    index = _HostIndex()
-    _, hosts, _ = prose.evidence(source, index, None, source=True)  # type: ignore[arg-type]
-    return [host.line for host in hosts], len(index.texts), len(checks)
+    index = _KeyIndex()
+    variables, _, _ = prose.evidence(source, index, None, source=True)
+    return [match.line for match in variables], len(index.texts), len(checks)
 
 
 def test_a_file_whose_matches_avoid_its_prose_is_neither_classified_nor_matched_twice():
     # A large module pays for parsing only when a host or variable name sits on a masked line.
     assert _evidence("import os\nx = 1  # local only\n") == ([], 1, 0)
-    assert _evidence("api.openai.com.ping()\n# a comment elsewhere\n") == ([1], 1, 0)
+    assert _evidence("OPENAI_API_KEY.ping()\n# a comment elsewhere\n") == ([1], 1, 0)
 
 
 def test_a_match_on_a_masked_line_is_matched_again_without_the_prose():
-    lines, matched, checks = _evidence("# api.openai.com is blocked\nx = 1\n")
+    lines, matched, checks = _evidence("# OPENAI_API_KEY is blocked\nx = 1\n")
     assert (lines, matched) == ([], 2) and checks
-    lines, matched, checks = _evidence('URL = "https://api.openai.com"  # api.openai.com\n')
+    lines, matched, checks = _evidence('KEY = os.environ["OPENAI_API_KEY"]  # OPENAI_API_KEY\n')
     assert (lines, matched) == ([1], 2) and checks
 
 
 def test_other_files_are_never_classified():
     checks: list[None] = []
-    prose = _Prose("# api.openai.com\n", [(0, 16)], ".go", False, lambda: checks.append(None))
-    _, hosts, _ = prose.evidence("# api.openai.com\n", _HostIndex(), None, source=True)  # type: ignore[arg-type]
-    assert [host.line for host in hosts] == [1]
+    prose = _Prose("# OPENAI_API_KEY\n", [(0, 16)], ".go", False, lambda: checks.append(None))
+    variables, _, _ = prose.evidence("# OPENAI_API_KEY\n", _KeyIndex(), None, source=True)
+    assert [match.line for match in variables] == [1]
     assert not checks
-    assert [
-        host.line for host in _Prose().evidence("api.openai.com\n", _HostIndex(), None, source=False)[1]
-    ] == [1]  # type: ignore[arg-type]
+    variables, _, _ = _Prose().evidence("OPENAI_API_KEY\n", _KeyIndex(), None, source=False)
+    assert [match.line for match in variables] == [1]
 
 
 def test_the_model_pass_classifies_on_first_read_and_only_once():
