@@ -96,6 +96,9 @@ Licensing notes:
 - NIST AI RMF titles are short summaries in the project's own words.
 - OWASP names are used under CC BY-SA 4.0 with attribution to the source
   repository; MITRE ATLAS technique names come from its Apache-2.0 data release.
+  These catalogs keep their upstream licences: the project's Apache-2.0 OR MIT
+  grant does not cover them, and `NOTICE` credits them. A catalog whose
+  `licence` field is an SPDX identifier must be named in `NOTICE`.
 - AIUC-1 references stay at domain level, plus `D003` (restrict unsafe tool
   calls). Other requirement identifiers could not be verified against the
   official text and are not used.

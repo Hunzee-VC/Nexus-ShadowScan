@@ -358,9 +358,11 @@ python -m shadowscan.mappings.validate
 make mapping-reference
 ```
 
-Add a test with a finding the changed rule should match. See
-[docs/concepts/mappings.md](docs/concepts/mappings.md) for the format, editions
-and licensing limits.
+Add a test with a finding the changed rule should match. A catalog drawn from
+material under its own licence records that licence as an SPDX identifier in
+its `licence` field and is credited in `NOTICE`; a test checks that every such
+catalog is named there. See [docs/concepts/mappings.md](docs/concepts/mappings.md)
+for the format, editions and licensing limits.
 
 ## Review and merge policy
 
@@ -434,7 +436,9 @@ in public issues.
 ## Developer Certificate of Origin
 
 By contributing to this project, you certify that you have the right to submit
-the work under both the Apache-2.0 and the MIT licenses and that you agree to the
+the work under both the Apache-2.0 and the MIT licenses (or, for a change to the
+third-party material listed in `NOTICE`, under that material's own licence) and
+that you agree to the
 [Developer Certificate of Origin](https://developercertificate.org/) (DCO).
 
 You can sign off your commits with `git commit -s`, which adds a
@@ -469,4 +473,7 @@ A GitHub-signed squash is not a guaranteed substitute for signed PR history.
 Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
 dual licensed under Apache-2.0 OR MIT, at the licensee's choice, without any
-additional terms or conditions.
+additional terms or conditions. A change to the third-party material listed in
+`NOTICE` is licensed under that material's own licence instead: Apache-2.0 for
+`shadowscan/mappings/data/frameworks/mitre-atlas.yaml` and CC BY-SA 4.0 for
+`owasp-llm.yaml` and `owasp-asi.yaml`.

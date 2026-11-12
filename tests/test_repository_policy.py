@@ -850,16 +850,29 @@ def test_container_build_carries_every_declared_license_file_and_the_license_exp
         for stage in re.split(r"^FROM ", dockerfile, flags=re.M)
         if stage.splitlines()[0].endswith(" AS build")
     )
-    packaging_inputs = re.findall(r"^COPY (?!--)([^\n]+) /opt/shadowscan/$", build_stage, re.M)
-    assert len(packaging_inputs) == 1, "the build stage copies its packaging inputs in one COPY"
-    copied = packaging_inputs[0].split()
+    # Each file must land at its own path under /opt/shadowscan: COPY puts every
+    # source straight into a directory destination, so a nested licence file needs
+    # a COPY that names its full destination path.
+    copies = [line.split() for line in re.findall(r"^COPY (?!--)([^\n]+)$", build_stage, re.M)]
+
+    def copied_to_its_path(name: str) -> bool:
+        for *sources, destination in copies:
+            if name in sources and (
+                destination == f"/opt/shadowscan/{name}"
+                or (destination == "/opt/shadowscan/" and "/" not in name)
+            ):
+                return True
+        return False
+
     assert project["license-files"]
     for name in project["license-files"]:
         assert (ROOT / name).is_file(), f"{name} is declared in license-files but missing"
         assert _build_context_includes(patterns, name), (
             f".dockerignore leaves {name} out of the build context"
         )
-        assert name in copied, f"the Dockerfile build stage does not copy {name}"
+        assert copied_to_its_path(name), (
+            f"the Dockerfile build stage does not copy {name} to /opt/shadowscan/{name}"
+        )
     labels = re.findall(r'^\s+org\.opencontainers\.image\.licenses="([^"]*)"', dockerfile, re.M)
     assert labels == [project["license"]], "the image licence label must match pyproject.toml"
 

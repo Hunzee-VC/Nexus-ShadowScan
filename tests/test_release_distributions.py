@@ -6,6 +6,7 @@ import io
 import subprocess
 import sys
 import tarfile
+import tomllib
 import zipfile
 from collections.abc import Callable
 from pathlib import Path
@@ -214,6 +215,14 @@ def _without(name: str) -> dict[str, bytes]:
 def test_sdist_must_carry_build_inputs_and_licence_notices(tmp_path: Path, name: str) -> None:
     with pytest.raises(ValueError, match=f"sdist is missing {name}"):
         verify_distributions(_pair(tmp_path / "dist", sdist=_without(name)))
+
+
+def test_release_check_covers_exactly_the_declared_licence_files() -> None:
+    # The checker compares these files between the sdist and the wheel; a licence
+    # file declared in pyproject.toml but missing here would ship unchecked.
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
+    assert set(distributions._LICENSE_FILES) == set(project["license-files"])
+    assert set(project["license-files"]) <= set(distributions._SDIST_ROOT_FILES)
 
 
 def test_sdist_must_not_ship_a_partial_test_suite(tmp_path: Path) -> None:

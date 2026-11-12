@@ -13,6 +13,37 @@ Counts and figures quoted in an entry are those of its date.
 
 ## Unreleased
 
+### Dual licence: Apache-2.0 OR MIT (November 12)
+
+Pull request #353 offers the project under Apache-2.0 OR MIT, at the licensee's
+choice. The maintainer weighed MIT alone and kept the dual licence: it keeps
+Apache-2.0's express patent grant and termination clause for users who choose
+it, keeps MIT's simplicity and GPLv2 compatibility, and is a superset of the
+Apache-2.0 terms that releases up to and including 0.1.4 were published under.
+`LICENSE` stays the Apache-2.0 text and `LICENSE-MIT` holds the MIT text;
+`pyproject.toml` declares the PEP 639 expression `Apache-2.0 OR MIT` without
+licence classifiers, which setuptools 84.2.1 rejects next to an expression.
+`CITATION.cff` lists `[Apache-2.0, MIT]`, because CFF 1.2.0 has no expression
+syntax. The worker image's build context and build stage carry `LICENSE-MIT`
+(setuptools only warns about a missing `license-files` entry and the image's
+`pip wheel` hides the warning), and a policy test requires every declared
+licence file to reach `/opt/shadowscan/<path>` and the image label to equal the
+project expression. Contributions are licensed under both licences.
+
+Third-party material keeps its own licence. The MITRE ATLAS technique titles
+(`mitre-atlas.yaml`, Copyright 2021-2026 MITRE) come from an Apache-2.0-only
+release and the OWASP titles (`owasp-llm.yaml`, `owasp-asi.yaml`) are
+CC BY-SA 4.0. `NOTICE`, the README and the product guide carve them out of the
+MIT option, `CONTRIBUTING.md` licenses changes to them under their own
+licences, and a consistency test requires every catalog whose `licence` field
+is an SPDX identifier to be credited in `NOTICE`. The package expression names
+only the project's licence; whether it should also name the bundled
+licences (`... AND Apache-2.0 AND CC-BY-SA-4.0`) is left to the maintainer, as
+is the OWASP point recorded earlier. The only human contributor other than the
+maintainer is the account whose README edits #229, #275 and #313 carried; their
+consent, or a determination that those edits need none, is to be recorded on
+the pull request before it merges.
+
 ### pytest 9.2.0 and the companion suite's capture mode (November 5)
 
 Dependabot's #347 moves pytest from 9.1.1 to 9.2.0. This repository's own

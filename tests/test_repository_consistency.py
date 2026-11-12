@@ -744,6 +744,21 @@ def test_citation_matches_the_package_metadata() -> None:
     assert citation["url"] == project["urls"]["Documentation"]
 
 
+def test_third_party_catalog_licences_are_credited_in_notice() -> None:
+    # A catalog drawn from licensed third-party material keeps that licence; the
+    # project's grant does not cover it, so NOTICE must name it. Prose licence
+    # notes (own-words labels, public domain) are not SPDX identifiers.
+    notice = _read(ROOT / "NOTICE")
+    licensed = {
+        path.name: str(licence)
+        for path in sorted((ROOT / "shadowscan/mappings/data/frameworks").glob("*.yaml"))
+        if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9.+-]*", str(licence := _load_yaml(path).get("licence", "")))
+    }
+    assert licensed, "no catalog records an SPDX licence; the MITRE ATLAS and OWASP catalogs do"
+    for name, licence in licensed.items():
+        assert name in notice, f"NOTICE does not credit {name} ({licence})"
+
+
 # The word each one-line scope description uses for a discovery surface; a
 # plural or a longer phrase ("LLM gateway logs", "running processes") matches.
 SURFACE_WORDS = {
