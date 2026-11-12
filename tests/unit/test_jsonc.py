@@ -13,10 +13,10 @@ def test_lenient_json_is_linear_on_unterminated_strings():
     # Every quote inside an unterminated string used to restart the string
     # token, so escaped quotes made stripping quadratic in the line length.
     text = '{"a": 1, "b": "' + '\\"' * 50_000 + "\n}"
-    started = time.perf_counter()
+    started = time.process_time()
     with pytest.raises(ValueError):
         load_json_lenient(text)
-    assert time.perf_counter() - started < 2
+    assert time.process_time() - started < 2
 
 
 def test_lenient_json_loader_only_strips_comments_when_needed():

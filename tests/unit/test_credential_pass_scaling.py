@@ -25,9 +25,9 @@ from shadowscan.utils.redaction import REDACTED, sanitize_text
 def _best_time(source: str, repeats: int = 3) -> float:
     best = float("inf")
     for _ in range(repeats):
-        started = time.perf_counter()
+        started = time.process_time()
         sanitize_text(source)
-        best = min(best, time.perf_counter() - started)
+        best = min(best, time.process_time() - started)
     return best
 
 
@@ -142,9 +142,9 @@ def test_the_password_values_of_a_long_line_are_read_in_linear_time(unit):
     def best(source: str) -> float:
         fastest = float("inf")
         for _ in range(3):
-            started = time.perf_counter()
+            started = time.process_time()
             redaction._redact_line_tails(source)
-            fastest = min(fastest, time.perf_counter() - started)
+            fastest = min(fastest, time.process_time() - started)
         return fastest
 
     small, large = best(unit * 1000), best(unit * 4000)
@@ -190,12 +190,12 @@ def test_a_long_run_of_one_character_class_is_read_once(prefix, run, suffix, cou
         source = prefix + run * repeats + suffix
         best = float("inf")
         for _ in range(3):
-            started = time.perf_counter()
+            started = time.process_time()
             if structured:
                 redaction.sanitize({"note": source})
             else:
                 sanitize_text(source)
-            best = min(best, time.perf_counter() - started)
+            best = min(best, time.process_time() - started)
         return best
 
     assert cost(count) < max(cost(8), 0.02) * 10
@@ -235,7 +235,7 @@ def test_a_long_line_of_record_names_completes_in_a_full_scan(tmp_path, index):
     # scan was incomplete (MatchTimeoutError).
     source = "import openai\n# " + "{name: API_KEY, " * 20_000 + "\n"
     (tmp_path / "app.py").write_text(source, encoding="utf-8")
-    started = time.perf_counter()
+    started = time.process_time()
     result = Engine(
         ScanConfig(
             connectors=[
@@ -250,7 +250,7 @@ def test_a_long_line_of_record_names_completes_in_a_full_scan(tmp_path, index):
         ),
         index,
     ).run()
-    elapsed = time.perf_counter() - started
+    elapsed = time.process_time() - started
     assert elapsed < 20, elapsed  # generous for slow CI runners
     assert result.complete, [error for stats in result.stats for error in stats.errors]
     assert any("OpenAI" in finding.title for finding in result.findings)
@@ -291,9 +291,9 @@ def test_an_unterminated_markup_tag_is_matched_in_linear_time(shape):
     def best(source: str) -> float:
         fastest = float("inf")
         for _ in range(3):
-            started = time.perf_counter()
+            started = time.process_time()
             list(_XML_TAG.finditer(source))
-            fastest = min(fastest, time.perf_counter() - started)
+            fastest = min(fastest, time.process_time() - started)
         return fastest
 
     small, large = best(shape(2000)), best(shape(8000))

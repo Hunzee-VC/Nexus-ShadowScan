@@ -97,9 +97,19 @@ than read as coverage. It needs the cloud SDKs installed, so run it after
   signature packs. The suite reuses one index of the built-in packs, parsed at
   session start, while their source digest is unchanged; organization pack
   directories and override approval always load for real.
+- **Environment preconditions.** Collection fails fast with a clear message
+  when the host cannot run the suite: the temporary directory must not be
+  setgid (pytest `tmp_path` directories inherit the bit, and
+  `prepare_private_directory` requires mode exactly `0o700`), and a `python`
+  must be on `PATH` (the Makefile and several policy tests shell out to bare
+  `python`; a host that ships `python3` only needs a `python` symlink in the
+  venv first).
 
-Timing assertions use generous bounds, thread CPU time, or a fixed clock, so a
-loaded runner does not fail them.
+Performance guards measure CPU time (`time.process_time()`; see
+`tests/perf.py`), so a loaded runner does not fail them. Tests of deadlines
+and timeouts measure wall time on purpose -- a deadline is about waiting,
+not computing -- and are marked as deadline tests so the two kinds stay
+distinguishable.
 
 Useful pytest patterns:
 
