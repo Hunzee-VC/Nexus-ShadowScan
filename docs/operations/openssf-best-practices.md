@@ -2,7 +2,7 @@
 
 The [OpenSSF Best Practices badge](https://www.bestpractices.dev/) is a self-certification. The maintainer signs in, answers a questionnaire about the project, and the site records the answers; it fills in some itself, but every answer stays the maintainer's. This page maps the 67 criteria of the **passing** level to what this repository shows, so that an application can cite files instead of memory.
 
-**This repository claims no badge.** The README shows none and nothing in the repository records an application. This page is preparation, not an application and not a claim. It was written from the criteria as the site published them on 2026-10-17 and re-checked against the repository on 2026-10-26; the criteria change, so read them again when you apply.
+**This repository claims no badge.** The README shows none and nothing in the repository records an application. This page is preparation, not an application and not a claim. It was written from the criteria as the site published them on 2026-10-17 and re-checked against the repository on 2026-11-12; the criteria change, so read them again when you apply.
 
 ## What the statuses mean
 
@@ -61,7 +61,7 @@ Passing the CI checks, the CodeQL analysis or the OpenSSF Scorecard is not indep
 | `sites_https` | MUST | **Met** | The repository, its issues, the PyPI project and the Pages URL are all `https:` addresses ([project URLs](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/pyproject.toml)). |
 | `discussion` | MUST | **Met** | GitHub issues and pull-request discussions are public, searchable, addressable by URL and open to anyone with a GitHub account; they need no proprietary client. |
 | `english` | SHOULD | **Met** | Documentation, issue forms, commit messages and code comments are in English, and reports in English are accepted. |
-| `maintained` | MUST | **Confirm** | The latest commit on `main` was made on 2026-10-23 (observed 2026-10-26), and Dependabot opens update pull requests weekly ([`.github/dependabot.yml`](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/.github/dependabot.yml)). The criterion asks that significant reports get a response; the two response rows below show whether they do. |
+| `maintained` | MUST | **Confirm** | The latest commit on `main` was made on 2026-11-06 (observed 2026-11-12), and Dependabot opens update pull requests weekly ([`.github/dependabot.yml`](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/.github/dependabot.yml)). The criterion asks that significant reports get a response; the two response rows below show whether they do. |
 
 ### Change Control
 

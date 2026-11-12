@@ -228,3 +228,18 @@ the complexity gate, the nine evaluation corpora and the self-scan, as the
 engineering log entry for the split records. Not verified: the live clone
 and API modes of `code.github` and `code.gitlab` against real hosts, and the
 public repositories of the 2026-10-01 field scan.
+
+## Status (2026-11-12)
+
+Measured at HEAD `d8f4e585` (2026-11-06): `walk.py` holds 3,161 lines,
+`file_scan.py` 2,450, and the `filesystem.py` façade 1,363
+(`project_findings.py` 1,287, `scan_records.py` 438). The split recorded
+2,192 / 2,259 / 1,188 on 2026-10-17, so `walk.py` has grown 44% and
+`file_scan.py` 8% since the split, and neither is under the 2,000-line mark
+the ratchet uses for new modules. The complexity gate still fails closed on
+growth; a rise a review accepts is recorded with `--rebaseline` and explained
+in the pull request. Getting both below the mark remains a further step, not a
+precondition of the split.
+
+ADR-004 (tree-sitter as a test oracle) is still **Proposed**, with no decision
+recorded as of 2026-11-12.

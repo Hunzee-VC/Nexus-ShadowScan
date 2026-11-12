@@ -65,7 +65,9 @@ with `publish: pypi`; evidence-only and TestPyPI runs cannot attach assets.
 3. **GitHub environments.** Under **Settings → Environments**, create `pypi`
    and `testpypi`:
    - **Required reviewers:** the maintainer. Add a second reviewer and turn on
-     **Prevent self-review** as soon as one exists.
+     **Prevent self-review** as soon as one exists. Until then the approval is
+     self-approval: the single maintainer who prepared the candidate is the
+     only person who can approve its upload.
    - **Deployment branches and tags:** selected branches only, `main`.
    - **Secrets:** none. Trusted publishing needs no token, and a stored token
      would bypass these gates.
