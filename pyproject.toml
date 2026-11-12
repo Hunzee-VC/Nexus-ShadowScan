@@ -7,8 +7,8 @@ name = "NexusShadowScan"
 version = "0.1.4"
 description = "Find evidence of shadow AI agents across code, identity, LLM gateways, low-code, SaaS, cloud, endpoints, network and processes."
 readme = "README.md"
-license = "Apache-2.0"
-license-files = ["LICENSE", "NOTICE"]
+license = "Apache-2.0 OR MIT"
+license-files = ["LICENSE", "LICENSE-MIT", "NOTICE"]
 requires-python = ">=3.11,<3.15"
 authors = [{ name = "Nexus ShadowScan contributors" }]
 keywords = [

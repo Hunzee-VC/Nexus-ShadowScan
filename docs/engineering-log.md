@@ -13,6 +13,50 @@ Counts and figures quoted in an entry are those of its date.
 
 ## Unreleased
 
+### Dual licence: Apache-2.0 OR MIT (November 12)
+
+Pull request #353 offers the project under Apache-2.0 OR MIT, at the licensee's
+choice. The maintainer weighed MIT alone and kept the dual licence. For the
+project's own code it keeps Apache-2.0's express patent grant and termination
+clause for users who choose it, keeps MIT's simplicity and GPLv2 compatibility,
+and is a superset of the Apache-2.0 terms that releases up to and including
+0.1.4 were published under. `LICENSE` stays the Apache-2.0 text and
+`LICENSE-MIT` holds the MIT text; `pyproject.toml` declares the PEP 639
+expression `Apache-2.0 OR MIT` without licence classifiers, which setuptools
+84.2.1 rejects next to an expression. `CITATION.cff` lists `[Apache-2.0, MIT]`,
+because CFF 1.2.0 has no expression syntax. The worker image's build context
+and build stage carry `LICENSE-MIT` (setuptools only warns about a missing
+`license-files` entry and the image's `pip wheel` hides the warning), and a
+policy test requires every declared licence file to reach
+`/opt/shadowscan/<path>` and the image label to equal the project expression. A
+release-distribution test ties the checker's licence files to `license-files`.
+Contributions are licensed under both licences.
+
+Third-party material keeps its own licence and is outside the project's
+Apache-2.0 OR MIT grant. The MITRE ATLAS technique titles (`mitre-atlas.yaml`,
+Copyright 2021-2026 MITRE) come from an Apache-2.0-only release and the OWASP
+titles (`owasp-llm.yaml`, `owasp-asi.yaml`) are CC BY-SA 4.0; the generated
+mappings reference reproduces both. The repository also holds the evaluation
+corpora under `tools/evaluation/` and the SARIF schema fixture, each recorded
+with its upstream licence. `NOTICE`, the README and the product guide state the
+exception, `CONTRIBUTING.md` licenses changes to such material under its own
+licence, and a consistency test requires every catalog's `licence` field to be
+an SPDX expression credited by name in the third-party section of `NOTICE`, or
+a prose note on its reviewed list. The package expression names only the
+project's licence; whether it should also name the bundled licences (`... AND
+Apache-2.0 AND CC-BY-SA-4.0`) is left to the maintainer, as is the OWASP point
+recorded earlier.
+
+Not done here. The README images stay pinned to `84183af`, whose banner still
+reads `Apache-2.0`; they move to a commit on main at release preparation, as
+the release-candidate check requires, and so do the version and `date-released`
+in `pyproject.toml` and `CITATION.cff`, which still name 0.1.4 (published under
+Apache-2.0 only). The only human contributor other than the maintainer opened
+five pull requests (#175, #225, #229, #275 and #313), all closed unmerged;
+README edits from three of them reached main with co-author credit. Their
+consent to the dual licence, or a determination that those edits need none, is
+to be recorded on the pull request before it merges.
+
 ### pytest 9.2.0 and the companion suite's capture mode (November 5)
 
 Dependabot's #347 moves pytest from 9.1.1 to 9.2.0. This repository's own

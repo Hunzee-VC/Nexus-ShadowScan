@@ -833,6 +833,64 @@ def test_container_build_is_digest_pinned_hash_locked_and_non_root() -> None:
     assert not _violations(ROOT / ".dockerignore")
 
 
+def test_container_build_carries_every_declared_license_file_and_the_license_expression() -> None:
+    # The image builds its wheel from this context. setuptools only warns about a
+    # license-files entry that is not there, and the build stage's pip wheel hides
+    # the warning, so a file missing from the context or the COPY ships a wheel
+    # whose License-Expression names a licence whose text it does not carry.
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
+    patterns = [
+        line.strip()
+        for line in (ROOT / ".dockerignore").read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.startswith("#")
+    ]
+    dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8").replace("\\\n", " ")
+    stages = re.split(r"^FROM ", dockerfile, flags=re.M)
+    build_stage = next(stage for stage in stages if stage.splitlines()[0].endswith(" AS build"))
+    # Each file must land at its own path under /opt/shadowscan. COPY puts a file
+    # source straight into a directory destination and keeps the relative paths
+    # below a directory source; a COPY --from reads another stage, not the context.
+    copies = []
+    for line in re.findall(r"^COPY ([^\n]+)$", build_stage, re.M):
+        tokens = line.split()
+        flags = [token for token in tokens if token.startswith("--")]
+        if not any(flag.startswith("--from") for flag in flags):
+            copies.append([token for token in tokens if not token.startswith("--")])
+
+    def copied_to_its_path(name: str) -> bool:
+        target = f"/opt/shadowscan/{name}"
+        for *sources, destination in copies:
+            for source in sources:
+                if source == name and (
+                    destination == target
+                    or (destination.endswith("/") and destination + name.rsplit("/", 1)[-1] == target)
+                ):
+                    return True
+                if name.startswith(source.rstrip("/") + "/") and (
+                    f"{destination.rstrip('/')}/{name[len(source.rstrip('/')) + 1 :]}" == target
+                ):
+                    return True
+        return False
+
+    assert project["license-files"]
+    for name in project["license-files"]:
+        assert (ROOT / name).is_file(), f"{name} is declared in license-files but missing"
+        assert _build_context_includes(patterns, name), (
+            f".dockerignore leaves {name} out of the build context"
+        )
+        assert copied_to_its_path(name), (
+            f"the Dockerfile build stage does not copy {name} to /opt/shadowscan/{name}"
+        )
+    # Only the final stage's labels reach the image, and a later LABEL overrides.
+    final_stage = stages[-1]
+    labels = [
+        value
+        for line in re.findall(r"^LABEL ([^\n]+)$", final_stage, re.M)
+        for value in re.findall(r'org\.opencontainers\.image\.licenses="([^"]*)"', line)
+    ]
+    assert labels and labels[-1] == project["license"], "the image's licence label must match pyproject.toml"
+
+
 def test_build_context_matcher_follows_docker_pattern_rules() -> None:
     patterns = ["**", "!shadowscan/**/*.py", "!shadowscan/data/**/*.yaml", "shadowscan/data/private/*.yaml"]
     included = {

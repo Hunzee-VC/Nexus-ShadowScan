@@ -38,6 +38,7 @@ from urllib.parse import unquote
 
 import pytest
 import yaml
+from packaging.licenses import InvalidLicenseExpression, canonicalize_license_expression
 
 from shadowscan.config import ScanConfig
 from shadowscan.connectors import ConnectorContext, builtin_connector_names, get_connector_class
@@ -66,6 +67,7 @@ ADVISORY_URL = "https://github.com/Hunzee-VC/Nexus-ShadowScan/security/advisorie
 COMMUNITY_FILES = (
     "README.md",
     "LICENSE",
+    "LICENSE-MIT",
     "NOTICE",
     "CODE_OF_CONDUCT.md",
     "CONTRIBUTING.md",
@@ -732,9 +734,62 @@ def test_citation_matches_the_package_metadata() -> None:
     project = _pyproject()["project"]
     assert citation["version"] == project["version"]
     license = project["license"]
-    assert citation["license"] == (license if isinstance(license, str) else license["text"])
+    expression = license if isinstance(license, str) else license["text"]
+    # CFF 1.2.0 takes one SPDX identifier or a list of them read as OR, with no
+    # expression syntax: "Apache-2.0 OR MIT" is written as [Apache-2.0, MIT].
+    cited = citation["license"]
+    identifiers = [cited] if isinstance(cited, str) else cited
+    assert all(" " not in name for name in identifiers), "CITATION.cff license takes SPDX identifiers"
+    assert " OR ".join(identifiers) == expression
     assert citation["repository-code"] == project["urls"]["Repository"]
     assert citation["url"] == project["urls"]["Documentation"]
+
+
+def _spdx_expression(value: object) -> str | None:
+    """``value`` as a canonical SPDX licence expression, or None for a prose note."""
+    try:
+        return canonicalize_license_expression(str(value))
+    except InvalidLicenseExpression:
+        return None
+
+
+# Catalog licence notes that describe the project's own wording or material
+# free to reuse, not a third-party licence. Every other catalog must record an
+# SPDX expression, so a licence cannot slip past NOTICE by being spelled as prose
+# ("CC BY-SA 4.0"); adding a note here is a reviewed decision.
+_CATALOG_PROSE_LICENCE_NOTES = frozenset(
+    {
+        "Copyrighted; identifiers and own-words labels only",
+        "CSA publication; layer numbers and short labels only",
+        "EU legal act; reuse permitted",
+        "Public domain (US government work)",
+        "Unverified; identifiers and own-words labels only",
+    }
+)
+
+
+def test_third_party_catalog_licences_are_credited_in_notice() -> None:
+    # A catalog drawn from licensed third-party material keeps that licence; the
+    # project's grant does not cover it, so NOTICE's third-party section must name
+    # it. A compound expression ("Apache-2.0 WITH LLVM-exception") counts.
+    notice = _read(ROOT / "NOTICE")
+    assert notice.count("Third-party material:") == 1, "NOTICE has one third-party section"
+    third_party = notice.split("Third-party material:", 1)[1]
+    licensed = {}
+    for path in sorted((ROOT / "shadowscan/mappings/data/frameworks").glob("*.yaml")):
+        licence = str(_load_yaml(path).get("licence", ""))
+        if licence in _CATALOG_PROSE_LICENCE_NOTES:
+            continue
+        expression = _spdx_expression(licence)
+        assert expression, (
+            f"{path.name}: licence {licence!r} is neither an SPDX expression nor a reviewed prose note"
+        )
+        licensed[path.name] = expression
+    assert licensed, "no catalog records an SPDX licence; the MITRE ATLAS and OWASP catalogs do"
+    for name, licence in licensed.items():
+        assert re.search(rf"(?<![\w.-]){re.escape(name)}(?![\w.-])", third_party), (
+            f"NOTICE's third-party section does not credit {name} ({licence})"
+        )
 
 
 # The word each one-line scope description uses for a discovery surface; a
