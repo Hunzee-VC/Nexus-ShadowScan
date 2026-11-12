@@ -1280,6 +1280,10 @@ the concrete status, denominator, control and reviewer artifacts:
    repositories and restrict access to retained reports. Regenerate retained
    reports after an upgrade that withholds more, such as the
    [2026-09-28 redaction changes](history/production-change-history.md#completeness-report-and-credential-changes).
+   The November 12 change withholds generated-looking literals from finding
+   descriptions, titles and metadata as well as snippets, and stops reporting
+   expired JWTs as signature-verified; regenerate retained reports after
+   upgrading to a release that carries it.
 4. Replay each exported instance using its manifest filename, checking account,
    resource identity and detection consistency. Sanitized exports are not
    lossless raw API backups; credential findings may differ after redaction.

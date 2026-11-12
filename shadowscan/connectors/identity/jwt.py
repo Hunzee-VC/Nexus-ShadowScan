@@ -19,7 +19,10 @@ Signals evaluated:
 * hygiene: lifetime > 24h, no ``exp``, ``alg=none``, symmetric algs on public issuers
 * provenance: without a JWKS the signature is not checked; the finding then carries
   ``signature_verified: false``, a ``signature-unverified`` tag and a zero-weight
-  ``jwt:signature`` evidence item, and its claims are unauthenticated
+  ``jwt:signature`` evidence item, and its claims are unauthenticated. A token
+  whose signature verifies but which is expired (or not yet valid) is likewise
+  reported ``signature_verified: false``, with ``signature_verification_reason``
+  naming why; audience is never validated
 
 Input: ``tokens: [...]`` in config, ``input`` file (one token per line, JSON list,
 or JSON objects with a ``token`` field), or the CLI ``shadowscan jwt`` command.
@@ -294,10 +297,14 @@ class JwtConnector(BaseConnector, _NoDump):
 
         iat = parse_timestamp(claims.get("iat"))
         exp = parse_timestamp(claims.get("exp"))
+        nbf = parse_timestamp(claims.get("nbf"))
         lifetime_h = (exp - iat).total_seconds() / 3600 if iat and exp else None
         alg = str(header.get("alg", ""))
         hygiene = _hygiene_issues(alg, family, exp, lifetime_h)
-        if exp and exp < datetime.now(UTC):
+        now = datetime.now(UTC)
+        expired = exp is not None and exp < now
+        not_yet_valid = nbf is not None and nbf > now
+        if expired:
             f.add_tag("expired")
         for h in hygiene:
             f.add_tag("token-hygiene")
@@ -313,13 +320,21 @@ class JwtConnector(BaseConnector, _NoDump):
         )
         # Without a JWKS the signature is never checked: issuer family, identity
         # type and privileged scopes then come from unauthenticated claims.
-        f.metadata["signature_verified"] = verified is True
+        # A signature that verifies cryptographically is still not reported as
+        # verified once the token is outside its validity period: a consumer
+        # reading only signature_verified must not mistake an expired (or
+        # not-yet-valid) token for a live one. The cryptographic result is
+        # recorded in the jwt:signature evidence item.
+        time_reason = "signature_expired" if expired else "signature_not_yet_valid" if not_yet_valid else None
+        f.metadata["signature_verified"] = verified is True and time_reason is None
+        if verified is True and time_reason is not None:
+            f.metadata["signature_verification_reason"] = time_reason
         if verified is not True:
             f.add_tag("signature-unverified")
         if verified is None:
             _unchecked_signature_evidence(f)
         else:
-            self._signature_evidence(f, verified)
+            self._signature_evidence(f, verified, time_reason=time_reason)
         f.add_tag(f"identity:{identity_type}")
         f.title = f"JWT ({identity_type}) for {sub or azp or '?'} from {family}"
         f.owner = (
@@ -450,13 +465,23 @@ class JwtConnector(BaseConnector, _NoDump):
                 identity_type = "agent"
         return identity_type, reasons, agent_hints, azp
 
-    def _signature_evidence(self, f: Finding, verified: bool) -> None:
+    def _signature_evidence(self, f: Finding, verified: bool, *, time_reason: str | None = None) -> None:
         expected_issuer = self.ctx.get("expected_issuer")
-        verified_description = (
-            "signature and configured issuer verified; expiry and audience NOT validated"
-            if expected_issuer
-            else "signature verified against configured JWKS; issuer, expiry and audience NOT validated"
-        )
+        if time_reason is not None:
+            verified_description = (
+                "signature verified against configured JWKS but token expired; not reported as verified"
+                if time_reason == "signature_expired"
+                else "signature verified against configured JWKS but token not yet valid; "
+                "not reported as verified"
+            )
+        else:
+            verified_description = (
+                "signature and configured issuer verified and token within its validity "
+                "period; audience NOT validated"
+                if expected_issuer
+                else "signature verified against configured JWKS and token within its "
+                "validity period; issuer and audience NOT validated"
+            )
         f.add_evidence(
             Evidence(
                 signal="jwt:signature",
@@ -464,7 +489,7 @@ class JwtConnector(BaseConnector, _NoDump):
                 weight=0.0,
             )
         )
-        f.metadata["verified"] = verified
+        f.metadata["verified"] = verified and time_reason is None
         f.metadata["verification_scope"] = "signature-and-issuer" if expected_issuer else "signature-only"
         f.metadata["issuer_verified"] = bool(verified and expected_issuer)
         f.metadata["authorization_validated"] = False

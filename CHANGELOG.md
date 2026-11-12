@@ -8,6 +8,13 @@ explain operator migrations. Earlier per-change entries are preserved in the
 
 ## Unreleased
 
+- Entropy (last-resort) redaction now withholds generated-looking literals from
+  finding descriptions, titles and metadata, not only evidence snippets
+  (audit SEC-01); an expired or not-yet-valid JWT whose signature verifies is
+  no longer reported `signature_verified: true` — it reports `false` with
+  `signature_verification_reason` naming the cause (audit SEC-02). Reports made
+  before this change are not retroactively redacted; regenerate retained reports
+  after upgrading.
 - The development toolchain moves to pytest 9.2.0 (#347). The repository's
   own pytest 9.2 fixes landed earlier (the redaction-namespace descriptors and
   the scoped `os.fstat` stub); CI's `benchmark-tests` job now runs the pinned

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime, timedelta
 from unittest.mock import patch
 
 import jwt
@@ -308,6 +309,71 @@ def test_failed_and_successful_verification_set_the_same_field(index: SignatureI
     assert bad.metadata["signature_verified"] is False
     assert bad.metadata["verified"] is False
     assert "signature-unverified" in bad.tags
+
+
+def _signed_token(claims: dict, private) -> str:
+    return jwt.encode(claims, private, algorithm="RS256", headers={"kid": "key-1"})
+
+
+def _verified(index: SignatureIndex, claims: dict, private):
+    """A finding for a token whose signature verifies against a mocked JWKS."""
+    jwk = json.loads(jwt.algorithms.get_default_algorithms()["RS256"].to_jwk(private.public_key()))
+    jwk.update({"alg": "RS256", "use": "sig", "key_ops": ["verify"], "kid": "key-1"})
+    connector = JwtConnector(ConnectorContext(index=index, config={"jwks_url": JWKS_URL}))
+    with patch("shadowscan.utils.http.HttpClient.get_json", return_value={"keys": [jwk]}):
+        finding = connector.analyze_token(_signed_token(claims, private), jwks_url=JWKS_URL)
+    assert finding is not None
+    return finding
+
+
+# SEC-02 (audit 2026-11-12): a token whose signature verifies cryptographically
+# must never be reported verified once it is outside its validity period.
+def test_an_expired_token_with_a_valid_signature_is_not_reported_verified(index: SignatureIndex):
+    private = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    now = datetime.now(UTC)
+    finding = _verified(
+        index,
+        {"iss": OKTA_ISSUER, "sub": "u1", "exp": int((now - timedelta(hours=1)).timestamp())},
+        private,
+    )
+    assert finding.metadata["signature_verified"] is False
+    assert finding.metadata["signature_verification_reason"] == "signature_expired"
+    assert finding.metadata["verified"] is False
+    assert "expired" in finding.tags
+    assert "signature-unverified" not in finding.tags
+    evidence = next(e for e in finding.evidence if e.signal == "jwt:signature")
+    assert "expired" in evidence.description and "not reported as verified" in evidence.description
+
+
+def test_a_not_yet_valid_token_with_a_valid_signature_is_not_reported_verified(index: SignatureIndex):
+    private = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    now = datetime.now(UTC)
+    finding = _verified(
+        index,
+        {"iss": OKTA_ISSUER, "sub": "u1", "nbf": int((now + timedelta(hours=1)).timestamp())},
+        private,
+    )
+    assert finding.metadata["signature_verified"] is False
+    assert finding.metadata["signature_verification_reason"] == "signature_not_yet_valid"
+    assert finding.metadata["verified"] is False
+
+
+def test_a_token_inside_its_validity_period_still_verifies(index: SignatureIndex):
+    private = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    now = datetime.now(UTC)
+    finding = _verified(
+        index,
+        {
+            "iss": OKTA_ISSUER,
+            "sub": "u1",
+            "iat": int((now - timedelta(minutes=5)).timestamp()),
+            "exp": int((now + timedelta(hours=1)).timestamp()),
+        },
+        private,
+    )
+    assert finding.metadata["signature_verified"] is True
+    assert "signature_verification_reason" not in finding.metadata
+    assert finding.metadata["verified"] is True
 
 
 # ------------------------------------------------- precision: decoy name suppression

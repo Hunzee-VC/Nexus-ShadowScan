@@ -231,11 +231,33 @@ class RiskLevel(str, Enum):
         return cls.INFO
 
 
-def _evidence_value(name: str, value: Any) -> Any:
-    """A sanitized evidence field, with random-looking literals also withheld from snippets."""
-    if name == "snippet" and isinstance(value, str):
+def _entropy_value(value: Any) -> Any:
+    """Apply the random-literal pass to every string leaf of ``value``.
+
+    Only quoted literals that look generated are withheld, so identifiers,
+    digests, UUIDs and prose keep their text (see
+    ``shadowscan.utils.redaction_entropy``). Containers are rebuilt with the
+    same shape; anything else passes through unchanged.
+    """
+    if isinstance(value, str):
         return withhold_random_literals(value)
+    if isinstance(value, dict):
+        return {key: _entropy_value(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_entropy_value(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_entropy_value(item) for item in value)
     return value
+
+
+def _evidence_value(name: str, value: Any) -> Any:
+    """A sanitized evidence field, with random-looking literals also withheld.
+
+    The entropy pass applies to every text field, not only snippets: a quoted
+    literal that looks generated is withheld wherever it appears in a report
+    field, including ``description`` and ``location``.
+    """
+    return _entropy_value(value)
 
 
 @dataclass(slots=True)
@@ -450,7 +472,7 @@ class Finding:
         else:
             (values, evidence_values, risk_values), _ = sanitize((state, credential_context))
         for name, (value,) in zip(names, values, strict=True):
-            setattr(self, name, value)
+            setattr(self, name, _entropy_value(value))
         changed = {
             name
             for name, original in zip(identity_names, identity_before, strict=True)
@@ -476,8 +498,8 @@ class Finding:
             for name, (value,) in zip(_EVIDENCE_FIELDS, clean, strict=True):
                 setattr(ev, name, _evidence_value(name, value))
         for factor, ((identifier,), (description,)) in zip(self.risk.factors, risk_values, strict=True):
-            factor.id = identifier
-            factor.description = description
+            factor.id = _entropy_value(identifier)
+            factor.description = _entropy_value(description)
         object.__setattr__(self, "_clean_digest", _clean_state(self._digest_state(), bounded=True))
 
     def add_evidence(self, ev: Evidence) -> None:

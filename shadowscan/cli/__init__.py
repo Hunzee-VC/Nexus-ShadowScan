@@ -669,7 +669,7 @@ class _UsageError(click.UsageError):
         self.error = error
 
     def format_message(self) -> str:
-        return self.error.format_message()
+        return str(self.error.format_message())
 
     def __str__(self) -> str:
         return str(self.error)
