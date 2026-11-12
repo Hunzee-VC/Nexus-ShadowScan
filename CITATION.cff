@@ -26,8 +26,6 @@ keywords:
   - mcp
   - sarif
   - cyclonedx
-license:
-  - Apache-2.0
-  - MIT
+license: MIT
 version: 0.1.4
 date-released: 2026-10-23

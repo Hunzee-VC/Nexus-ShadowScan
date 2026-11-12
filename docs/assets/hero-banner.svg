@@ -27,13 +27,13 @@
   <text x="90" y="362" font-size="30" fill="#c9d4ea">low-code, SaaS, cloud, endpoints, network logs and running</text>
   <text x="90" y="402" font-size="30" fill="#c9d4ea">processes, then reconciles it against the agent registry you supply.</text>
   <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="20">
-    <rect x="90" y="436" width="230" height="48" rx="24" fill="#162544" stroke="#2b4270" stroke-width="1.5"/>
-    <text x="205" y="466" font-size="20" fill="#c9d4ea" text-anchor="middle">Apache-2.0 OR MIT</text>
-    <rect x="338" y="436" width="380" height="48" rx="24" fill="#2a2210" stroke="#6b4e12" stroke-width="1.5"/>
-    <text x="528" y="466" font-size="20" fill="#f4b942" text-anchor="middle">pip install NexusShadowScan</text>
-    <rect x="736" y="436" width="240" height="48" rx="24" fill="#0d2818" stroke="#1a5c32" stroke-width="1.5"/>
-    <text x="856" y="466" font-size="20" fill="#3ddc97" text-anchor="middle">38 connectors</text>
-    <rect x="994" y="436" width="240" height="48" rx="24" fill="#1a1028" stroke="#3d2268" stroke-width="1.5"/>
-    <text x="1114" y="466" font-size="20" fill="#a78bfa" text-anchor="middle">233 signatures</text>
+    <rect x="90" y="436" width="160" height="48" rx="24" fill="#162544" stroke="#2b4270" stroke-width="1.5"/>
+    <text x="170" y="466" font-size="20" fill="#c9d4ea" text-anchor="middle">MIT</text>
+    <rect x="268" y="436" width="380" height="48" rx="24" fill="#2a2210" stroke="#6b4e12" stroke-width="1.5"/>
+    <text x="458" y="466" font-size="20" fill="#f4b942" text-anchor="middle">pip install NexusShadowScan</text>
+    <rect x="666" y="436" width="240" height="48" rx="24" fill="#0d2818" stroke="#1a5c32" stroke-width="1.5"/>
+    <text x="786" y="466" font-size="20" fill="#3ddc97" text-anchor="middle">38 connectors</text>
+    <rect x="924" y="436" width="240" height="48" rx="24" fill="#1a1028" stroke="#3d2268" stroke-width="1.5"/>
+    <text x="1044" y="466" font-size="20" fill="#a78bfa" text-anchor="middle">233 signatures</text>
   </g>
 </svg>

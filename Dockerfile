@@ -69,7 +69,8 @@ RUN apk upgrade --no-cache --available \
     && apk add --no-cache python-3.12 python-3.12-base py3.12-pip
 
 WORKDIR /opt/shadowscan
-COPY pyproject.toml requirements.lock requirements-build.lock README.md LICENSE LICENSE-MIT NOTICE /opt/shadowscan/
+COPY pyproject.toml requirements.lock requirements-build.lock README.md LICENSE NOTICE /opt/shadowscan/
+COPY LICENSES/Apache-2.0.txt /opt/shadowscan/LICENSES/Apache-2.0.txt
 COPY shadowscan /opt/shadowscan/shadowscan
 
 # The worker's packages go into a virtual environment that the runtime stage
@@ -96,7 +97,7 @@ FROM chainguard/wolfi-base:latest@sha256:771146c2dfc880902a185f060c3db5571473c46
 
 LABEL org.opencontainers.image.source="https://github.com/Hunzee-VC/Nexus-ShadowScan" \
       org.opencontainers.image.description="ShadowScan disposable scan worker" \
-      org.opencontainers.image.licenses="Apache-2.0 OR MIT"
+      org.opencontainers.image.licenses="MIT"
 
 # The runtime needs only the interpreter and Git with its HTTPS transport; pip
 # and the build tools stay in the build stage. The worker never needs to gain

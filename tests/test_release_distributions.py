@@ -35,9 +35,9 @@ def _sdist_files() -> dict[str, bytes]:
         "PKG-INFO": METADATA,
         "pyproject.toml": b'[project]\nname = "NexusShadowScan"\n',
         "README.md": b"# Nexus ShadowScan\n",
-        "LICENSE": b"Apache License\n",
-        "LICENSE-MIT": b"MIT License\n",
+        "LICENSE": b"MIT License\n",
         "NOTICE": b"Nexus ShadowScan\n",
+        "LICENSES/Apache-2.0.txt": b"Apache License\n",
         "setup.cfg": b"[egg_info]\n",
         **PACKAGE,
     }
@@ -48,9 +48,9 @@ def _wheel_files() -> dict[str, bytes]:
         **PACKAGE,
         f"{DIST_INFO}/METADATA": METADATA,
         f"{DIST_INFO}/WHEEL": WHEEL,
-        f"{DIST_INFO}/licenses/LICENSE": b"Apache License\n",
-        f"{DIST_INFO}/licenses/LICENSE-MIT": b"MIT License\n",
+        f"{DIST_INFO}/licenses/LICENSE": b"MIT License\n",
         f"{DIST_INFO}/licenses/NOTICE": b"Nexus ShadowScan\n",
+        f"{DIST_INFO}/licenses/LICENSES/Apache-2.0.txt": b"Apache License\n",
         f"{DIST_INFO}/RECORD": b"",
     }
 
@@ -209,7 +209,7 @@ def _without(name: str) -> dict[str, bytes]:
 
 
 @pytest.mark.parametrize(
-    "name", ["PKG-INFO", "pyproject.toml", "README.md", "LICENSE", "LICENSE-MIT", "NOTICE"]
+    "name", ["PKG-INFO", "pyproject.toml", "README.md", "LICENSE", "NOTICE", "LICENSES/Apache-2.0.txt"]
 )
 def test_sdist_must_carry_build_inputs_and_licence_notices(tmp_path: Path, name: str) -> None:
     with pytest.raises(ValueError, match=f"sdist is missing {name}"):
@@ -255,7 +255,9 @@ def test_wheel_must_not_declare_extra_tags(tmp_path: Path) -> None:
         pytest.param({"other/module.py": b"x = 1\n"}, "outside shadowscan/", id="foreign-top-level"),
         pytest.param({f"{DIST_INFO}/licenses/NOTICE": b"other\n"}, "NOTICE differs", id="changed-notice"),
         pytest.param(
-            {f"{DIST_INFO}/licenses/LICENSE-MIT": b"other\n"}, "LICENSE-MIT differs", id="changed-license-mit"
+            {f"{DIST_INFO}/licenses/LICENSES/Apache-2.0.txt": b"other\n"},
+            "LICENSES/Apache-2.0.txt differs",
+            id="changed-third-party-license",
         ),
         pytest.param(
             {f"{DIST_INFO}/METADATA": METADATA + b"changed description\n"},

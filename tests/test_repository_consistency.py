@@ -66,7 +66,6 @@ ADVISORY_URL = "https://github.com/Hunzee-VC/Nexus-ShadowScan/security/advisorie
 COMMUNITY_FILES = (
     "README.md",
     "LICENSE",
-    "LICENSE-MIT",
     "NOTICE",
     "CODE_OF_CONDUCT.md",
     "CONTRIBUTING.md",
@@ -735,7 +734,7 @@ def test_citation_matches_the_package_metadata() -> None:
     license = project["license"]
     expression = license if isinstance(license, str) else license["text"]
     # CFF 1.2.0 takes one SPDX identifier or a list of them read as OR, with no
-    # expression syntax: "Apache-2.0 OR MIT" is written as [Apache-2.0, MIT].
+    # expression syntax: "A OR B" is written as [A, B].
     cited = citation["license"]
     identifiers = [cited] if isinstance(cited, str) else cited
     assert all(" " not in name for name in identifiers), "CITATION.cff license takes SPDX identifiers"
