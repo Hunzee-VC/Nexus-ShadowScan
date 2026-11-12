@@ -753,20 +753,43 @@ def _spdx_expression(value: object) -> str | None:
         return None
 
 
+# Catalog licence notes that describe the project's own wording or material
+# free to reuse, not a third-party licence. Every other catalog must record an
+# SPDX expression, so a licence cannot slip past NOTICE by being spelled as prose
+# ("CC BY-SA 4.0"); adding a note here is a reviewed decision.
+_CATALOG_PROSE_LICENCE_NOTES = frozenset(
+    {
+        "Copyrighted; identifiers and own-words labels only",
+        "CSA publication; layer numbers and short labels only",
+        "EU legal act; reuse permitted",
+        "Public domain (US government work)",
+        "Unverified; identifiers and own-words labels only",
+    }
+)
+
+
 def test_third_party_catalog_licences_are_credited_in_notice() -> None:
     # A catalog drawn from licensed third-party material keeps that licence; the
-    # project's grant does not cover it, so NOTICE must name it. A prose licence
-    # note (own-words labels, public domain) is not an SPDX expression; a compound
-    # expression ("Apache-2.0 WITH LLVM-exception", "CC-BY-SA-4.0 OR MIT") is.
+    # project's grant does not cover it, so NOTICE's third-party section must name
+    # it. A compound expression ("Apache-2.0 WITH LLVM-exception") counts.
     notice = _read(ROOT / "NOTICE")
-    licensed = {
-        path.name: expression
-        for path in sorted((ROOT / "shadowscan/mappings/data/frameworks").glob("*.yaml"))
-        if (expression := _spdx_expression(_load_yaml(path).get("licence", "")))
-    }
+    assert notice.count("Third-party material:") == 1, "NOTICE has one third-party section"
+    third_party = notice.split("Third-party material:", 1)[1]
+    licensed = {}
+    for path in sorted((ROOT / "shadowscan/mappings/data/frameworks").glob("*.yaml")):
+        licence = str(_load_yaml(path).get("licence", ""))
+        if licence in _CATALOG_PROSE_LICENCE_NOTES:
+            continue
+        expression = _spdx_expression(licence)
+        assert expression, (
+            f"{path.name}: licence {licence!r} is neither an SPDX expression nor a reviewed prose note"
+        )
+        licensed[path.name] = expression
     assert licensed, "no catalog records an SPDX licence; the MITRE ATLAS and OWASP catalogs do"
     for name, licence in licensed.items():
-        assert name in notice, f"NOTICE does not credit {name} ({licence})"
+        assert re.search(rf"(?<![\w.-]){re.escape(name)}(?![\w.-])", third_party), (
+            f"NOTICE's third-party section does not credit {name} ({licence})"
+        )
 
 
 # The word each one-line scope description uses for a discovery surface; a

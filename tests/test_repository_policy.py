@@ -844,24 +844,32 @@ def test_container_build_carries_every_declared_license_file_and_the_license_exp
         for line in (ROOT / ".dockerignore").read_text(encoding="utf-8").splitlines()
         if line.strip() and not line.startswith("#")
     ]
-    dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
-    build_stage = next(
-        stage
-        for stage in re.split(r"^FROM ", dockerfile, flags=re.M)
-        if stage.splitlines()[0].endswith(" AS build")
-    )
-    # Each file must land at its own path under /opt/shadowscan: COPY puts every
-    # source straight into a directory destination, so a nested licence file needs
-    # a COPY that names its full destination path.
-    copies = [line.split() for line in re.findall(r"^COPY (?!--)([^\n]+)$", build_stage, re.M)]
+    dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8").replace("\\\n", " ")
+    stages = re.split(r"^FROM ", dockerfile, flags=re.M)
+    build_stage = next(stage for stage in stages if stage.splitlines()[0].endswith(" AS build"))
+    # Each file must land at its own path under /opt/shadowscan. COPY puts a file
+    # source straight into a directory destination and keeps the relative paths
+    # below a directory source; a COPY --from reads another stage, not the context.
+    copies = []
+    for line in re.findall(r"^COPY ([^\n]+)$", build_stage, re.M):
+        tokens = line.split()
+        flags = [token for token in tokens if token.startswith("--")]
+        if not any(flag.startswith("--from") for flag in flags):
+            copies.append([token for token in tokens if not token.startswith("--")])
 
     def copied_to_its_path(name: str) -> bool:
+        target = f"/opt/shadowscan/{name}"
         for *sources, destination in copies:
-            if name in sources and (
-                destination == f"/opt/shadowscan/{name}"
-                or (destination == "/opt/shadowscan/" and "/" not in name)
-            ):
-                return True
+            for source in sources:
+                if source == name and (
+                    destination == target
+                    or (destination.endswith("/") and destination + name.rsplit("/", 1)[-1] == target)
+                ):
+                    return True
+                if name.startswith(source.rstrip("/") + "/") and (
+                    f"{destination.rstrip('/')}/{name[len(source.rstrip('/')) + 1 :]}" == target
+                ):
+                    return True
         return False
 
     assert project["license-files"]
@@ -873,8 +881,14 @@ def test_container_build_carries_every_declared_license_file_and_the_license_exp
         assert copied_to_its_path(name), (
             f"the Dockerfile build stage does not copy {name} to /opt/shadowscan/{name}"
         )
-    labels = re.findall(r'^\s+org\.opencontainers\.image\.licenses="([^"]*)"', dockerfile, re.M)
-    assert labels == [project["license"]], "the image licence label must match pyproject.toml"
+    # Only the final stage's labels reach the image, and a later LABEL overrides.
+    final_stage = stages[-1]
+    labels = [
+        value
+        for line in re.findall(r"^LABEL ([^\n]+)$", final_stage, re.M)
+        for value in re.findall(r'org\.opencontainers\.image\.licenses="([^"]*)"', line)
+    ]
+    assert labels and labels[-1] == project["license"], "the image's licence label must match pyproject.toml"
 
 
 def test_build_context_matcher_follows_docker_pattern_rules() -> None:

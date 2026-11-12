@@ -40,11 +40,12 @@ mappings reference reproduces both. The repository also holds the evaluation
 corpora under `tools/evaluation/` and the SARIF schema fixture, each recorded
 with its upstream licence. `NOTICE`, the README and the product guide state the
 exception, `CONTRIBUTING.md` licenses changes to such material under its own
-licence, and a consistency test requires every catalog whose `licence` field is
-an SPDX expression to be credited in `NOTICE`. The package expression names
-only the project's licence; whether it should also name the bundled licences
-(`... AND Apache-2.0 AND CC-BY-SA-4.0`) is left to the maintainer, as is the
-OWASP point recorded earlier.
+licence, and a consistency test requires every catalog's `licence` field to be
+an SPDX expression credited by name in the third-party section of `NOTICE`, or
+a prose note on its reviewed list. The package expression names only the
+project's licence; whether it should also name the bundled licences (`... AND
+Apache-2.0 AND CC-BY-SA-4.0`) is left to the maintainer, as is the OWASP point
+recorded earlier.
 
 Not done here. The README images stay pinned to `84183af`, whose banner still
 reads `Apache-2.0`; they move to a commit on main at release preparation, as

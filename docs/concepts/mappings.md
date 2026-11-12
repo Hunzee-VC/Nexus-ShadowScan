@@ -98,8 +98,10 @@ Licensing notes:
   repository; MITRE ATLAS technique names come from its Apache-2.0 data release.
   These catalogs, and the titles the generated mappings reference reproduces
   from them, keep their upstream licences: the project's Apache-2.0 OR MIT
-  grant does not cover them, and `NOTICE` credits them. A catalog whose
-  `licence` field is an SPDX expression must be named in `NOTICE`.
+  grant does not cover them, and `NOTICE` credits them. A catalog's `licence`
+  field is either an SPDX expression, and the catalog is then named in the
+  third-party section of `NOTICE`, or a prose note on the consistency test's
+  reviewed list (own-words labels, public domain, reusable legal text).
 - AIUC-1 references stay at domain level, plus `D003` (restrict unsafe tool
   calls). Other requirement identifiers could not be verified against the
   official text and are not used.

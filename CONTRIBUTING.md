@@ -359,9 +359,10 @@ make mapping-reference
 ```
 
 Add a test with a finding the changed rule should match. A catalog drawn from
-material under its own licence records that licence as an SPDX identifier in
-its `licence` field and is credited in `NOTICE`; a test checks that every such
-catalog is named there. See [docs/concepts/mappings.md](docs/concepts/mappings.md)
+material under its own licence records that licence as an SPDX expression in
+its `licence` field and is credited in the third-party section of `NOTICE`; a
+test checks this, and accepts any other `licence` value only from its reviewed
+list of prose notes (own-words labels, public domain). See [docs/concepts/mappings.md](docs/concepts/mappings.md)
 for the format, editions and licensing limits.
 
 ## Review and merge policy
