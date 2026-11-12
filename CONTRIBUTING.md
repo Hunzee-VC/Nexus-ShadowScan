@@ -100,7 +100,7 @@ Dependabot and the tests read them from there:
 | `agent-card.yaml` | Sample Agent Capability Card used by the offline demo, the quick start and the image |
 | `CHANGELOG.md`, `docs/engineering-log.md`, `RELEASE_NOTES.md` | One summary per release, the detailed engineering log, and the operator summary of what changes on upgrade |
 | `AGENTS.md` | Rules for coding agents working in this repository |
-| `CITATION.cff`, `NOTICE`, `LICENSE`, `CODEOWNERS` | Citation metadata, attribution, licence and review ownership |
+| `CITATION.cff`, `NOTICE`, `LICENSE`, `LICENSE-MIT`, `CODEOWNERS` | Citation metadata, attribution, the two licences and review ownership |
 
 ## Run one test
 
@@ -434,7 +434,7 @@ in public issues.
 ## Developer Certificate of Origin
 
 By contributing to this project, you certify that you have the right to submit
-the work under either the Apache-2.0 or the MIT license and that you agree to the
+the work under both the Apache-2.0 and the MIT licenses and that you agree to the
 [Developer Certificate of Origin](https://developercertificate.org/) (DCO).
 
 You can sign off your commits with `git commit -s`, which adds a
@@ -466,5 +466,7 @@ A GitHub-signed squash is not a guaranteed substitute for signed PR history.
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under
-either the Apache-2.0 or the MIT license, at the licensee's choice.
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
+dual licensed under Apache-2.0 OR MIT, at the licensee's choice, without any
+additional terms or conditions.

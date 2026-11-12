@@ -201,8 +201,8 @@ def render_banner() -> str:
             for index, line in enumerate(textwrap.wrap(sentence, 68, break_on_hyphens=False))
         ),
         f'<g font-family="{MONO}" font-size="20">',
-        # The licence pill is wider than the others: "Apache-2.0 OR MIT" is
-        # 17 characters, and the following pills shift right to make room.
+        # The licence pill is widened from 160 to 230 so "Apache-2.0 OR MIT"
+        # (17 characters) fits; the following pills shift right to make room.
         f"  {_rect(90, 436, 230, 48, '#162544', '#2b4270', rx=24)}",
         f"  {_t(205, 466, _license(), size=20, fill='#c9d4ea', text_anchor='middle')}",
         f"  {_rect(338, 436, 380, 48, '#2a2210', '#6b4e12', rx=24)}",

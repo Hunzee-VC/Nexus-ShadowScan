@@ -810,4 +810,4 @@ See [SECURITY.md](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/SECURI
 
 ## License
 
-Licensed under either Apache-2.0 or MIT, at your choice. See [LICENSE](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/LICENSE) (Apache-2.0), [LICENSE-MIT](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/LICENSE-MIT) (MIT), and [NOTICE](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/NOTICE).
+Licensed under either Apache-2.0 or MIT, at your choice, except the MITRE ATLAS (Apache-2.0) and OWASP (CC BY-SA 4.0) mapping catalogs in `shadowscan/mappings/data/frameworks/`, which keep their upstream licences. See [LICENSE](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/LICENSE) (Apache-2.0), [LICENSE-MIT](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/LICENSE-MIT) (MIT), and [NOTICE](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/NOTICE).

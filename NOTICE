@@ -10,7 +10,20 @@ Licensed under either of
     http://www.apache.org/licenses/LICENSE-2.0)
     MIT license (LICENSE-MIT or https://opensource.org/licenses/MIT)
 
-at your option.
+at your option, except the third-party material listed below, which keeps
+its own license.
+
+Third-party material:
+
+    shadowscan/mappings/data/frameworks/mitre-atlas.yaml holds technique
+    identifiers and names from MITRE ATLAS
+    (https://github.com/mitre-atlas/atlas-data), Copyright 2021-2026 MITRE,
+    licensed under the Apache License, Version 2.0 only.
+
+    shadowscan/mappings/data/frameworks/owasp-llm.yaml and owasp-asi.yaml
+    hold entry names from the OWASP GenAI Security Project
+    (https://github.com/GenAI-Security-Project/GenAI-LLM-Top10), licensed
+    under CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/).
 
 Unless required by applicable law or agreed to in writing, software
 distributed under these licenses is distributed on an "AS IS" BASIS,

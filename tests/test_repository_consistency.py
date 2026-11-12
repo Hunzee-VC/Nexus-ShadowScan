@@ -733,7 +733,13 @@ def test_citation_matches_the_package_metadata() -> None:
     project = _pyproject()["project"]
     assert citation["version"] == project["version"]
     license = project["license"]
-    assert citation["license"] == (license if isinstance(license, str) else license["text"])
+    expression = license if isinstance(license, str) else license["text"]
+    # CFF 1.2.0 takes one SPDX identifier or a list of them read as OR, with no
+    # expression syntax: "Apache-2.0 OR MIT" is written as [Apache-2.0, MIT].
+    cited = citation["license"]
+    identifiers = [cited] if isinstance(cited, str) else cited
+    assert all(" " not in name for name in identifiers), "CITATION.cff license takes SPDX identifiers"
+    assert " OR ".join(identifiers) == expression
     assert citation["repository-code"] == project["urls"]["Repository"]
     assert citation["url"] == project["urls"]["Documentation"]
 

@@ -834,10 +834,10 @@ def test_container_build_is_digest_pinned_hash_locked_and_non_root() -> None:
 
 
 def test_container_build_carries_every_declared_license_file_and_the_license_expression() -> None:
-    # The image builds its wheel from this context. setuptools silently drops a
-    # license-files entry that is not there, so a file missing from the context
-    # or the build stage's COPY ships a wheel whose License-Expression names a
-    # licence whose text it does not carry.
+    # The image builds its wheel from this context. setuptools only warns about a
+    # license-files entry that is not there, and the build stage's pip wheel hides
+    # the warning, so a file missing from the context or the COPY ships a wheel
+    # whose License-Expression names a licence whose text it does not carry.
     project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
     patterns = [
         line.strip()
@@ -845,7 +845,12 @@ def test_container_build_carries_every_declared_license_file_and_the_license_exp
         if line.strip() and not line.startswith("#")
     ]
     dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
-    packaging_inputs = re.findall(r"^COPY (?!--)([^\n]+) /opt/shadowscan/$", dockerfile, re.M)
+    build_stage = next(
+        stage
+        for stage in re.split(r"^FROM ", dockerfile, flags=re.M)
+        if stage.splitlines()[0].endswith(" AS build")
+    )
+    packaging_inputs = re.findall(r"^COPY (?!--)([^\n]+) /opt/shadowscan/$", build_stage, re.M)
     assert len(packaging_inputs) == 1, "the build stage copies its packaging inputs in one COPY"
     copied = packaging_inputs[0].split()
     assert project["license-files"]
@@ -855,7 +860,8 @@ def test_container_build_carries_every_declared_license_file_and_the_license_exp
             f".dockerignore leaves {name} out of the build context"
         )
         assert name in copied, f"the Dockerfile build stage does not copy {name}"
-    assert f'org.opencontainers.image.licenses="{project["license"]}"' in dockerfile
+    labels = re.findall(r'^\s+org\.opencontainers\.image\.licenses="([^"]*)"', dockerfile, re.M)
+    assert labels == [project["license"]], "the image licence label must match pyproject.toml"
 
 
 def test_build_context_matcher_follows_docker_pattern_rules() -> None:
