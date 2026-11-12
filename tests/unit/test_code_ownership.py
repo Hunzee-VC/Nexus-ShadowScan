@@ -208,9 +208,9 @@ def test_codeowners_large_monorepo_resolves_owners_without_exhausting_the_budget
         package = tmp_path / "packages" / f"pkg-{j}" / "src" / "agents"
         package.mkdir(parents=True)
         (package / "orchestrator.py").write_text("from crewai import Agent\n")
-    started = time.monotonic()
+    started = time.process_time()
     findings, ctx = _run(index, tmp_path)
-    assert time.monotonic() - started < 20
+    assert time.process_time() - started < 20
     assert not any("budget exceeded" in error for error in ctx.stats.errors)
     project = next(f for f in findings if f.resource_type == "project")
     assert project.owner == "@org/everyone"

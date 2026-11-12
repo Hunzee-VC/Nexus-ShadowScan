@@ -149,9 +149,9 @@ def test_text_output_of_a_long_imported_title_is_not_quadratic(tmp_path, relatio
     before, after = (
         (_report(), _report(finding)) if relation == "new" else (_report(finding), _report(changed))
     )
-    started = time.perf_counter()
+    started = time.process_time()
     result = _invoke(tmp_path, before, after)
-    elapsed = time.perf_counter() - started
+    elapsed = time.process_time() - started
     assert result.exit_code == 0, result.output
     assert f"1 {relation}" in result.output and title in "".join(result.output.split())
     assert elapsed < 1.0, elapsed

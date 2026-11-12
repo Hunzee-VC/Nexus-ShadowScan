@@ -3,10 +3,13 @@ from __future__ import annotations
 import errno
 import functools
 import ipaddress
+import os
 import re
 import shutil
 import socket
+import stat
 import subprocess
+import tempfile
 from collections.abc import Callable, Iterator
 from pathlib import Path
 from typing import Any
@@ -91,7 +94,46 @@ requires_git_2_45 = pytest.mark.skipif(
 )
 
 
+def _check_test_environment() -> None:
+    """Fail fast when the host environment would break the suite late (audit F5).
+
+    Two preconditions cost the 2026-11-08 run 92 failures before anyone saw a
+    clear message, so they are checked at collection time instead of failing
+    test by test:
+
+    - A setgid temporary directory: ``prepare_private_directory``
+      (``shadowscan/utils/output.py``) requires mode exactly ``0o700``, and
+      pytest ``tmp_path`` directories inherit the setgid bit from their
+      parent, so every test that writes private output fails.
+    - No ``python`` on PATH: the Makefile and several policy tests shell out
+      to bare ``python`` (this host ships ``python3`` only by default).
+    """
+    tmpdir = tempfile.gettempdir()
+    try:
+        # S_ISGID is a bit value, not a predicate: test the mode directly.
+        setgid = bool(os.stat(tmpdir).st_mode & stat.S_ISGID)
+    except OSError:
+        setgid = False
+    if setgid:
+        pytest.exit(
+            f"TMPDIR {tmpdir} is setgid: pytest tmp_path directories inherit the setgid bit, "
+            "and shadowscan.utils.output.prepare_private_directory requires mode exactly "
+            "0o700, so tests that write private output fail late. Unset TMPDIR or point it "
+            "at a directory without the setgid bit (chmod g-s <dir>).",
+            returncode=2,
+        )
+    if shutil.which("python") is None:
+        pytest.exit(
+            "No `python` on PATH: the Makefile and several policy tests shell out to bare "
+            "`python` (this host ships `python3` only by default). Put a `python` on PATH "
+            "first, e.g. `ln -s $(command -v python3) <venv>/bin/python` and activate the "
+            "venv, then re-run. See docs/testing.md.",
+            returncode=2,
+        )
+
+
 def pytest_configure(config: pytest.Config) -> None:
+    _check_test_environment()
     config.addinivalue_line(
         "markers",
         "requires_git_2_45: the test runs real git enrichment, which needs Git >= 2.45 on the host",

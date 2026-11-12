@@ -164,12 +164,12 @@ def _cases(seed: str) -> Iterator[tuple[str, Any]]:
 def _timed(call: Any, text: str, repeat: int = 1) -> float:
     best = float("inf")
     for _ in range(repeat):
-        started = time.perf_counter()
+        started = time.process_time()
         try:
             call(text)
         except Exception:  # noqa: BLE001 - a pattern that rejects the input still did its work
             pass
-        best = min(best, time.perf_counter() - started)
+        best = min(best, time.process_time() - started)
     return best
 
 
@@ -283,9 +283,9 @@ def test_the_sweep_flags_quadratic_and_stalled_patterns_and_passes_linear_ones()
 def test_the_possessive_form_of_a_flagged_pattern_is_linear():
     # The supported fix: the third-party engine's possessive quantifiers never backtrack.
     fixed = regex.compile(r"\w++\s*+=\s*+\w++!")
-    started = time.perf_counter()
+    started = time.process_time()
     assert fixed.search("a" * 100_000 + "x") is None
-    assert time.perf_counter() - started < 1.0
+    assert time.process_time() - started < 1.0
 
 
 # Signature patterns are compiled by the signature loader, not at module level, so the

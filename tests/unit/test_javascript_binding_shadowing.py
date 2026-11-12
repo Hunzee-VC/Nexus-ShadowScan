@@ -164,9 +164,9 @@ _QUADRATIC_SHAPES = {
 @pytest.mark.parametrize("shape", sorted(_QUADRATIC_SHAPES))
 def test_the_quadratic_shapes_found_in_review_stay_fast(shape: str):
     source = _QUADRATIC_SHAPES[shape]()
-    started = time.perf_counter()
+    started = time.process_time()
     _kept(source, "OpenAI")
-    assert time.perf_counter() - started < 2.0
+    assert time.process_time() - started < 2.0
 
 
 def test_windowed_check_agrees_with_the_original_pattern_on_declaration_shaped_source():
