@@ -326,54 +326,42 @@ def _verified(index: SignatureIndex, claims: dict, private):
     return finding
 
 
-# SEC-02 (audit 2026-11-12): a token whose signature verifies cryptographically
-# must never be reported verified once it is outside its validity period.
-def test_an_expired_token_with_a_valid_signature_is_not_reported_verified(index: SignatureIndex):
+# SEC-02 (audit 2026-11-12): a consumer must be able to tell a live token from an
+# expired one. ``verified`` stays signature evidence (historical tokens are valid
+# analysis inputs, SECURITY.md); time validity is reported in its own field.
+@pytest.mark.parametrize(
+    ("offset_claims", "period", "tag"),
+    [
+        ({"exp": -3600}, "expired", "expired"),
+        ({"nbf": 3600}, "not-yet-valid", "not-yet-valid"),
+        ({"iat": -300, "exp": 3600}, "current", None),
+    ],
+    ids=["expired", "not-yet-valid", "current"],
+)
+def test_validity_period_is_reported_beside_an_unchanged_signature_result(
+    index: SignatureIndex, offset_claims: dict, period: str, tag: str | None
+):
     private = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     now = datetime.now(UTC)
-    finding = _verified(
-        index,
-        {"iss": OKTA_ISSUER, "sub": "u1", "exp": int((now - timedelta(hours=1)).timestamp())},
-        private,
+    claims = {"iss": OKTA_ISSUER, "sub": "u1"}
+    claims.update(
+        {name: int((now + timedelta(seconds=offset)).timestamp()) for name, offset in offset_claims.items()}
     )
-    assert finding.metadata["signature_verified"] is False
-    assert finding.metadata["signature_verification_reason"] == "signature_expired"
-    assert finding.metadata["verified"] is False
-    assert "expired" in finding.tags
-    assert "signature-unverified" not in finding.tags
-    evidence = next(e for e in finding.evidence if e.signal == "jwt:signature")
-    assert "expired" in evidence.description and "not reported as verified" in evidence.description
-
-
-def test_a_not_yet_valid_token_with_a_valid_signature_is_not_reported_verified(index: SignatureIndex):
-    private = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    now = datetime.now(UTC)
-    finding = _verified(
-        index,
-        {"iss": OKTA_ISSUER, "sub": "u1", "nbf": int((now + timedelta(hours=1)).timestamp())},
-        private,
-    )
-    assert finding.metadata["signature_verified"] is False
-    assert finding.metadata["signature_verification_reason"] == "signature_not_yet_valid"
-    assert finding.metadata["verified"] is False
-
-
-def test_a_token_inside_its_validity_period_still_verifies(index: SignatureIndex):
-    private = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    now = datetime.now(UTC)
-    finding = _verified(
-        index,
-        {
-            "iss": OKTA_ISSUER,
-            "sub": "u1",
-            "iat": int((now - timedelta(minutes=5)).timestamp()),
-            "exp": int((now + timedelta(hours=1)).timestamp()),
-        },
-        private,
-    )
+    finding = _verified(index, claims, private)
+    assert finding.metadata["validity_period"] == period
     assert finding.metadata["signature_verified"] is True
-    assert "signature_verification_reason" not in finding.metadata
     assert finding.metadata["verified"] is True
+    assert "signature-unverified" not in finding.tags
+    if tag:
+        assert tag in finding.tags
+
+
+@pytest.mark.parametrize("claims", [{"exp": "garbage"}, {"exp": [1]}, {"exp": True}, {"nbf": "x"}], ids=str)
+def test_an_unreadable_validity_claim_is_not_reported_current(index: SignatureIndex, claims: dict):
+    private = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    finding = _verified(index, {"iss": OKTA_ISSUER, "sub": "u1", **claims}, private)
+    assert finding.metadata["validity_period"] == "unparseable"
+    assert "validity-unparseable" in finding.tags
 
 
 # ------------------------------------------------- precision: decoy name suppression

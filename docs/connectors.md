@@ -799,12 +799,16 @@ ES256, EdDSA and PS256 by default. `allowed_algorithms` may narrow that list.
 `expected_issuer` binds verification to an operator-supplied exact issuer; the
 unverified token's issuer does not choose or authorize a key source. The JWKS URL
 is configured by the operator, so legitimate providers may host keys separately.
-Audience is not an authorization check here. A token past its expiry (or before its not-before) is reported as not verified, with `metadata.signature_verification_reason` set to `signature_expired` or `signature_not_yet_valid`. Read
+Audience and historical-token expiry are not authorization checks here: an
+expired token whose signature verifies is still `metadata.verified: true`.
+`metadata.validity_period` says whether the token is `current`, `expired`,
+`not-yet-valid` or `unparseable` (an `exp` or `nbf` that is present but not a
+timestamp), with a matching tag. Read
 `metadata.verified` as signature evidence, not permission to act.
 A token analyzed without `jwks_url`, or whose verification failed, carries
 `metadata.signature_verified: false`, the `signature-unverified` tag and a
 `jwt:signature` evidence item: its issuer family, identity type and privileged
-scopes come from unauthenticated claims and can be forged. A cryptographically verified token that is expired or not yet valid likewise carries `metadata.signature_verified: false` (with `metadata.signature_verification_reason`), but keeps a `jwt:signature` evidence item describing the verified signature. The marker does not
+scopes come from unauthenticated claims and can be forged. The marker does not
 change confidence or risk. For a JWKS endpoint behind a private CA, set
 `ca_bundle` to a PEM file; it replaces the default CA store for that fetch and
 certificate verification stays on.

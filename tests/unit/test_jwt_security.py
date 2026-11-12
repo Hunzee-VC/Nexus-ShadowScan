@@ -206,11 +206,8 @@ def test_output_says_when_the_signature_was_not_checked(index, rsa_private, tmp_
     "expected_issuer,scope", [(None, "signature-only"), (ISSUER, "signature-and-issuer")]
 )
 def test_connector_wires_verifier_and_labels_scope(index, rsa_private, expected_issuer, scope):
-    # exp is 2100-01-01: the token must be inside its validity period for
-    # the connector to report it verified (SEC-02: expired tokens are no
-    # longer reported verified).
     token, jwk, _ = signed(
-        rsa_private, claims={"sub": "agent", "iss": ISSUER, "exp": 4102444800, "aud": "unvalidated"}
+        rsa_private, claims={"sub": "agent", "iss": ISSUER, "exp": 1, "aud": "unvalidated"}
     )
     config = {"jwks_url": JWKS_URL, "allowed_algorithms": ["RS256"]}
     if expected_issuer:

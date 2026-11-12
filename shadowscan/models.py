@@ -471,8 +471,10 @@ class Finding:
             values, evidence_values, risk_values = sanitize(state)
         else:
             (values, evidence_values, risk_values), _ = sanitize((state, credential_context))
+        # Identity fields keep the regex sanitizer's result only: rewriting them would
+        # change a finding's identity and let distinct findings collide.
         for name, (value,) in zip(names, values, strict=True):
-            setattr(self, name, _entropy_value(value))
+            setattr(self, name, value if name == "id" or name in identity_names else _entropy_value(value))
         changed = {
             name
             for name, original in zip(identity_names, identity_before, strict=True)

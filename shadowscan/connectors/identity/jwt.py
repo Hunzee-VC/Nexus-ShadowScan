@@ -19,10 +19,13 @@ Signals evaluated:
 * hygiene: lifetime > 24h, no ``exp``, ``alg=none``, symmetric algs on public issuers
 * provenance: without a JWKS the signature is not checked; the finding then carries
   ``signature_verified: false``, a ``signature-unverified`` tag and a zero-weight
-  ``jwt:signature`` evidence item, and its claims are unauthenticated. A token
-  whose signature verifies but which is expired (or not yet valid) is likewise
-  reported ``signature_verified: false``, with ``signature_verification_reason``
-  naming why; audience is never validated
+  ``jwt:signature`` evidence item, and its claims are unauthenticated
+* validity: ``metadata.validity_period`` is ``current``, ``expired``,
+  ``not-yet-valid`` or ``unparseable`` (an ``exp`` or ``nbf`` claim that is present
+  but not a timestamp), with a matching ``expired``, ``not-yet-valid`` or
+  ``validity-unparseable`` tag. It never changes ``verified`` or
+  ``signature_verified``, which stay signature evidence: historical tokens are
+  valid analysis inputs
 
 Input: ``tokens: [...]`` in config, ``input`` file (one token per line, JSON list,
 or JSON objects with a ``token`` field), or the CLI ``shadowscan jwt`` command.
@@ -301,11 +304,14 @@ class JwtConnector(BaseConnector, _NoDump):
         lifetime_h = (exp - iat).total_seconds() / 3600 if iat and exp else None
         alg = str(header.get("alg", ""))
         hygiene = _hygiene_issues(alg, family, exp, lifetime_h)
-        now = datetime.now(UTC)
-        expired = exp is not None and exp < now
-        not_yet_valid = nbf is not None and nbf > now
-        if expired:
+        validity = _validity_period(claims, exp, nbf, datetime.now(UTC))
+        f.metadata["validity_period"] = validity
+        if validity == "unparseable":
+            f.add_tag("validity-unparseable")
+        if exp and exp < datetime.now(UTC):
             f.add_tag("expired")
+        if validity == "not-yet-valid":
+            f.add_tag("not-yet-valid")
         for h in hygiene:
             f.add_tag("token-hygiene")
             f.add_evidence(Evidence(signal="jwt:hygiene", description=h, weight=0.1))
@@ -320,21 +326,13 @@ class JwtConnector(BaseConnector, _NoDump):
         )
         # Without a JWKS the signature is never checked: issuer family, identity
         # type and privileged scopes then come from unauthenticated claims.
-        # A signature that verifies cryptographically is still not reported as
-        # verified once the token is outside its validity period: a consumer
-        # reading only signature_verified must not mistake an expired (or
-        # not-yet-valid) token for a live one. The cryptographic result is
-        # recorded in the jwt:signature evidence item.
-        time_reason = "signature_expired" if expired else "signature_not_yet_valid" if not_yet_valid else None
-        f.metadata["signature_verified"] = verified is True and time_reason is None
-        if verified is True and time_reason is not None:
-            f.metadata["signature_verification_reason"] = time_reason
+        f.metadata["signature_verified"] = verified is True
         if verified is not True:
             f.add_tag("signature-unverified")
         if verified is None:
             _unchecked_signature_evidence(f)
         else:
-            self._signature_evidence(f, verified, time_reason=time_reason)
+            self._signature_evidence(f, verified)
         f.add_tag(f"identity:{identity_type}")
         f.title = f"JWT ({identity_type}) for {sub or azp or '?'} from {family}"
         f.owner = (
@@ -465,23 +463,13 @@ class JwtConnector(BaseConnector, _NoDump):
                 identity_type = "agent"
         return identity_type, reasons, agent_hints, azp
 
-    def _signature_evidence(self, f: Finding, verified: bool, *, time_reason: str | None = None) -> None:
+    def _signature_evidence(self, f: Finding, verified: bool) -> None:
         expected_issuer = self.ctx.get("expected_issuer")
-        if time_reason is not None:
-            verified_description = (
-                "signature verified against configured JWKS but token expired; not reported as verified"
-                if time_reason == "signature_expired"
-                else "signature verified against configured JWKS but token not yet valid; "
-                "not reported as verified"
-            )
-        else:
-            verified_description = (
-                "signature and configured issuer verified and token within its validity "
-                "period; audience NOT validated"
-                if expected_issuer
-                else "signature verified against configured JWKS and token within its "
-                "validity period; issuer and audience NOT validated"
-            )
+        verified_description = (
+            "signature and configured issuer verified; expiry and audience NOT validated"
+            if expected_issuer
+            else "signature verified against configured JWKS; issuer, expiry and audience NOT validated"
+        )
         f.add_evidence(
             Evidence(
                 signal="jwt:signature",
@@ -489,10 +477,29 @@ class JwtConnector(BaseConnector, _NoDump):
                 weight=0.0,
             )
         )
-        f.metadata["verified"] = verified and time_reason is None
+        f.metadata["verified"] = verified
         f.metadata["verification_scope"] = "signature-and-issuer" if expected_issuer else "signature-only"
         f.metadata["issuer_verified"] = bool(verified and expected_issuer)
         f.metadata["authorization_validated"] = False
+
+
+def _validity_period(
+    claims: dict[str, Any], exp: datetime | None, nbf: datetime | None, now: datetime
+) -> str:
+    """When the token is valid, judged from ``exp`` and ``nbf`` alone; separate from its signature.
+
+    A claim that is present but not a timestamp makes the period ``unparseable``:
+    the token is not reported as current when its limits cannot be read.
+    """
+    for name, parsed in (("exp", exp), ("nbf", nbf)):
+        raw = claims.get(name)
+        if raw is not None and (parsed is None or isinstance(raw, bool)):
+            return "unparseable"
+    if exp is not None and exp < now:
+        return "expired"
+    if nbf is not None and nbf > now:
+        return "not-yet-valid"
+    return "current"
 
 
 def _unchecked_signature_evidence(f: Finding) -> None:

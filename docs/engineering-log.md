@@ -13,7 +13,7 @@ Counts and figures quoted in an entry are those of its date.
 
 ## Unreleased
 
-### Entropy redaction in every report field, and expired JWTs no longer reported verified (November 12)
+### Entropy redaction in finding text fields, and a JWT validity period (November 12)
 
 Audit findings SEC-01 and SEC-02 (end-to-end audit of HEAD `d8f4e585`,
 2026-11-12). SEC-01 was reproduced live before the fix: the literal
@@ -26,7 +26,7 @@ was wired only into the snippet path (`models.py`, when the field name was
 The fix is at the model level, not in `sanitize_text`: a new `_entropy_value`
 helper in `shadowscan/models.py` applies the pass to every string leaf, and
 `Evidence.sanitize()` now uses it for all fields while `Finding.sanitize()`
-uses it for every scalar field (title, resource, metadata) and for risk-factor
+uses it for every non-identity scalar field (title, owner, metadata) and for risk-factor
 id/description. `sanitize_text` was deliberately left untouched — it is a hot
 path also used for non-report text, and the model sanitizers cover every
 reportable field (sanitize on construction, `to_dict()` re-sanitizes before
@@ -40,15 +40,23 @@ says to regenerate retained reports after upgrading to a release that carries
 it.
 
 SEC-02: `analyze_token` in `shadowscan/connectors/identity/jwt.py` now parses
-`nbf` and gates the reported verdict on the token being inside its validity
-period. An expired token reports `signature_verified: false` with
-`metadata["signature_verification_reason"] = "signature_expired"` (and
-`"signature_not_yet_valid"` for a token before `nbf`); `metadata["verified"]`
-follows, and the `jwt:signature` evidence still records that the signature
-itself verified. `verify_against_jwks` is unchanged (signature only, as its
-docstring states); audience is still not validated, by design — the connector
-has no expected-audience configuration. No existing test asserted the old
-behaviour for an expired token. Also in this change: `os.walk` in
+`nbf` and reports `metadata["validity_period"]`: `current`, `expired`,
+`not-yet-valid`, or `unparseable` when an `exp` or `nbf` claim is present but
+is not a timestamp (fail closed rather than claim a live token), with matching
+`expired`, `not-yet-valid` and `validity-unparseable` tags. A first version
+folded expiry into `signature_verified`; review showed that contradicts the
+documented contract (SECURITY.md: historical tokens are valid analysis inputs;
+identity.md: read `metadata.verified` as signature evidence) and broke
+`test_connector_wires_verifier_and_labels_scope`, which pins it, so `verified`
+and `signature_verified` stay signature evidence and the test is unchanged.
+Review also found that the widened entropy pass rewrote finding-identity fields
+(resource, account, provider, connector, resource type, discriminator): two
+plugin findings whose resources differed only by a random-looking quoted
+literal derived one id and were merged. Identity fields now keep the regex
+sanitizer's result only, and a regression test re-derives plugin ids. The pass
+covers quoted generated-looking literals in finding and evidence text fields;
+bare values, mapping keys and typographic quotes are outside it, as before.
+Also in this change: `os.walk` in
 `walk.py:2741` now passes `followlinks=False` explicitly (SEC-12, behaviour
 unchanged), and `cli/__init__.py:672` returns `str(...)` so mypy
 `no-any-return` is clean (the audit's single environment-independent mypy
@@ -58,7 +66,7 @@ Verification (shared venv, Python 3.12.3, pytest 9.2.0): targeted files
 `test_snippet_entropy_properties`, `test_finding_sanitization`,
 `test_model_sanitization_schema`, `test_identity_classification_regressions`,
 `test_jwt_classification_bounds`, `test_cli_exit_codes` — 158 passed,
-including 3 new SEC-01 and 3 new SEC-02 regression tests. The wider
+including the SEC-01 and SEC-02 regression tests. The wider
 redaction/oracle/filesystem run (4,693 passed) carries 3 failures in
 linear-time performance guards that fail identically on the pristine base
 clone (subprocess timeouts under load on the shared-CPU VM); they are not
