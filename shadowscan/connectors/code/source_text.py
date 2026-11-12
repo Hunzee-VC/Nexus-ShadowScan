@@ -14,6 +14,7 @@ from __future__ import annotations
 import ast
 import io
 import re
+import sys
 import tokenize
 import tomllib
 import warnings
@@ -143,6 +144,10 @@ _NOT_LINE_BREAK = re.compile(r"[^\r\n]")
 _LINE_FEED = re.compile(r"\n")
 # How many tokens or statements classifying Python prose handles between checks of the input's budget.
 _BUDGET_EVERY = 4096
+# CPython 3.12.0-3.12.3 tokenize is quadratic in a line's length (fixed in 3.12.4); on
+# those interpreters a file with a line longer than this is not classified, as on main.
+_QUADRATIC_TOKENIZE = (3, 12) <= sys.version_info[:3] < (3, 12, 4)
+_LONG_LINE = 10_000
 # The statement lists of a Python syntax tree: module and block bodies, else and finally
 # blocks, exception handlers and match cases (each of the last two holds a body).
 _STATEMENT_LISTS = ("body", "orelse", "finalbody", "handlers", "cases")
@@ -285,6 +290,8 @@ def _python_prose_spans(text: str, check: Callable[[], object]) -> list[tuple[in
     if "#" not in text and '"' not in text and "'" not in text:
         return []
     if "\r" in text and "\r" in text.replace("\r\n", ""):
+        return None
+    if _QUADRATIC_TOKENIZE and max(map(len, text.split("\n"))) > _LONG_LINE:
         return None
     check()
     try:

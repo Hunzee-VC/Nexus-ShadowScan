@@ -301,17 +301,22 @@ project that installs or imports the OpenAI SDK describes that SDK and never
 adds `provider.openai-compatible` as a second provider; in a project whose
 only such library is a Hugging Face `InferenceClient`, the shape names neither.
 
-Prose in a Python source file is not evidence. In a `.py` file that parses,
-hosts, environment-variable names and model identifiers are read with the
-file's comments and docstrings blanked: comments are the tokenizer's comment
-tokens, and a docstring is a statement that is only a string or bytes literal.
-A note that a service "must never call api.openai.com" names the host without
-using it. A string the code reads still counts, whether it is assigned, passed
-to a call, listed in a table or built as an f-string. A file that names
-`__doc__` keeps its docstrings, since it may read them, and a file that does
-not parse keeps all of its prose. Notebooks and other languages are
-unchanged, and their comments still count: a lexer span that starts with `//`
-or `#` can be a template or interpolated piece of code.
+Prose in a Python source file is not evidence. In a `.py` file that parses
+under the Python running the scanner, hosts, environment-variable names and
+model identifiers are read with the file's comments and docstrings blanked:
+comments are the tokenizer's comment tokens, and a docstring is a statement
+that is only a string or bytes literal. A note that a service "must never call
+api.openai.com" names the host without using it. A string the code reads still
+counts, whether it is assigned, passed to a call, listed in a table or built as
+an f-string. A file that names `__doc__` keeps its docstrings, since it may
+read them, and a file that does not parse keeps all of its prose. The `__doc__`
+check looks at that file only: a docstring another module reads
+(`endpoints.__doc__`), one read through `inspect.getdoc`, and doctest examples
+are blanked like any other docstring. On CPython 3.12.0 to 3.12.3, whose
+tokenizer is quadratic in a line's length, a file with a line over 10,000
+characters is not classified. Notebooks and other languages are unchanged, and
+their comments still count: a lexer span that starts with `//` or `#` can be a
+template or interpolated piece of code.
 
 Model identifiers are medium-weight provider evidence. Quoted literals in
 source files and notebook code cells (comments are skipped where the lexer

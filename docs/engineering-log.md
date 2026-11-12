@@ -34,7 +34,8 @@ Counts and figures quoted in an entry are those of its date.
   parse or tokenize, when the lexer reports its reading ambiguous, when the
   text has a bare carriage return, or when a span found does not begin and end
   the way its kind must. A file that names `__doc__` keeps its docstrings:
-  `docopt(__doc__)` reads option defaults from one. Classification is linear,
+  `docopt(__doc__)` reads option defaults from one; a docstring read only from
+  another module, through `inspect.getdoc` or as a doctest is still blanked. Classification is linear (except on CPython 3.12.0 to 3.12.3, whose tokenizer is quadratic in a line's length; there a file with a line over 10,000 characters is not classified),
   checks the input's execution budget every 4,096 tokens or statements, and
   took 0.45 s for a 1 MB file on Python 3.11 (0.2 s on 3.13) here. Notebooks and
   every other language are unchanged: their comments are still evidence, and
@@ -86,7 +87,7 @@ Counts and figures quoted in an entry are those of its date.
   two-line example above. Doing better there needs comment spans that the
   lexers record by kind, which is left for a later change. Scanning the
   `shadowscan` package itself still yields one high-risk "LLM usage" finding,
-  now from 81 evidence items and 14 providers instead of 117 and 16, because
+  now from 84 evidence items and 14 providers instead of 118 and 16, because
   its catalogs are Python tables of hosts, variable names and model
   identifiers. A provider table in a gateway is real usage and reads the same,
   so telling the two apart is a labelling decision, not a lexical one;

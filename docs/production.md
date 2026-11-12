@@ -87,7 +87,7 @@ Python files.
   scan stays incomplete). CycloneDX BOMs keep the sanitized endpoint of an MCP
   server whose URL carried inline credentials.
 - **Findings that change: prose in Python files.** In a `.py` file that
-  parses, comments and docstrings are no longer evidence of hosts,
+  parses under the Python running the scanner, comments and docstrings are no longer evidence of hosts,
   environment-variable names or model identifiers. A finding that rested on
   such prose alone disappears, so `shadowscan code --fail-on low` can exit 0
   where it exited 2 on a file whose only provider mention is a comment. A

@@ -406,3 +406,22 @@ def test_text_without_comments_or_quotes_is_not_parsed():
     assert (
         _python_prose_spans("def handler(request):\n    return client.chat(model=request.m)\n", spent) == []
     )
+
+
+def test_a_long_line_is_not_classified_where_tokenize_is_quadratic(monkeypatch):
+    # CPython 3.12.0-3.12.3 tokenize is quadratic in a line's length: a file with a
+    # line past the bound is left unclassified there (main's behaviour), not timed out.
+    from shadowscan.connectors.code import source_text
+
+    text = "# api.openai.com\nVOCAB = [" + ", ".join(f'"w{i}"' for i in range(2_000)) + "]\n"
+    monkeypatch.setattr(source_text, "_QUADRATIC_TOKENIZE", True)
+    assert _python_prose_spans(text, lambda: None) is None
+    monkeypatch.setattr(source_text, "_QUADRATIC_TOKENIZE", False)
+    assert _python_prose_spans(text, lambda: None)
+
+
+def test_a_docstring_read_only_from_another_module_is_still_prose():
+    # Documented limitation: the __doc__ guard looks at one file, so a module docstring
+    # that another module reads at runtime (endpoints.__doc__) is blanked like any other.
+    text = '"""https://api.openai.com/v1/chat/completions"""\n'
+    assert _python_prose_spans(text, lambda: None) == [(0, len(text) - 1)]
