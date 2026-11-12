@@ -493,12 +493,15 @@ Offline results from this repository's own benchmarks. The maintainer wrote
 ShadowScan, the corpora, their labels and the harnesses, with AI coding
 assistants (Claude, Codex, Grok, Google Antigravity and others), so these numbers are
 regression evidence about the listed inputs. They are **not** independent review
-and **not** measured production precision or recall.
+and **not** measured production precision or recall. The benchmark reports now
+live in the ShadowBench companion repository (pinned at
+`1ce0eee376585f85fbd0fec98235d556310e6277`); the in-repo copies at commit
+`0792106b` are archived, and the `benchmarks/` report paths have moved there.
 
 | Track (run, version) | Inputs | ShadowScan result | Limits |
 |---|---|---|---|
-| [ShadowBench estate, nine surfaces](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/0792106b8d2cc09517f7f4ee2eeabf4f8eb8da2d/benchmarks/shadowbench/estate/results/2026-10-11/REPORT.md) (2026-10-11, 0.1.2) | 137 authored vendor-format entities for one fictional estate: 87 positive, 27 control, 23 near-miss | Entity precision / recall / F1 91.2% / 95.4% / 93.3%; 83 of 87 positives found; 8 of 50 controls and near-misses flagged | Authored artifacts; frozen after one label-completeness pass in which every runnable tool ran once (it added one secondary anchor and one tolerated pair and changed no label); later ShadowScan runs on it are in-sample (below) |
-| [Shadow AI discovery, code surface](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/0792106b8d2cc09517f7f4ee2eeabf4f8eb8da2d/benchmarks/shadow-ai-discovery/results/2026-10-09/REPORT.md) (2026-10-09, 0.1.2+7bdea5300551) | 87 public repositories pinned by SHA: 65 positive, 10 control, 12 near-miss; 839 expected facts | Fact precision / recall / F1 99.8% / 94.8% / 97.2% **after** tuning on this corpus; 65 of 65 positive repositories flagged; 0 of 22 controls and near-misses flagged (4 of those 22 runs incomplete) | In-sample: the detection changes were driven by this corpus's errors, so these numbers measure fit to it, not field accuracy. 43 of 87 runs were incomplete (exit 3): fact counts are a lower bound, and an incomplete clean run is not a clean result |
+| [ShadowBench estate, nine surfaces](https://github.com/Hunzee-VC/Nexus-ShadowBench/blob/1ce0eee376585f85fbd0fec98235d556310e6277/benchmarks/shadowbench/estate/results/2026-10-11/REPORT.md) (2026-10-11, 0.1.2) | 137 authored vendor-format entities for one fictional estate: 87 positive, 27 control, 23 near-miss | Entity precision / recall / F1 91.2% / 95.4% / 93.3%; 83 of 87 positives found; 8 of 50 controls and near-misses flagged | Authored artifacts; frozen after one label-completeness pass in which every runnable tool ran once (it added one secondary anchor and one tolerated pair and changed no label); later ShadowScan runs on it are in-sample (below) |
+| [Shadow AI discovery, code surface](https://github.com/Hunzee-VC/Nexus-ShadowBench/blob/1ce0eee376585f85fbd0fec98235d556310e6277/benchmarks/shadow-ai-discovery/results/2026-10-09/REPORT.md) (2026-10-09, 0.1.2+7bdea5300551) | 87 public repositories pinned by SHA: 65 positive, 10 control, 12 near-miss; 839 expected facts | Fact precision / recall / F1 99.8% / 94.8% / 97.2% **after** tuning on this corpus; 65 of 65 positive repositories flagged; 0 of 22 controls and near-misses flagged (4 of those 22 runs incomplete) | In-sample: the detection changes were driven by this corpus's errors, so these numbers measure fit to it, not field accuracy. 43 of 87 runs were incomplete (exit 3): fact counts are a lower bound, and an incomplete clean run is not a clean result |
 
 The archived [2026-10-08 discovery metrics](https://github.com/Hunzee-VC/Nexus-ShadowBench/blob/1ce0eee376585f85fbd0fec98235d556310e6277/benchmarks/shadow-ai-discovery/results/2026-10-08/metrics.json)
 record in-scope fact F1 of 90.9%. The earlier report uses a different expected-fact
@@ -516,7 +519,7 @@ serving-engine images, n8n HTTP model calls, ServiceNow flow names, and the
 Wudpecker note-taker). A ShadowScan run on the estate after those changes is
 in-sample: fewer errors on it are not evidence of better field accuracy.
 ShadowScan's weakest surfaces in the
-[cases run](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/0792106b8d2cc09517f7f4ee2eeabf4f8eb8da2d/benchmarks/shadowbench/cases/results/2026-10-11/REPORT.md)
+[cases run](https://github.com/Hunzee-VC/Nexus-ShadowBench/blob/1ce0eee376585f85fbd0fec98235d556310e6277/benchmarks/shadowbench/cases/results/2026-10-11/REPORT.md)
 are identity (57% entity precision at 97% recall) and SaaS (51% at 88%)
 against decoy-heavy exports, so read the per-surface tables before relying
 on any single surface. The
@@ -528,7 +531,7 @@ lists every benchmark with its protocol and limits.
 </p>
 
 The chart is generated from the committed
-[ShadowBench cases run of 2026-10-11](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/0792106b8d2cc09517f7f4ee2eeabf4f8eb8da2d/benchmarks/shadowbench/cases/results/2026-10-11/REPORT.md):
+[ShadowBench cases run of 2026-10-11](https://github.com/Hunzee-VC/Nexus-ShadowBench/blob/1ce0eee376585f85fbd0fec98235d556310e6277/benchmarks/shadowbench/cases/results/2026-10-11/REPORT.md):
 738 authored entities across nine surfaces. Estate recall charges each tool for
 the surfaces it does not cover, so it mostly measures coverage; compare the
 in-scope bars, and read the report's precision and decoy specificity before
