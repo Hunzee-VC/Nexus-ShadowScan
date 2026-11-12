@@ -153,6 +153,9 @@ def test_slow_drip_body_fails_at_the_read_deadline_instead_of_holding_the_worker
     _resolve_to(port, monkeypatch)
     http = HttpClient(allow_private_origin=True, timeout=READ_TIMEOUT, max_retries=0)
     try:
+        # Deadline test, not a perf guard: wall time is the measurement here, because the
+        # read must be interrupted while blocked on the network, not while computing.
+        # See tests/perf.py for why performance guards use time.process_time() instead.
         started = time.monotonic()
         with pytest.raises(ValueError, match="read deadline") as caught:
             http.get_json(f"https://service.example:{port}/items", verify=str(cert_path))
@@ -256,6 +259,9 @@ def test_slow_drip_status_and_headers_are_interrupted_before_the_body_reader(tmp
     # the 1 s read timeout tolerates macOS TLS/TCP delayed delivery of tiny writes.
     request_timeout = 1
     try:
+        # Deadline test, not a perf guard: wall time is the measurement here, because the
+        # acquisition watchdog must fire while the request waits, not while computing.
+        # See tests/perf.py for why performance guards use time.process_time() instead.
         started = time.monotonic()
         with pytest.raises(ValueError, match="acquisition deadline"):
             http.get_json(url, verify=str(cert_path), timeout=request_timeout)
