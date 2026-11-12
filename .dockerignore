@@ -14,7 +14,7 @@
 !requirements-build.lock
 !README.md
 !LICENSE
-!LICENSES/Apache-2.0.txt
+!LICENSE-MIT
 !NOTICE
 !agent-card.yaml
 !shadowscan/**/*.py

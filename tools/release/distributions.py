@@ -24,16 +24,9 @@ _PACKAGE = "shadowscan/"
 _VERSION = r"(?P<version>[0-9][0-9A-Za-z.+!]*)"
 _WHEEL = re.compile(rf"{_NORMALIZED}-{_VERSION}-py3-none-any\.whl")
 _SDIST = re.compile(rf"{_NORMALIZED}-{_VERSION}\.tar\.gz")
-# Files the sdist must carry, by path from its root, to rebuild the wheel and its licence notices.
-_SDIST_ROOT_FILES = (
-    "PKG-INFO",
-    "pyproject.toml",
-    "README.md",
-    "LICENSE",
-    "NOTICE",
-    "LICENSES/Apache-2.0.txt",
-)
-_LICENSE_FILES = ("LICENSE", "NOTICE", "LICENSES/Apache-2.0.txt")
+# Files the sdist must carry at its root to rebuild the wheel and its licence notices.
+_SDIST_ROOT_FILES = ("PKG-INFO", "pyproject.toml", "README.md", "LICENSE", "LICENSE-MIT", "NOTICE")
+_LICENSE_FILES = ("LICENSE", "LICENSE-MIT", "NOTICE")
 _MAX_MEMBERS = 5_000
 _MAX_MEMBER_BYTES = 16 * 1024 * 1024
 _MAX_TOTAL_BYTES = 256 * 1024 * 1024

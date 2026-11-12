@@ -43,9 +43,9 @@ Passing the CI checks, the CodeQL analysis or the OpenSSF Scorecard is not indep
 
 | Criterion | Level | Status | Evidence |
 |---|---|---|---|
-| `floss_license` | MUST | **Met** | MIT: [`LICENSE`](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/LICENSE) and `license = "MIT"` in [`pyproject.toml`](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/pyproject.toml). |
-| `floss_license_osi` | SUGGESTED | **Met** | MIT is approved by the Open Source Initiative. |
-| `license_location` | MUST | **Met** | [`LICENSE`](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/LICENSE) and [`NOTICE`](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/NOTICE) at the top level of the repository. |
+| `floss_license` | MUST | **Met** | Apache-2.0 OR MIT: [`LICENSE`](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/LICENSE) (Apache-2.0) and [`LICENSE-MIT`](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/LICENSE-MIT) (MIT), and `license = "Apache-2.0 OR MIT"` in [`pyproject.toml`](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/pyproject.toml). |
+| `floss_license_osi` | SUGGESTED | **Met** | Both Apache-2.0 and MIT are approved by the Open Source Initiative. |
+| `license_location` | MUST | **Met** | [`LICENSE`](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/LICENSE), [`LICENSE-MIT`](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/LICENSE-MIT) and [`NOTICE`](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/NOTICE) at the top level of the repository. |
 
 #### Documentation
 
@@ -123,7 +123,7 @@ Passing the CI checks, the CodeQL analysis or the OpenSSF Scorecard is not indep
 
 | Criterion | Level | Status | Evidence |
 |---|---|---|---|
-| `test` | MUST | **Met** | The pytest suite under [`tests/`](https://github.com/Hunzee-VC/Nexus-ShadowScan/tree/main/tests) is released with the code under MIT. [CONTRIBUTING.md, Quality gates](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/CONTRIBUTING.md#quality-gates) and [Testing](../testing.md) say how to run it, and [ci.yml](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/.github/workflows/ci.yml) runs it. |
+| `test` | MUST | **Met** | The pytest suite under [`tests/`](https://github.com/Hunzee-VC/Nexus-ShadowScan/tree/main/tests) is released with the code under Apache-2.0 OR MIT. [CONTRIBUTING.md, Quality gates](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/CONTRIBUTING.md#quality-gates) and [Testing](../testing.md) say how to run it, and [ci.yml](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/.github/workflows/ci.yml) runs it. |
 | `test_invocation` | SHOULD | **Met** | `python -m pytest`, or `make test` for the whole gate. |
 | `test_most` | SUGGESTED | **Met** | CI requires at least 80% aggregate coverage counting branches and at least 75% for every connector module ([`tools/coverage_gate.py`](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/tools/coverage_gate.py)). Redaction and source lexing also have property tests and [fuzz targets](fuzzing.md). |
 | `test_continuous_integration` | SUGGESTED | **Met** | [ci.yml](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/.github/workflows/ci.yml) runs on every pull request, every push to `main` and weekly. |

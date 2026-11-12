@@ -14,16 +14,14 @@ explain operator migrations. Earlier per-change entries are preserved in the
   companion's suite with `--capture=sys`, because one companion test stubs
   `os.fstat` for its whole body and pytest 9.2's fd-level capture calls it. The
   flag goes when the companion pin moves past its fix.
-- Relicense the project under the MIT License. `LICENSE` now holds the MIT
-  text and `pyproject.toml` declares `license = "MIT"` (a PEP 639 expression,
-  so no licence classifiers are declared). Releases up to and including 0.1.4
-  were published under Apache-2.0 and remain available under it. The MITRE
-  ATLAS (Apache-2.0) and OWASP (CC BY-SA 4.0) mapping catalogs keep their
-  upstream licences: `NOTICE` credits them, and the sdist, the wheel and the
-  worker image ship the Apache-2.0 text as `LICENSES/Apache-2.0.txt`. The
-  README, product guide, contributing guide, citation, OpenSSF evidence,
-  release-distribution checks and the image's `org.opencontainers.image.licenses`
-  label say MIT.
+- Dual-license the project under Apache-2.0 OR MIT, at the licensee's choice:
+  add `LICENSE-MIT` (Copyright 2026 Nexus ShadowScan contributors), set
+  `license = "Apache-2.0 OR MIT"` in `pyproject.toml` (a PEP 639 expression,
+  so the superseded licence classifiers are not declared), and update the
+  README, product guide, contributing guide, citation, `NOTICE`, OpenSSF
+  evidence and release-distribution checks to match. The worker image's build
+  context and build stage now carry `LICENSE-MIT`, and its
+  `org.opencontainers.image.licenses` label reads `Apache-2.0 OR MIT`.
 - The worker image moves both `FROM` lines to the current
   `chainguard/wolfi-base:latest` index
   `sha256:771146c2dfc880902a185f060c3db5571473c46b267edd98c3119c83068dfb61`
