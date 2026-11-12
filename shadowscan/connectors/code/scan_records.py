@@ -136,8 +136,11 @@ class _SourceFile:
     # The text and context excerpts are cut from; created with the file (see _ExcerptSource).
     excerpts: _ExcerptSource = field(default_factory=lambda: _ExcerptSource("", Path(), None, None))
     literals: LiteralScan | None = None  # the signature literals found in ``text``, scanned once
-    # Comment and docstring spans of a lexed source file: prose that names what the code may not use.
+    # Prose spans of a lexed source file, which the model-identifier pass skips: its comments and,
+    # in Python, its docstrings. Only spans known by token kind and syntax (``blank_prose``) may also
+    # hide hosts and variable names; the lexer's other comment spans are found by text prefix.
     prose: list[tuple[int, int]] = field(default_factory=list)
+    blank_prose: bool = False
     card_kind: str | None = None  # agent manifest kind suggested by the path
     card_valid: bool = False
     card_incomplete: bool = False  # a recognizable card that misses required declarations
@@ -155,8 +158,8 @@ class _SourceFile:
     project_tool_regions: list[tuple[int, int]] = field(default_factory=list)
 
     def without_prose(self, text: str) -> str:
-        """``text`` with this file's comments and docstrings blanked; offsets and lines are kept."""
-        return _without_spans(text, self.prose)
+        """``text`` with this file's exactly known prose blanked; offsets and lines are kept."""
+        return _without_spans(text, self.prose) if self.blank_prose else text
 
     @property
     def name(self) -> str:

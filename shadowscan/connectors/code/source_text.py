@@ -12,10 +12,14 @@ each helper's docstring.
 from __future__ import annotations
 
 import ast
+import io
 import re
+import tokenize
 import tomllib
-from bisect import bisect_right
-from collections.abc import Iterator, Sequence
+import warnings
+from bisect import bisect_left, bisect_right
+from collections.abc import Callable, Iterator, Sequence
+from itertools import accumulate
 from typing import Any
 
 import regex
@@ -132,7 +136,15 @@ _CellSpans = tuple[tuple[int, int], ...]
 # What opens a comment in the languages the lexer masks; every other masked
 # span is a string literal, which the model-identifier pass reads.
 _COMMENT_OPENERS = ("#", "//", "/*", "<!--", "=begin")
-_NOT_LINE_BREAK = re.compile(r"[^\n]")
+_NOT_LINE_BREAK = re.compile(r"[^\r\n]")
+_LINE_FEED = re.compile(r"\n")
+# How many tokens or statements classifying Python prose handles between checks of the input's budget.
+_BUDGET_EVERY = 4096
+# The statement lists of a Python syntax tree: module and block bodies, else and finally
+# blocks, exception handlers and match cases (each of the last two holds a body).
+_STATEMENT_LISTS = ("body", "orelse", "finalbody", "handlers", "cases")
+# How a str or bytes constant begins in Python source; an f-string is never a constant.
+_PY_STRING_START = re.compile(r"[rRbBuU]{0,2}['\"]")
 
 
 def _comment_spans(text: str, ignored: Sequence[tuple[int, int]]) -> list[tuple[int, int]]:
@@ -140,49 +152,133 @@ def _comment_spans(text: str, ignored: Sequence[tuple[int, int]]) -> list[tuple[
     return [(start, end) for start, end in ignored if text.startswith(_COMMENT_OPENERS, start)]
 
 
-def _python_docstring_spans(text: str, ignored: Sequence[tuple[int, int]]) -> list[tuple[int, int]]:
-    """The strings among the lexer's ``ignored`` spans of Python ``text`` that are a whole statement.
-
-    A string that is a statement of its own is a docstring or a block of prose left in the code: it
-    documents, and nothing reads it. Only a string outside every bracket that fills its lines counts,
-    so an argument, an element or a continued value written on a line of its own stays code. Unbalanced
-    brackets leave every later string as code.
-    """
-    spans: list[tuple[int, int]] = []
-    depth = previous = 0
-    for start, end in ignored:
-        code = text[previous:start]
-        depth += sum(map(code.count, "([{")) - sum(map(code.count, ")]}"))
-        previous = end
-        if not depth and not text.startswith(_COMMENT_OPENERS, start) and _fills_its_lines(text, start, end):
-            spans.append((start, end))
-    return spans
-
-
-def _fills_its_lines(text: str, start: int, end: int) -> bool:
-    """Whether ``text[start:end]`` begins a logical line and only a comment follows it there."""
-    line_start = text.rfind("\n", 0, start) + 1
-    line_end = text.find("\n", end)
-    after = text[end : len(text) if line_end < 0 else line_end].strip()
-    return (
-        not text[line_start:start].strip()
-        and (not after or after.startswith("#"))
-        and not text[:line_start].rstrip("\r\n").endswith("\\")
-    )
-
-
 def _prose_spans(
-    text: str, ignored: Sequence[tuple[int, int]], language: str | None
-) -> list[tuple[int, int]]:
-    """The comments and, in Python, the docstrings among the lexer's ``ignored`` spans of ``text``.
+    text: str,
+    ignored: Sequence[tuple[int, int]],
+    ext: str,
+    ambiguous: bool,
+    check: Callable[[], object],
+) -> tuple[list[tuple[int, int]], bool]:
+    """The prose spans of a source file's ``text``, and whether they are known exactly.
 
-    Prose about the code names hosts, variables and models the code may never use: a note that a
-    service "must never call api.openai.com" is not a call. String literals the code reads are kept.
+    A note that a service "must never call api.openai.com" names the host without calling it. In a
+    ``.py`` file that tokenizes and parses, comments and docstrings are known by token kind and syntax
+    (:func:`_python_prose_spans`), and they are exact: host and variable matching skips them too.
+    Anywhere else the spans are the lexer's comments, found by what their text starts with. The
+    model-identifier pass skips those, as it always has, but nothing else may: an f-string,
+    template or interpolated piece that starts with ``#`` or ``//`` is code, and so is a string the
+    lexer merged with a comment. Nothing is exact when the lexer reports its reading ambiguous.
     """
-    spans = _comment_spans(text, ignored)
-    if language == "python":
-        spans = sorted({*spans, *_python_docstring_spans(text, ignored)})
+    if ext == ".py" and not ambiguous:
+        spans = _python_prose_spans(text, check)
+        if spans is not None:
+            return spans, True
+    return _comment_spans(text, ignored), False
+
+
+def _python_prose_spans(text: str, check: Callable[[], object]) -> list[tuple[int, int]] | None:
+    """The comment and docstring spans of Python ``text``; None when they cannot be known exactly.
+
+    Comments are the tokenizer's COMMENT tokens. A docstring is an expression statement whose value
+    is a str or bytes constant: it documents, and evaluating it does nothing. An f-string statement
+    runs the code in its replacement fields and is not one. A file that names ``__doc__`` may read
+    its docstrings (``docopt(__doc__)`` takes option defaults from one), so only its comments are
+    prose. Nothing is known when the text does not parse or tokenize, when a span found does not
+    begin and end the way its kind must, or when the text has a bare carriage return, which Python
+    reads as a line break and this mapping does not. The work is linear in the text and is charged to
+    the input's execution budget through ``check``, which raises once the budget is spent.
+    """
+    if "\r" in text and "\r" in text.replace("\r\n", ""):
+        return None
+    check()
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            tree = ast.parse(text)
+    except (SyntaxError, ValueError, RecursionError, MemoryError):
+        return None
+    starts = [0, *(match.end() for match in _LINE_FEED.finditer(text))]
+    comments = _python_comments(text, starts, check)
+    if comments is None:
+        return None
+    docstrings = [] if "__doc__" in text else list(_python_docstrings(text, tree, starts, check))
+    if not _shaped(text, comments, docstrings):
+        return None
+    return _merged([*comments, *docstrings])
+
+
+def _shaped(text: str, comments: list[tuple[int, int]], docstrings: list[tuple[int, int]]) -> bool:
+    """Whether each comment span begins with ``#`` and each docstring span is a quoted literal."""
+    quoted = all(_PY_STRING_START.match(text, start) and text[end - 1] in "'\"" for start, end in docstrings)
+    return quoted and all(text.startswith("#", start) for start, _ in comments)
+
+
+def _python_comments(
+    text: str, starts: list[int], check: Callable[[], object]
+) -> list[tuple[int, int]] | None:
+    """The spans of the COMMENT tokens of Python ``text``; None when it does not tokenize."""
+    spans: list[tuple[int, int]] = []
+    try:
+        for count, token in enumerate(tokenize.generate_tokens(io.StringIO(text).readline)):
+            if not count % _BUDGET_EVERY:
+                check()
+            if token.type == tokenize.COMMENT:
+                (row, column), (end_row, end_column) = token.start, token.end
+                spans.append((starts[row - 1] + column, starts[end_row - 1] + end_column))
+    except (tokenize.TokenError, SyntaxError, ValueError, IndexError):
+        return None
     return spans
+
+
+def _python_docstrings(
+    text: str, tree: ast.Module, starts: list[int], check: Callable[[], object]
+) -> Iterator[tuple[int, int]]:
+    """The spans of the str and bytes constants in ``tree`` that are whole expression statements.
+
+    Only statement lists are walked, never expressions, so the cost follows the number of
+    statements. ``ast`` columns count UTF-8 bytes; a line with other characters maps them once.
+    """
+    widths: dict[int, list[int] | None] = {}
+
+    def offset(line: int, column: int) -> int:
+        if line not in widths:
+            segment = text[starts[line - 1] : starts[line] if line < len(starts) else len(text)]
+            widths[line] = (
+                None if segment.isascii() else list(accumulate((len(c.encode()) for c in segment), initial=0))
+            )
+        cumulative = widths[line]
+        return starts[line - 1] + (column if cumulative is None else bisect_left(cumulative, column))
+
+    pending: list[list[Any]] = [tree.body]
+    visited = 0
+    while pending:
+        for node in pending.pop():
+            visited += 1
+            if not visited % _BUDGET_EVERY:
+                check()
+            value = getattr(node, "value", None)
+            if (
+                isinstance(node, ast.Expr)
+                and isinstance(value, ast.Constant)
+                and isinstance(value.value, (str, bytes))
+                and value.end_lineno is not None
+                and value.end_col_offset is not None
+            ):
+                yield offset(value.lineno, value.col_offset), offset(value.end_lineno, value.end_col_offset)
+            pending.extend(
+                nested for name in _STATEMENT_LISTS if isinstance(nested := getattr(node, name, None), list)
+            )
+
+
+def _merged(spans: list[tuple[int, int]]) -> list[tuple[int, int]]:
+    """``spans`` sorted, with overlapping spans joined: a comment can sit between the parts of a docstring."""
+    merged: list[tuple[int, int]] = []
+    for start, end in sorted(spans):
+        if merged and start <= merged[-1][1]:
+            merged[-1] = (merged[-1][0], max(end, merged[-1][1]))
+        else:
+            merged.append((start, end))
+    return merged
 
 
 def _without_spans(text: str, spans: Sequence[tuple[int, int]]) -> str:

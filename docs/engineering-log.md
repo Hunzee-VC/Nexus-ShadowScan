@@ -13,63 +13,96 @@ Counts and figures quoted in an entry are those of its date.
 
 ## Unreleased
 
-### Prose in source files is not usage evidence (November 10)
+### Prose in Python source files is not usage evidence (November 10, revised November 12)
 
 - **Defect.** In a source file the code connector matched signature hosts and
   environment-variable names over the whole text, comments included. A Python
   file whose only mention of a provider was two comment lines ("This service
   must never call api.openai.com or api.anthropic.com" and "OPENAI_API_KEY and
   ANTHROPIC_API_KEY are blocked at the proxy") produced one "LLM usage: OpenAI,
-  Anthropic" finding at confidence 0.99; the same two lines as Go comments did
-  too. A domain signal weighs up to 0.9 wherever it is found, and two
-  independent ones reach 0.99 through the noisy-OR. Code patterns, imports and
-  model identifiers already skipped what the lexer masks; these two signal
-  types did not.
-- **Change.** `_match_source` records a lexed file's prose spans
-  (`_SourceFile.prose`): the comments among the lexer's ignored spans and, in
-  Python, the string literals that are a whole statement (a module, class or
-  function docstring, or a string left as a statement). `_scan_content` blanks
-  those spans, keeping offsets and line breaks, before it matches environment
-  variables and hosts, and the model-identifier pass skips them as it skipped
-  comments. A Python string counts as a statement only outside every bracket,
-  when nothing but whitespace precedes it on its line, nothing but a comment
-  follows it there and the previous line does not end in a backslash. An
-  argument, a list element or a dictionary value written on a line of its own
-  therefore stays code, and so does every string after unbalanced brackets.
-- **Behavior that changes with it.** A host named only in a source comment
-  was a weak hint: `# weights: https://huggingface.co/...` beside an OpenAI
-  import listed `provider.huggingface` under `potential_providers`. It is now
-  not read, so that entry disappears; the same link in a string still lists
-  it. Three existing tests placed their host in a comment and now place it in
-  the code of the same line: the weak-mention test in
+  Anthropic" finding at confidence 0.99. A domain signal weighs up to 0.9
+  wherever it is found, and two independent ones reach 0.99 through the
+  noisy-OR. Code patterns, imports and model identifiers already skipped what
+  the lexer masks; these two signal types did not.
+- **Change.** `_match_source` classifies the prose of a `.py` file by token
+  kind and syntax (`_python_prose_spans` in `source_text.py`). Comments are the
+  tokenizer's COMMENT tokens. A docstring is an expression statement whose value
+  is a str or bytes constant, never an f-string statement, whose replacement
+  fields run code. `_scan_content` blanks exactly those spans, keeping offsets
+  and line breaks, before it matches environment variables and hosts, and the
+  model-identifier pass skips them. Nothing is blanked when the file does not
+  parse or tokenize, when the lexer reports its reading ambiguous, when the
+  text has a bare carriage return, or when a span found does not begin and end
+  the way its kind must. A file that names `__doc__` keeps its docstrings:
+  `docopt(__doc__)` reads option defaults from one. Classification is linear,
+  checks the input's execution budget every 4,096 tokens or statements, and
+  took 0.45 s for a 1 MB file on Python 3.11 (0.2 s on 3.13) here. Notebooks and
+  every other language are unchanged: their comments are still evidence, and
+  the model-identifier pass still skips the comment spans the lexer finds by
+  text prefix, as on `main`.
+- **First version, withdrawn after review.** The November 10 version
+  recognized prose by what a lexer span's text starts with (`#`, `//`, `/*`,
+  `<!--`, `=begin`) in every lexed language, and Python docstrings by counting
+  brackets between spans. A coding-assistant review on November 12, not an
+  independent human review, showed that this fails open. An f-string, template
+  or interpolated piece that starts with `//` or `#!` (Python, TypeScript,
+  JavaScript, Kotlin, C#, Dart, Ruby), a Swift raw string, a PHP file opening
+  with an HTML comment, escaped `}}` or replacement fields that shifted the
+  bracket count, and an R notebook were read as prose. Real calls to
+  `api.openai.com` then produced no finding while the scan stayed complete.
+  Thirteen of the review's fourteen end-to-end cases reproduced here on Python
+  3.13; the fourteenth needs 3.11. All of them report usage again. That version
+  also sliced the text before each candidate string, which is quadratic, and
+  blanked spans the lexer had reported ambiguous.
+- **Behavior that changes with it.** A host named only in a Python comment was
+  a weak hint: `# weights: https://huggingface.co/...` beside an OpenAI import
+  listed `provider.huggingface` under `potential_providers`. It is now not
+  read, so that entry disappears; the same link in a string, or in a comment
+  in another language, still lists it. A finding that keeps other evidence
+  keeps its ID and SARIF fingerprint, but its evidence lines move from the
+  prose to the code, providers named only in prose drop out, and its
+  confidence can fall (0.96 to 0.90 for the raw HTTP call in the tests). Three
+  existing tests placed their host in a comment and now place it in the code
+  of the same line: the weak-mention test in
   `test_code_filesystem_precision.py` and two netrc excerpt cases in
   `test_credential_file_redaction.py`, which still require the comment's text
   in the reported excerpt and the password in no report format.
 - **Unchanged.** String literals the code reads count as before: a host in an
-  assignment, a call argument or a table. Scanning the `shadowscan` package
-  itself still yields one high-risk "LLM usage" finding, now from 81 evidence
-  items and 14 providers instead of 117 and 16, because its catalogs are
-  Python tables of hosts, variable names and model identifiers. A provider
-  table in a gateway is real usage and reads the same, so telling the two
-  apart is a labelling decision, not a lexical one; `catalogs.py` keeps
-  "source code and manifests are never catalogs". Documentation strings of
-  other languages that are string literals, such as Elixir's `@moduledoc`,
-  are not treated as prose. Configuration files are matched as before.
+  assignment, a call argument, a table or an f-string. Comments in Go,
+  TypeScript and the other lexed languages still produce findings such as the
+  two-line example above. Doing better there needs comment spans that the
+  lexers record by kind, which is left for a later change. Scanning the
+  `shadowscan` package itself still yields one high-risk "LLM usage" finding,
+  now from 81 evidence items and 14 providers instead of 117 and 16, because
+  its catalogs are Python tables of hosts, variable names and model
+  identifiers. A provider table in a gateway is real usage and reads the same,
+  so telling the two apart is a labelling decision, not a lexical one;
+  `catalogs.py` keeps "source code and manifests are never catalogs".
+  Configuration files are matched as before.
 - **Not changed, for the record.** The same review noted that the examples in
   `openai/swarm` are not reported as agents, because `from swarm import Agent`
   resolves to the repository's own `swarm` package. That is the local-module
   rule working as tested: nothing in the checkout distinguishes OpenAI's
   package from an unrelated one of that name, and the signature already
   refuses the bare PyPI name for that reason.
-- **Evidence.** `tests/unit/test_source_prose_evidence.py` covers the four
-  inputs above end to end, a raw HTTP call that keeps its finding and its code
-  line numbers beside a comment and a docstring, and the statement rule on
-  eight strings the code reads. `review_corpus.json` gains three negatives and
-  one positive. The line count of `file_scan.py` is unchanged at its ratchet
-  value. This was developed where the pinned dependencies could not be
-  installed: the suite and the corpora ran against stand-ins for `regex` and
-  `rich`, with the same failing set as `main` there, and the pull request's CI
-  run is the first run under the locked environment.
+- **Evidence.** `tests/unit/test_source_prose_evidence.py` covers Python
+  comments, docstrings, and both with wider-than-ASCII characters and CRLF line
+  breaks as negatives. Its fourteen must-still-report cases are the review's
+  table, and they fail on the first version (thirteen on 3.13). It also has
+  the Go scope test and the statement rule on eleven strings the code reads,
+  f-strings among them. Further tests cover the cases that leave prose unknown
+  (a syntax error, a bare carriage return, a NUL, Python 2), the `__doc__` rule,
+  budget charging and stopping, and a 1.1 MB file classified within 5 s.
+  `review_corpus.json` keeps the Python comment and docstring negatives and
+  the raw HTTP call positive. It drops the Go negative and gains an f-string
+  positive that fails on the first version. The extracted classifier gives
+  the same spans on Python 3.11, 3.12 and 3.13 for comments after wide
+  characters, CRLF files, nested and concatenated docstrings, f-strings and a
+  comment inside an f-string replacement field (3.12 and later). The line
+  count of `file_scan.py` is unchanged at its ratchet value. The suite and the
+  corpora ran against stand-ins for `regex` and `rich`, because the pinned
+  dependencies could not be installed where this was developed; the pull
+  request's CI run is the first run under the locked environment.
 
 ### pytest 9.2.0 and the companion suite's capture mode (November 5)
 

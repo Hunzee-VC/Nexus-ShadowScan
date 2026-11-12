@@ -43,8 +43,9 @@ release is created by this change.
 
 ## Migration notes and change history
 
-Unreleased: what an operator sees change after the October 26 audit fixes and
-the November 1 AgentBOM inventory import.
+Unreleased: what an operator sees change after the October 26 audit fixes,
+the November 1 AgentBOM inventory import and the November 12 rule for prose in
+Python files.
 
 - **Exit 3 where 0 was reported.** An offline replay of a single saved
   `lowcode.zapier` `/v2/zaps` page with `links.next`, an `identity.auth0`
@@ -85,6 +86,19 @@ the November 1 AgentBOM inventory import.
   audit page fails, including a token response without an `access_token` (the
   scan stays incomplete). CycloneDX BOMs keep the sanitized endpoint of an MCP
   server whose URL carried inline credentials.
+- **Findings that change: prose in Python files.** In a `.py` file that
+  parses, comments and docstrings are no longer evidence of hosts,
+  environment-variable names or model identifiers. A finding that rested on
+  such prose alone disappears, so `shadowscan code --fail-on low` can exit 0
+  where it exited 2 on a file whose only provider mention is a comment. A
+  finding that keeps other evidence keeps its ID and SARIF fingerprint, but
+  providers named only in prose drop out of it, its evidence lines move from
+  the prose to the code, and its confidence can fall, which matters with
+  `--min-confidence`. A host named only in a Python comment is no longer a
+  `potential_providers` hint. Comments in notebooks and other languages, and
+  configuration files, are read as before. When accepting a build with this
+  change, compare reports of repositories with commented-out or documented
+  provider calls in Python.
 - **Deadlines.** With `--incremental` and several roots, the automatic deadline
   extension is applied once per job, capped at 1,800 s, not once per root.
 - **New inventory input.** `--inventory` accepts SymBiote AgentBOM 0.1 JSON, a

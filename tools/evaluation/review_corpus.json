@@ -887,27 +887,27 @@
       }
     },
     {
-      "id": "go-comment-names-provider",
-      "family": "framework",
-      "description": "Go line and block comments that name provider hosts and a key variable are not LLM usage.",
-      "files": {
-        "main.go": "package main\n\n// This service must never call api.openai.com or api.anthropic.com.\n/* OPENAI_API_KEY is blocked at the proxy. */\nfunc main() {\n\tprintln(\"ok\")\n}\n"
-      },
-      "target": {
-        "kind": "framework-usage",
-        "signature": "provider.openai"
-      },
-      "present": false,
-      "assertions": {
-        "exact_findings": []
-      }
-    },
-    {
       "id": "py-provider-call-beside-prose",
       "family": "framework",
       "description": "A raw HTTP call to the provider is LLM usage; the comment and docstring beside it add nothing and hide nothing.",
       "files": {
         "ask.py": "import os\nimport requests\n\n# api.openai.com is the only provider this job may reach.\ndef ask(question):\n    \"\"\"Send one question to api.openai.com.\"\"\"\n    return requests.post(\n        \"https://api.openai.com/v1/chat/completions\",\n        headers={\"Authorization\": \"Bearer \" + os.environ[\"OPENAI_API_KEY\"]},\n        json={\"model\": \"gpt-4o\", \"messages\": [{\"role\": \"user\", \"content\": question}]},\n    ).json()\n"
+      },
+      "target": {
+        "kind": "framework-usage",
+        "signature": "provider.openai"
+      },
+      "present": true,
+      "assertions": {
+        "max_agent_findings": 0
+      }
+    },
+    {
+      "id": "py-fstring-host-after-interpolation",
+      "family": "framework",
+      "description": "An f-string piece that starts with // after a replacement field is code: the call is LLM usage even though the file's comment and docstring are prose.",
+      "files": {
+        "models.py": "import requests\n\n# api.openai.com is reached through the scheme the deployment sets.\nSCHEME = \"https:\"\n\ndef models():\n    \"\"\"List the models this account can use.\"\"\"\n    return requests.get(f\"{SCHEME}//api.openai.com/v1/models\").json()\n"
       },
       "target": {
         "kind": "framework-usage",

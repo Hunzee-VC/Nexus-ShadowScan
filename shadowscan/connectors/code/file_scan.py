@@ -1251,7 +1251,7 @@ class FileScanner:
                 f"code.filesystem: {file.rel}: incomplete source lexical analysis",
                 reason="unparsed-input",
             )
-        file.prose = _prose_spans(content_text, ignored, lang)
+        file.prose, file.blank_prose = _prose_spans(content_text, ignored, ext, ambiguous, _pattern_timeout)
         imports = self.index.match_imports(content_text, lang, ignore_spans=ignored, scan=file.literals)
         for m in imports:
             if lang == "python":
