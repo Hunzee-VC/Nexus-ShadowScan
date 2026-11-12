@@ -120,9 +120,8 @@ from shadowscan.connectors.code.source_text import (
     _YAML_SUFFIXES,
     _cell_noncode_ranges,
     _CellSpans,
-    _comment_spans,
-    _crawler_ua_text,
     _notebook_binder_source,
+    _Prose,
     _quote_glob_values,
     _quote_plain_values,
     _redacted_source,
@@ -1162,17 +1161,13 @@ class FileScanner:
                 self._scan_model_literals(file, content_text, [], source=False)
         catalog_limits: list[str] = []
         if not is_nonexecutable and not file.is_mcp and not self.triage:
-            variables = self.index.match_envs_in_text(content_text)
-            for m in variables:
-                self._record_content(file, m, self._lazy_excerpt(file, m.line))
             # Source code is never a rule list: `|| "https://api.openai.com"` continues an expression and
-            # `host, err := ...` unpacks a result. Crawler user-agent values are blanked in place, so
-            # domain_text keeps the original line structure the rule-list filter reads.
+            # `host, err := ...` unpacks a result. A Python file's prose is no evidence (_Prose.evidence).
             skip = None if file.ext in SOURCE_EXTENSIONS else HostLineFilter(content_text)
-            domain_text, ua_text = _crawler_ua_text(content_text)
-            for m in self.index.match_domains_in_text(
-                domain_text, skip_line=skip, source=file.ext in SOURCE_EXTENSIONS
-            ):
+            variables, hosts, ua_text = file.prose.evidence(
+                content_text, self.index, skip, source=file.ext in SOURCE_EXTENSIONS
+            )
+            for m in (*variables, *hosts):
                 self._record_content(file, m, self._lazy_excerpt(file, m.line))
             if ua_text:
                 ua_hosts = [str(m.value) for m in self.index.match_domains_in_text(ua_text)]
@@ -1251,15 +1246,15 @@ class FileScanner:
                 f"code.filesystem: {file.rel}: incomplete source lexical analysis",
                 reason="unparsed-input",
             )
-        literals = file.literals
-        imports = self.index.match_imports(content_text, lang, ignore_spans=ignored, scan=literals)
+        file.prose = _Prose(content_text, ignored, ext, ambiguous, _pattern_timeout)
+        imports = self.index.match_imports(content_text, lang, ignore_spans=ignored, scan=file.literals)
         for m in imports:
             if lang == "python":
                 imported = re.match(r"\s*(?:from|import)\s+([A-Za-z_]\w*(?:\.\w+)*)", m.value)
                 if imported and is_local_module(imported.group(1)):
                     continue
             self._record_content(file, m, self._lazy_excerpt(file, m.line))
-        code_matches = self.index.match_code(content_text, lang, ignore_spans=ignored, scan=literals)
+        code_matches = self.index.match_code(content_text, lang, ignore_spans=ignored, scan=file.literals)
         return _MatchedSource(file, content_text, ignored, is_local_module, imports, code_matches)
 
     def _bind_source(
@@ -1353,7 +1348,7 @@ class FileScanner:
             self._register_mcp_tools(file, source.ignored)
             self._record_mcp_server_constructions(file, code_matches, bound)
         # Model identifiers are read in string literals, not in the comments the lexer masked.
-        self._scan_model_literals(file, source.text, _comment_spans(source.text, source.ignored), source=True)
+        self._scan_model_literals(file, source.text, file.prose, source=True)
 
     def _scan_model_literals(
         self,

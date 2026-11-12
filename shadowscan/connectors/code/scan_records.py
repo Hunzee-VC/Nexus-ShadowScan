@@ -31,7 +31,7 @@ from shadowscan.connectors.code.instruction_content import ContentHit
 from shadowscan.connectors.code.manifests import Dep
 from shadowscan.connectors.code.mcp_config import mcp_server_holders
 from shadowscan.connectors.code.skill_audit import InstructionAudit
-from shadowscan.connectors.code.source_text import _YAML_SUFFIXES, _CellSpans
+from shadowscan.connectors.code.source_text import _YAML_SUFFIXES, _CellSpans, _Prose
 from shadowscan.models import Finding, Kind
 from shadowscan.signatures import Match, Signature
 from shadowscan.signatures.loader import builtin_signature_dir
@@ -136,6 +136,9 @@ class _SourceFile:
     # The text and context excerpts are cut from; created with the file (see _ExcerptSource).
     excerpts: _ExcerptSource = field(default_factory=lambda: _ExcerptSource("", Path(), None, None))
     literals: LiteralScan | None = None  # the signature literals found in ``text``, scanned once
+    # A lexed source file's prose, its comments and, in Python, its docstrings, classified on first
+    # use (``_Prose``); any other file has none.
+    prose: _Prose = field(default_factory=_Prose)
     card_kind: str | None = None  # agent manifest kind suggested by the path
     card_valid: bool = False
     card_incomplete: bool = False  # a recognizable card that misses required declarations

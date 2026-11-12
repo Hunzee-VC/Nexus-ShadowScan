@@ -8,6 +8,21 @@ explain operator migrations. Earlier per-change entries are preserved in the
 
 ## Unreleased
 
+- In Python source files (`.py`), comments and docstrings are no longer
+  evidence of a host, an environment-variable name or a model identifier. Two
+  comment lines saying a service must never call `api.openai.com` and that
+  `OPENAI_API_KEY` is blocked produced a 0.99-confidence "LLM usage: OpenAI,
+  Anthropic" finding for a file that calls neither. Comments are the
+  tokenizer's comment tokens and docstrings are statements that are only a
+  string or bytes literal, found in the syntax tree. A file that names
+  `__doc__` keeps its docstrings as evidence, and a file that does not parse
+  keeps all of its prose (a docstring read only from another module, through
+  `inspect.getdoc` or as a doctest is still blanked). String literals the code reads, f-strings included,
+  count as before. Notebooks and other languages are unchanged. Findings that
+  rested on Python prose alone are absent from the next report, and a host
+  named only in a Python comment is no longer a `potential_providers` hint.
+  Engineering log: "Prose in Python source files is not usage evidence".
+
 - The development toolchain moves to pytest 9.2.0 (#347). The repository's
   own pytest 9.2 fixes landed earlier (the redaction-namespace descriptors and
   the scoped `os.fstat` stub); CI's `benchmark-tests` job now runs the pinned

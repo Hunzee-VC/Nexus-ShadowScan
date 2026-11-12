@@ -457,7 +457,8 @@ def test_a_prose_word_after_a_netrc_keyword_is_withheld(source, expected):
     ("line", "shown"),
     [
         ('NETRC = "machine api.openai.com login CORP\\\\fred password VALUE"', "CORP"),
-        ("# machine api.openai.com login CORP\\victor password VALUE", "CORP"),
+        # A comment is not evidence by itself, so the host is also in the code of its line.
+        ('HOST = "api.openai.com"  # machine api.openai.com login CORP\\victor password VALUE', "CORP"),
         (
             'NETRC = "machine api.openai.com\\n  # deploy bot\\n  login bot\\n  password VALUE\\n"',
             "deploy bot",
@@ -469,7 +470,7 @@ def test_a_prose_word_after_a_netrc_keyword_is_withheld(source, expected):
         ),
         (
             'NETRC = ("machine proxy.corp\\n"\n         "login bot\\n"\n'
-            '         "password VALUE\\n")  # proxy for api.openai.com',
+            '         "password VALUE\\n" "api.openai.com")  # proxy for api.openai.com',
             "proxy for api.openai.com",
         ),
     ],
