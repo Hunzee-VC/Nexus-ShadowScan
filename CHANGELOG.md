@@ -8,6 +8,15 @@ explain operator migrations. Earlier per-change entries are preserved in the
 
 ## Unreleased
 
+- Entropy (last-resort) redaction now withholds generated-looking literals from
+  finding descriptions, titles and metadata, not only evidence snippets
+  (audit SEC-01); finding-identity fields keep their text, so ids are unchanged.
+  JWT findings gain `metadata.validity_period` (`current`, `expired`,
+  `not-yet-valid` or `unparseable`) with matching tags, so a reader can tell a
+  live token from an expired one; `verified` and `signature_verified` stay
+  signature evidence, as documented (audit SEC-02). Reports made
+  before this change are not retroactively redacted; regenerate retained reports
+  after upgrading.
 - The development toolchain moves to pytest 9.2.0 (#347). The repository's
   own pytest 9.2 fixes landed earlier (the redaction-namespace descriptors and
   the scoped `os.fstat` stub); CI's `benchmark-tests` job now runs the pinned

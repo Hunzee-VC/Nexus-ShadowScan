@@ -1,13 +1,15 @@
-"""Last-resort redaction of random-looking string literals in evidence snippets.
+"""Last-resort redaction of random-looking string literals in report text.
 
 The other redaction passes recognize credentials by provider format or by the
 name they are assigned to. A generic credential with neither, such as an
 opaque literal passed to an unrecognized call or labelled only by a comment,
-passes through them. This pass reads only evidence snippets, which are short
-code excerpts, and withholds a quoted literal when it looks random: long,
-drawn from a token alphabet, mixing upper case, lower case and digits, often
-switching between them, and with high per-character entropy. Hex digests,
-UUIDs, identifiers and prose keep their text.
+passes through them. This pass withholds a quoted literal when it looks
+random: long, drawn from a token alphabet, mixing upper case, lower case and
+digits, often switching between them, and with high per-character entropy.
+It applies to evidence fields and finding text (titles, descriptions,
+metadata) through the model sanitizers in ``shadowscan.models``; excerpts use
+the bounded ``withhold_random_literals_cut`` variant. Hex digests, UUIDs,
+identifiers and prose keep their text.
 """
 
 from __future__ import annotations

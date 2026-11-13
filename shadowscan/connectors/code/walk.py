@@ -2738,7 +2738,7 @@ class TreeWalker:
         """
         seen = 0
         failed: list[OSError] = []
-        for directory, dirnames, filenames in os.walk(target, onerror=failed.append):
+        for directory, dirnames, filenames in os.walk(target, followlinks=False, onerror=failed.append):
             below = Path(directory).relative_to(target).as_posix()
             prefix = rel if below == "." else f"{rel}/{below}"
             links = [name for name in dirnames if os.path.islink(os.path.join(directory, name))]
