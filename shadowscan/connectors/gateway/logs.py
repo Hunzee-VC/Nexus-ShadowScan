@@ -60,15 +60,8 @@ from shadowscan.connectors.base import (
     _positive_limit,
 )
 from shadowscan.connectors.common import apply_matches, config_boolean, finalize
-from shadowscan.connectors.gateway.normalise import (  # noqa: F401
-    # Re-exported: callers and tests import these names from this module.
-    NORMALISERS,
+from shadowscan.connectors.gateway.normalise import (
     Event,
-    _b,
-    _f,
-    _has_tool_calls,
-    _has_tools,
-    _i,
     _normalise,
     collection_kind,
     detect_schema,

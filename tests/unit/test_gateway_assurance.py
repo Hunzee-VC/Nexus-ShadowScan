@@ -11,7 +11,8 @@ import pytest
 
 from shadowscan.config import ConnectorSpec, ScanConfig
 from shadowscan.connectors import ConnectorContext
-from shadowscan.connectors.gateway.logs import GatewayLogConnector, _has_tool_calls, normalise
+from shadowscan.connectors.gateway.logs import GatewayLogConnector, normalise
+from shadowscan.connectors.gateway.normalise import _has_tool_calls
 from shadowscan.correlation import correlate_runtime
 from shadowscan.engine import Engine
 from shadowscan.merge import merge

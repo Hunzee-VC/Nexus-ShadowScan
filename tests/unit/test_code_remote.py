@@ -1764,7 +1764,7 @@ LIST_OPTIONS = [(GitHubConnector, "topics"), (GitHubConnector, "repos"), (GitLab
 @pytest.mark.parametrize(
     "value",
     ["llm", "acme/app", "a,b", "", 7, True, {"acme/app": 1}, ["ok", ""], ["ok", "  "], ["ok", None], [["x"]]],
-    ids=lambda v: repr(v),
+    ids=repr,
 )
 def test_list_options_accept_only_a_list_of_non_empty_strings(index, cls, key, value):
     """`--set topics=llm` became the characters l, l, m: zero repositories examined, scan complete."""

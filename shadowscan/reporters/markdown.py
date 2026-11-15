@@ -106,8 +106,10 @@ def render_markdown(result: ScanResult) -> str:
     if not result.complete:
         lines.extend(
             [
-                "**INCOMPLETE SCAN:** some required inputs could not be assessed. Review connector "
-                "statistics.",
+                (
+                    "**INCOMPLETE SCAN:** some required inputs could not be assessed. Review connector "
+                    "statistics."
+                ),
                 "",
             ]
         )

@@ -94,7 +94,6 @@ from shadowscan.connectors.code.scan_records import (
     _SourceFile,
     _UndecodableFile,
 )
-from shadowscan.connectors.code.scan_records import _ENV_TEMPLATE_WORDS as _ENV_TEMPLATE_WORDS
 from shadowscan.connectors.code.semantic_config import AMBIGUOUS_DATA as _AMBIGUOUS_DATA
 from shadowscan.connectors.code.semantic_config import (
     agent_manifest_kind,

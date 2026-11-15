@@ -980,6 +980,7 @@ class IncrementalCache:
             try:
                 os.utime(path, follow_symlinks=False)
             except OSError:
+                # Recency only orders eviction; an entry that cannot be touched is still valid.
                 pass
             return findings, stats
         except (OSError, ValueError, KeyError, TypeError, AttributeError, RecursionError):
@@ -1092,4 +1093,5 @@ class IncrementalCache:
                 try:
                     os.unlink(temp)
                 except OSError:
+                    # Best-effort cleanup; the file may already have been renamed into place.
                     pass

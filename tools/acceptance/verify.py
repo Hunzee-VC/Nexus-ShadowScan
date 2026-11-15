@@ -38,9 +38,6 @@ from tools.evaluation.evaluate import (
     load_corpus,
     summarize,
 )
-from tools.evaluation.evaluate import (
-    DEFAULT_CORPUS as DEFAULT_CORPUS,
-)
 from tools.evaluation.sources import SourceOverlapError, bundled_source_index
 
 SCHEMA = "shadowscan.production-evidence/v1"

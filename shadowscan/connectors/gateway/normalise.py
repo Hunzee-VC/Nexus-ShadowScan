@@ -213,6 +213,7 @@ def _declared_tools(obj: dict[str, Any]) -> bool:
             try:
                 v = strict_json_loads(v)
             except json.JSONDecodeError:
+                # Not JSON: the non-empty serialised value still counts as declared tools.
                 pass
         if v not in (None, [], {}, ""):
             return True

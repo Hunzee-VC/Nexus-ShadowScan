@@ -22,7 +22,7 @@ import jwt as pyjwt
 import pytest
 from click.testing import CliRunner
 
-import shadowscan.engine as engine_module
+from shadowscan import engine as engine_module
 from shadowscan.cli import main
 from shadowscan.comparison import IDENTITY_KEY_ENV, build_collection_scope, compare_reports
 from shadowscan.config import ConnectorSpec, ScanConfig

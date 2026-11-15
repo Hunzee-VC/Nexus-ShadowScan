@@ -12,7 +12,6 @@ import sys
 import threading
 import time
 from pathlib import Path
-from threading import Event, Timer
 from types import SimpleNamespace
 from unittest.mock import Mock
 
@@ -378,14 +377,14 @@ def test_clone_timeout_kills_git_transport_subprocess(tmp_path, index):
 @pytest.mark.skipif(os.name != "posix", reason="process-group assertion uses POSIX signals")
 def test_clone_cancellation_kills_child_process(tmp_path, index):
     pidfile = tmp_path / "pid"
-    ctx = ConnectorContext(index=index, cancelled=Event())
+    ctx = ConnectorContext(index=index, cancelled=threading.Event())
     command = [
         sys.executable,
         "-c",
         "import os,pathlib,sys,time;pathlib.Path(sys.argv[1]).write_text(str(os.getpid()));time.sleep(10)",
         str(pidfile),
     ]
-    timer = Timer(0.35, ctx.cancelled.set)
+    timer = threading.Timer(0.35, ctx.cancelled.set)
     timer.start()
     try:
         with pytest.raises(ConnectorError, match="deadline"):
@@ -515,12 +514,12 @@ def test_terminating_active_clones_stops_git_deletes_checkout_and_refuses_new_cl
     checkout = _checkout(tmp_path)
     git_module.register_checkout(str(checkout))
     ctx = ConnectorContext(index=index)
-    outcome: list[BaseException] = []
+    outcome: list[Exception] = []
 
     def clone() -> None:
         try:
             run_bounded_clone([sys.executable, "-c", SLEEPER, str(pidfile)], os.environ.copy(), ctx, 30)
-        except BaseException as exc:  # noqa: BLE001 - reported to the asserting thread
+        except Exception as exc:  # noqa: BLE001 - reported to the asserting thread
             outcome.append(exc)
 
     worker = threading.Thread(target=clone)
@@ -535,12 +534,12 @@ def test_terminating_active_clones_stops_git_deletes_checkout_and_refuses_new_cl
         assert _wait_for(lambda: not _process_running(int(pidfile.read_text())), 5)
         assert not checkout.exists()
         # Another worker of the interrupted scan must not start the clone the exit would then orphan.
-        refused: list[BaseException] = []
+        refused: list[Exception] = []
 
         def another_clone() -> None:
             try:
                 run_bounded_clone([sys.executable, "-c", "pass"], os.environ.copy(), ctx, 30)
-            except BaseException as exc:  # noqa: BLE001 - reported to the asserting thread
+            except Exception as exc:  # noqa: BLE001 - reported to the asserting thread
                 refused.append(exc)
 
         late = threading.Thread(target=another_clone)

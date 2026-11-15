@@ -242,13 +242,16 @@ _MAX_CONFIGURATION_NODES = 100_000
 
 class _ProjectMatches(Protocol):
     @property
-    def root(self) -> str: ...
+    def root(self) -> str:
+        """The project's root as a relative POSIX path ("." for the scan root)."""
 
     @property
-    def matches(self) -> Sequence[Observation]: ...
+    def matches(self) -> Sequence[Observation]:
+        """The project's signature matches, each with its file and snippet."""
 
     @property
-    def coding_agent_matches(self) -> Mapping[str, Sequence[Observation]]: ...
+    def coding_agent_matches(self) -> Mapping[str, Sequence[Observation]]:
+        """The project's coding-agent matches, by signature id."""
 
 
 # The addresses a hosts file or a resolver maps a blocked name to.

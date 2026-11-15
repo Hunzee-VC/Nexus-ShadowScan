@@ -65,6 +65,15 @@ def test_persistent_low_cpu_contention_has_a_finite_retry_limit():
     assert all(later <= earlier for earlier, later in zip(attempts, attempts[1:], strict=False))
 
 
+def test_a_retry_loop_that_ends_without_a_result_fails_closed(monkeypatch):
+    # Regression: _run_regex fell off the end of its loop and returned None,
+    # which a caller reads as no match, whenever the loop ended without
+    # returning or raising. With no attempt at all it must still fail closed.
+    monkeypatch.setattr("shadowscan.signatures.matcher._MAX_CONTENTION_RETRIES", -1)
+    with pytest.raises(MatchTimeoutError, match="incomplete"):
+        _run_regex(lambda timeout: "matched", "custom.pattern")
+
+
 def test_multiple_preemptions_retain_live_result_within_original_cpu_and_wall_budgets():
     attempts = 0
 

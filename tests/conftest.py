@@ -166,11 +166,13 @@ def _is_numeric_or_local(host: str) -> bool:
         ipaddress.ip_address(candidate)
         return True
     except ValueError:
+        # Not a canonical IP literal: try the C resolver's short forms next.
         pass
     try:
         socket.inet_aton(candidate)  # also the short forms such as 127.1
         return True
     except OSError:
+        # Not numeric at all: only localhost names remain.
         pass
     name = host.rstrip(".").lower()
     return name == "localhost" or name.endswith(".localhost")

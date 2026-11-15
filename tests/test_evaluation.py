@@ -830,8 +830,6 @@ def test_acceptance_rejects_nonpositive_or_ambiguous_bounds(tmp_path: Path, bad_
 
 
 def test_acceptance_checks_method_on_the_evaluated_ledger(tmp_path: Path, monkeypatch):
-    import importlib
-
     corpus, policy, annotations = _acceptance_inputs(tmp_path)
     module = importlib.import_module("tools.evaluation.accept")
     digest = hashlib.sha256(corpus.read_bytes()).hexdigest()

@@ -38,6 +38,29 @@ from shadowscan.signatures.loader import builtin_signature_dir
 from shadowscan.signatures.matcher import LiteralScan
 from shadowscan.utils.text import BINARY_CONTENT_ERROR
 
+# The names other ShadowScan modules import from this one. Underscore names stay
+# package-internal; listing them keeps linters and CodeQL from reading them as unused.
+__all__ = [
+    "CREDENTIAL_FILE_NAMES",
+    "FindingBase",
+    "_BUNDLED_PACKS",
+    "_DEDICATED_MCP_CONFIG_NAMES",
+    "_ENV_TEMPLATE_WORDS",
+    "_MCP_TRANSPORTS",
+    "_MatchedSource",
+    "_Project",
+    "_READ_ISSUE_REASONS",
+    "_SourceFile",
+    "_UndecodableFile",
+    "_bundled_signature",
+    "_document_declares_mcp",
+    "_env_values_file",
+    "_local_module_predicate",
+    "_names_mcp_key",
+    "_on_disk_project",
+    "_read_issue_reason",
+]
+
 # The transport an MCP server code match names (metadata.mcp_server.transports).
 _MCP_TRANSPORTS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("stdio", re.compile(r"\b(?:stdio_server|StdioServerTransport)\s*\(")),
@@ -236,7 +259,8 @@ class FindingBase(Protocol):
         resource_type: str,
         *,
         identity_discriminator: str = "",
-    ) -> Finding: ...
+    ) -> Finding:
+        """A new finding for the file ``rel`` under ``root``, labelled ``label``."""
 
 
 # Tool credential files whose whole purpose is to hold a token or password:

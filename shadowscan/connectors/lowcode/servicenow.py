@@ -177,7 +177,7 @@ class ServiceNowConnector(BaseConnector):
     def collect(self) -> Iterable[dict[str, Any]]:
         self._auth()
         assert self.http
-        max_pages = max_pages_limit(self.ctx.get("max_pages", 1000))
+        max_pages = max_pages_limit(self.ctx.get("max_pages", _MAX_TABLE_PAGES))
         for table, fields in TABLES.items():
             seen: set[str] = set()
             for page in range(max_pages):

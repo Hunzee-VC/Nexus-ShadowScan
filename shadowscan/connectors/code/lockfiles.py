@@ -57,8 +57,10 @@ class LockInventory:
         default_factory=lambda: [
             "Locked dependency inventory does not establish installation, execution, or agency.",
             "Optional dependencies and environment markers are not evaluated.",
-            "Workspace links, peer variants, remote sources and ambiguous versions "
-            "have unknown reachability.",
+            (
+                "Workspace links, peer variants, remote sources and ambiguous versions "
+                "have unknown reachability."
+            ),
             "Source URLs and credentials are not retained.",
         ]
     )

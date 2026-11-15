@@ -11,6 +11,7 @@ import copy
 import hashlib
 import json
 import logging
+import math
 import random
 import re
 from decimal import ROUND_HALF_EVEN, Decimal
@@ -20,7 +21,7 @@ from urllib.parse import urlsplit
 import pytest
 from click.testing import CliRunner
 
-import shadowscan.risk as risk_module
+from shadowscan import risk as risk_module
 from shadowscan.cli import main
 from shadowscan.config import ConfigValidationError, ConnectorSpec, ScanConfig
 from shadowscan.connectors import ConnectorContext, get_connector_class
@@ -304,7 +305,7 @@ class _OddRepr(float):
 )
 def test_unusual_confidences_scale_without_error_and_keep_the_factors_exact(confidence):
     risk = _assess_raw(75, confidence)
-    clamped = 1.0 if confidence != confidence else max(0.0, min(1.0, float(confidence)))
+    clamped = 1.0 if math.isnan(confidence) else max(0.0, min(1.0, float(confidence)))
     assert risk.score == _documented_score(75, clamped)
     assert sum(factor.weight for factor in risk.factors) == risk.score
 

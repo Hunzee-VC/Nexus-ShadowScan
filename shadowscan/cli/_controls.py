@@ -5,7 +5,7 @@ from __future__ import annotations
 import click
 from rich.text import Text
 
-import shadowscan.cli as _cli
+from shadowscan import cli as _cli
 from shadowscan.cli import _load_report, main
 from shadowscan.controls import ControlSelectionError, build_control_evidence, check_sources, control_catalogs
 from shadowscan.fleet import merge_reports, source_names

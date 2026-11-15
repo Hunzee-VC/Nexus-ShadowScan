@@ -7,7 +7,6 @@ from unittest.mock import Mock
 
 import pytest
 import requests
-from requests import ConnectionError as RequestsConnectionError
 
 from shadowscan.connectors import ConnectorContext
 from shadowscan.connectors.base import ConnectorError
@@ -118,9 +117,9 @@ def test_azure_detail_failures_are_incomplete_coverage_not_fatal(index):
     connector.http = Mock()
     connector.http.get_json.side_effect = HttpError(500, "https://management.azure.com/x")
     assert connector._get("/x", "2024-01-01") is None
-    connector.http.get_json.side_effect = RequestsConnectionError()
+    connector.http.get_json.side_effect = requests.ConnectionError()
     assert connector._get("/y", "2024-01-01") is None
-    connector.http.post_json.side_effect = RequestsConnectionError()
+    connector.http.post_json.side_effect = requests.ConnectionError()
     assert ctx.stats.incomplete and len(ctx.stats.warnings) == 2
 
 
@@ -187,7 +186,7 @@ def test_azure_foundry_projects_inherit_subscription_and_location(index, monkeyp
     assert finding is not None and finding.account == "s1" and finding.region == "eastus"
 
 
-@pytest.mark.parametrize("failed", [None, [], {"error": {}}, {"properties": []}, RequestsConnectionError()])
+@pytest.mark.parametrize("failed", [None, [], {"error": {}}, {"properties": []}, requests.ConnectionError()])
 def test_azure_invalid_or_failed_appsettings_preserves_later_resources(index, failed):
     connector = AzureConnector(context(index, subscriptions="s1"))
     connector._auth = Mock()

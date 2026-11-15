@@ -293,8 +293,10 @@ def test_azure_listed_subscription_ids_must_be_guids(index):
 @pytest.mark.parametrize(
     "resource_id",
     [
-        "/subscriptions/s1/resourceGroups/rg/providers/Microsoft.Web/sites/x/../../../../providers"
-        "/Microsoft.CognitiveServices/accounts/a/listKeys",
+        (
+            "/subscriptions/s1/resourceGroups/rg/providers/Microsoft.Web/sites/x/../../../../providers"
+            "/Microsoft.CognitiveServices/accounts/a/listKeys"
+        ),
         "/subscriptions/s1/resourceGroups/rg/providers/Microsoft.Web/sites/x?api-version=2023-05-01#",
         "/subscriptions/s1/resourceGroups/rg/providers/Microsoft.Web/sites/x#",
         "/subscriptions/s1/resourceGroups/rg/providers/Microsoft.Web/sites/x%2F..%2F",

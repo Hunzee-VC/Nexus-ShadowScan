@@ -8,7 +8,7 @@ from typing import Any
 
 import click
 
-import shadowscan.cli as _cli
+from shadowscan import cli as _cli
 from shadowscan.cli import LEVELS, main
 from shadowscan.comparison import (
     DRIFT_CLASSES,

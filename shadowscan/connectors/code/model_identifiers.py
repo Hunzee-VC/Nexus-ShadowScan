@@ -14,6 +14,29 @@ import re
 
 import regex
 
+# The names other ShadowScan modules import from this one. Underscore names stay
+# package-internal; listing them keeps linters and CodeQL from reading them as unused.
+__all__ = [
+    "MAX_MODEL_LITERALS_PER_FILE",
+    "MAX_MODEL_LITERAL_OCCURRENCES",
+    "MAX_MODEL_MATCHES_PER_SIGNATURE",
+    "MODEL_IDS_ONLY_MAX_CONFIDENCE",
+    "MODEL_LITERAL_MAX_WEIGHT",
+    "_MODEL_FAMILY_SHAPES",
+    "_MODEL_FILE_NAME_RE",
+    "_MODEL_KEY_VALUE_RE",
+    "_MODEL_LITERAL_CONFIG_EXTENSIONS",
+    "_MODEL_QUOTED_RE",
+    "_MODEL_ROUTE_PREFIXES",
+    "_MODEL_SEGMENT_RE",
+    "_MODEL_STEMS",
+    "_MODEL_STEM_RE",
+    "_MODEL_TOOLING_NAMES",
+    "_MODEL_TOOLING_SEGMENTS",
+    "_has_model_stem",
+    "_model_lookalike",
+]
+
 # A model identifier found as a literal is medium-weight evidence: it names a
 # model the code may call, not an installed SDK (see _scan_model_literals).
 MODEL_LITERAL_MAX_WEIGHT = 0.5

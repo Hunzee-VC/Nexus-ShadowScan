@@ -208,12 +208,16 @@ def test_import_and_framework_utilities_are_not_agents(tmp_path, run_connector, 
 @pytest.mark.parametrize(
     "source",
     [
-        'import { createReactAgent as Graph } from "@langchain/langgraph/prebuilt";\n'
-        "const app = Graph({});\n",
+        (
+            'import { createReactAgent as Graph } from "@langchain/langgraph/prebuilt";\n'
+            "const app = Graph({});\n"
+        ),
         'import * as lg from "@langchain/langgraph/prebuilt";\nconst app = lg.createReactAgent({});\n',
         'const lg = require("@langchain/langgraph/prebuilt");\nconst app = lg.createReactAgent({});\n',
-        'const { createReactAgent: Graph } = require("@langchain/langgraph/prebuilt");\n'
-        "const app = Graph({});\n",
+        (
+            'const { createReactAgent: Graph } = require("@langchain/langgraph/prebuilt");\n'
+            "const app = Graph({});\n"
+        ),
         'import { createReactAgent as build } from "@langchain/langgraph/prebuilt";\nconst app = build({});\n',
     ],
 )
