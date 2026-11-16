@@ -137,7 +137,8 @@ def test_earlier_card_level_is_ignored_with_a_warning(tmp_path, version):
 @pytest.mark.parametrize("profile", [None, {"memory_persistence": True}, "free text"])
 def test_earlier_card_without_a_level_is_silent(tmp_path, profile):
     payload = card() if profile is None else card(autonomy_profile=profile)
-    assert Inventory.load([write(tmp_path, payload)]).autonomy_warnings() == []
+    path = write(tmp_path, payload)
+    assert Inventory.load([path]).autonomy_warnings() == []
 
 
 def test_inventory_check_prints_the_ignored_level_warning(tmp_path):

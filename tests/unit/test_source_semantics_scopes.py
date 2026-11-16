@@ -120,18 +120,30 @@ def test_exception_alias_is_deleted_even_when_reimported_in_the_handler():
 @pytest.mark.parametrize(
     "source",
     [
-        "from agents import Agent\ntry:\n    Agent = object\n    operation()\n"
-        "    from agents import Agent\nexcept Exception:\n    Agent()\n",
-        "from agents import Agent\ntry:\n    Agent = object\n    operation()\n"
-        "    from agents import Agent\nfinally:\n    Agent()\n",
-        "from agents import Agent\ntry:\n    operation()\nexcept* ValueError:\n"
-        "    Agent = object\nexcept* TypeError:\n    Agent()\n",
-        "from agents import Agent\ntry:\n    operation()\nexcept Exception:\n"
-        "    Agent = object\n    operation()\n    from agents import Agent\nfinally:\n    Agent()\n",
-        "from agents import Agent\ntry:\n    pass\nexcept Exception:\n    pass\nelse:\n"
-        "    Agent = object\n    operation()\n    from agents import Agent\nfinally:\n    Agent()\n",
-        "from agents import Agent\ntry:\n    raise TypeError()\nexcept (Agent := ValueError):\n"
-        "    pass\nexcept TypeError:\n    Agent()\n",
+        (
+            "from agents import Agent\ntry:\n    Agent = object\n    operation()\n"
+            "    from agents import Agent\nexcept Exception:\n    Agent()\n"
+        ),
+        (
+            "from agents import Agent\ntry:\n    Agent = object\n    operation()\n"
+            "    from agents import Agent\nfinally:\n    Agent()\n"
+        ),
+        (
+            "from agents import Agent\ntry:\n    operation()\nexcept* ValueError:\n"
+            "    Agent = object\nexcept* TypeError:\n    Agent()\n"
+        ),
+        (
+            "from agents import Agent\ntry:\n    operation()\nexcept Exception:\n"
+            "    Agent = object\n    operation()\n    from agents import Agent\nfinally:\n    Agent()\n"
+        ),
+        (
+            "from agents import Agent\ntry:\n    pass\nexcept Exception:\n    pass\nelse:\n"
+            "    Agent = object\n    operation()\n    from agents import Agent\nfinally:\n    Agent()\n"
+        ),
+        (
+            "from agents import Agent\ntry:\n    raise TypeError()\nexcept (Agent := ValueError):\n"
+            "    pass\nexcept TypeError:\n    Agent()\n"
+        ),
     ],
 )
 def test_exception_and_finally_calls_do_not_inherit_the_successful_body_state(source):
@@ -317,28 +329,50 @@ def test_wide_match_with_disjoint_writes_stays_fast_within_the_ast_budget():
 @pytest.mark.parametrize(
     "source",
     [
-        "try:\n    from agents import Agent\nexcept ImportError:\n    pass\n"
-        "worker = Agent(name='w', tools=[])\n",
-        "import sys\ntry:\n    from agents import Agent\nexcept ImportError:\n"
-        "    print('install openai-agents')\n    sys.exit(1)\nworker = Agent(name='w', tools=[])\n",
-        "try:\n    from agents import Agent\nexcept ImportError:\n    exit('pip install openai-agents')\n"
-        "worker = Agent(name='w', tools=[])\n",
-        "try:\n    from agents import Agent\nexcept ImportError:\n    quit()\n"
-        "worker = Agent(name='w', tools=[])\n",
-        "import logging, sys\nlog = logging.getLogger()\ntry:\n    from agents import Agent\n"
-        "except ImportError:\n    log.error('missing')\n    sys.exit(2)\nworker = Agent(name='w', tools=[])\n",
-        "import os\ntry:\n    from agents import Agent\nexcept ImportError:\n    os._exit(1)\n"
-        "worker = Agent(name='w', tools=[])\n",
-        "from sys import exit as stop\ntry:\n    from agents import Agent\nexcept ImportError:\n    stop(1)\n"
-        "worker = Agent(name='w', tools=[])\n",
-        "try:\n    from crewai import Agent\nexcept ImportError:\n    from crewai.agent import Agent\n"
-        "worker = Agent(role='r', goal='g', backstory='b', tools=[])\n",
-        "class Settings:\n    try:\n        from agents import Agent\n    except ImportError:\n        pass\n"
-        "    worker = Agent(name='w', tools=[])\n",
-        "def build():\n    try:\n        from agents import Agent\n    except ImportError:\n        return None\n"
-        "    return Agent(name='w', tools=[])\n",
-        "def build():\n    try:\n        from agents import Agent\n    except ImportError:\n        pass\n"
-        "    return Agent(name='w', tools=[])\n",
+        (
+            "try:\n    from agents import Agent\nexcept ImportError:\n    pass\n"
+            "worker = Agent(name='w', tools=[])\n"
+        ),
+        (
+            "import sys\ntry:\n    from agents import Agent\nexcept ImportError:\n"
+            "    print('install openai-agents')\n    sys.exit(1)\nworker = Agent(name='w', tools=[])\n"
+        ),
+        (
+            "try:\n    from agents import Agent\nexcept ImportError:\n    exit('pip install openai-agents')\n"
+            "worker = Agent(name='w', tools=[])\n"
+        ),
+        (
+            "try:\n    from agents import Agent\nexcept ImportError:\n    quit()\n"
+            "worker = Agent(name='w', tools=[])\n"
+        ),
+        (
+            "import logging, sys\nlog = logging.getLogger()\ntry:\n    from agents import Agent\n"
+            "except ImportError:\n    log.error('missing')\n    sys.exit(2)\nworker = Agent(name='w', tools=[])\n"
+        ),
+        (
+            "import os\ntry:\n    from agents import Agent\nexcept ImportError:\n    os._exit(1)\n"
+            "worker = Agent(name='w', tools=[])\n"
+        ),
+        (
+            "from sys import exit as stop\ntry:\n    from agents import Agent\nexcept ImportError:\n    stop(1)\n"
+            "worker = Agent(name='w', tools=[])\n"
+        ),
+        (
+            "try:\n    from crewai import Agent\nexcept ImportError:\n    from crewai.agent import Agent\n"
+            "worker = Agent(role='r', goal='g', backstory='b', tools=[])\n"
+        ),
+        (
+            "class Settings:\n    try:\n        from agents import Agent\n    except ImportError:\n        pass\n"
+            "    worker = Agent(name='w', tools=[])\n"
+        ),
+        (
+            "def build():\n    try:\n        from agents import Agent\n    except ImportError:\n        return None\n"
+            "    return Agent(name='w', tools=[])\n"
+        ),
+        (
+            "def build():\n    try:\n        from agents import Agent\n    except ImportError:\n        pass\n"
+            "    return Agent(name='w', tools=[])\n"
+        ),
     ],
 )
 def test_guarded_sdk_imports_keep_their_agent_binding(tmp_path, run_connector, source):
@@ -370,23 +404,33 @@ def test_guarded_provider_import_with_exiting_handler_keeps_tool_use(tmp_path, r
         "try:\n    from agents import Agent\nexcept ImportError:\n    Agent = object\nAgent()\n",
         "try:\n    from agents import Agent\nexcept ImportError:\n    from crewai import Agent\nAgent()\n",
         # Clause tests may assign the name before a later handler runs.
-        "try:\n    from agents import Agent\nexcept (Agent := ImportError):\n    pass\n"
-        "except Exception:\n    pass\nAgent()\n",
+        (
+            "try:\n    from agents import Agent\nexcept (Agent := ImportError):\n    pass\n"
+            "except Exception:\n    pass\nAgent()\n"
+        ),
         # A star import may already provide the name.
         "from helpers import *\ntry:\n    from agents import Agent\nexcept ImportError:\n    pass\nAgent()\n",
         # A builtin of the same name remains callable after the failed import.
         "try:\n    from agents import input\nexcept ImportError:\n    pass\ninput()\n",
         # Shadowed exits are ordinary calls that continue.
-        "def exit(code):\n    return code\ntry:\n    from agents import Agent\nexcept ImportError:\n"
-        "    exit(1)\n    Agent = object\nAgent()\n",
-        "import sys\nsys = object()\ntry:\n    from agents import Agent\nexcept ImportError:\n"
-        "    sys.exit(1)\n    Agent = object\nAgent()\n",
+        (
+            "def exit(code):\n    return code\ntry:\n    from agents import Agent\nexcept ImportError:\n"
+            "    exit(1)\n    Agent = object\nAgent()\n"
+        ),
+        (
+            "import sys\nsys = object()\ntry:\n    from agents import Agent\nexcept ImportError:\n"
+            "    sys.exit(1)\n    Agent = object\nAgent()\n"
+        ),
         # A later iteration can reach the handler with the name another
         # statement bound; so can a function that declares it global.
-        "for item in items:\n    try:\n        from agents import Agent\n    except ImportError:\n"
-        "        pass\n    Agent()\n    Agent = object\n",
-        "def setup():\n    global Agent\n    Agent = object\nsetup()\ntry:\n    from agents import Agent\n"
-        "except ImportError:\n    pass\nAgent()\n",
+        (
+            "for item in items:\n    try:\n        from agents import Agent\n    except ImportError:\n"
+            "        pass\n    Agent()\n    Agent = object\n"
+        ),
+        (
+            "def setup():\n    global Agent\n    Agent = object\nsetup()\ntry:\n    from agents import Agent\n"
+            "except ImportError:\n    pass\nAgent()\n"
+        ),
     ],
 )
 def test_guarded_import_alternatives_that_may_differ_stay_uncertain(source):

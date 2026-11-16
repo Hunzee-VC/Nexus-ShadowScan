@@ -63,11 +63,12 @@ from __future__ import annotations
 # Every name importable from this module before its helpers moved into
 # path_context, project_evidence, model_identifiers, source_text and excerpts,
 # and before its ownership, walk, file scan and finding code moved into
-# collaborator classes (ADR-005), stays importable: the imports marked
-# `noqa: F401 - re-exported` and the redundant `name as name` imports carry
-# names this module does not use itself. Patch such a name in its defining
-# module; rebinding it here does not change what the helpers use.
-import ast  # noqa: F401 - re-exported
+# collaborator classes (ADR-005), stays importable: `__all__` (after the
+# imports) lists them, including names this module does not use itself, so
+# linters and CodeQL read them as deliberate re-exports rather than unused
+# imports. Patch such a name in its defining module; rebinding it here does
+# not change what the helpers use.
+import ast
 import errno as errno
 import fnmatch as fnmatch
 import hashlib
@@ -76,7 +77,7 @@ import re
 import stat as stat
 import subprocess as subprocess
 import time as time
-import tomllib  # noqa: F401 - re-exported
+import tomllib
 from bisect import bisect_right as bisect_right
 from collections.abc import Callable as Callable
 from collections.abc import Iterable, Iterator
@@ -93,7 +94,7 @@ import yaml as yaml
 
 from shadowscan.connectors.base import BaseConnector, ConnectorContext, ConnectorError, _positive_limit
 from shadowscan.connectors.base import incomplete_reason as incomplete_reason
-from shadowscan.connectors.code.catalogs import (  # noqa: F401 - re-exported
+from shadowscan.connectors.code.catalogs import (
     _PIPELINE_DIRECTORIES,
     _PIPELINE_NAMES,
     CATALOG_MIN_SIGNATURES,
@@ -114,7 +115,6 @@ from shadowscan.connectors.code.excerpts import _ExcerptSource as _ExcerptSource
 from shadowscan.connectors.code.excerpts import _LazyExcerpt as _LazyExcerpt
 from shadowscan.connectors.code.excerpts import _Snippet as _Snippet
 from shadowscan.connectors.code.file_scan import _COLOCATED_SIGNATURES as _COLOCATED_SIGNATURES
-from shadowscan.connectors.code.file_scan import _ENV_TEMPLATE_WORDS as _ENV_TEMPLATE_WORDS
 from shadowscan.connectors.code.file_scan import _IAC_EXTENSIONS as _IAC_EXTENSIONS
 from shadowscan.connectors.code.file_scan import _IAC_MODEL_RE as _IAC_MODEL_RE
 from shadowscan.connectors.code.file_scan import _IAM_WILDCARD_RE as _IAM_WILDCARD_RE
@@ -172,7 +172,7 @@ from shadowscan.connectors.code.mcp_tools import mcp_tool_names as mcp_tool_name
 from shadowscan.connectors.code.model_artifacts import ARTIFACT_SUFFIXES as ARTIFACT_SUFFIXES
 from shadowscan.connectors.code.model_artifacts import ArtifactBudgetExhausted as ArtifactBudgetExhausted
 from shadowscan.connectors.code.model_artifacts import inspect_artifact as inspect_artifact
-from shadowscan.connectors.code.model_identifiers import (  # noqa: F401 - re-exported
+from shadowscan.connectors.code.model_identifiers import (
     _MODEL_FAMILY_SHAPES,
     _MODEL_FILE_NAME_RE,
     _MODEL_KEY_VALUE_RE,
@@ -201,7 +201,7 @@ from shadowscan.connectors.code.ownership import MAX_RULES as MAX_RULES
 from shadowscan.connectors.code.ownership import OwnershipBudget as OwnershipBudget
 from shadowscan.connectors.code.ownership import OwnershipLimitError as OwnershipLimitError
 from shadowscan.connectors.code.ownership import OwnershipResolver, codeowners_match
-from shadowscan.connectors.code.path_context import (  # noqa: F401 - re-exported
+from shadowscan.connectors.code.path_context import (
     _DOCS_DIR_NAMES,
     _EXAMPLE_DIR_NAMES,
     _GENERATED_FILE_RE,
@@ -222,7 +222,7 @@ from shadowscan.connectors.code.path_context import (  # noqa: F401 - re-exporte
     negative_context,
 )
 from shadowscan.connectors.code.path_context import NEGATIVE_CONTEXT_TAGS as NEGATIVE_CONTEXT_TAGS
-from shadowscan.connectors.code.project_evidence import (  # noqa: F401 - re-exported
+from shadowscan.connectors.code.project_evidence import (
     _CORROBORATING_SIGNALS,
     _MENTION_SIGNAL_TYPES,
     ENV_ONLY_MAX_CONFIDENCE,
@@ -256,6 +256,7 @@ from shadowscan.connectors.code.python_reexports import project_path as project_
 from shadowscan.connectors.code.rule_packs import detection_rule_format as detection_rule_format
 from shadowscan.connectors.code.scan_records import _BUNDLED_PACKS as _BUNDLED_PACKS
 from shadowscan.connectors.code.scan_records import _DEDICATED_MCP_CONFIG_NAMES as _DEDICATED_MCP_CONFIG_NAMES
+from shadowscan.connectors.code.scan_records import _ENV_TEMPLATE_WORDS as _ENV_TEMPLATE_WORDS
 from shadowscan.connectors.code.scan_records import _MCP_TRANSPORTS as _MCP_TRANSPORTS
 from shadowscan.connectors.code.scan_records import _READ_ISSUE_REASONS as _READ_ISSUE_REASONS
 from shadowscan.connectors.code.scan_records import CREDENTIAL_FILE_NAMES as CREDENTIAL_FILE_NAMES
@@ -266,7 +267,7 @@ from shadowscan.connectors.code.scan_records import _MatchedSource, _Project
 from shadowscan.connectors.code.scan_records import _on_disk_project as _on_disk_project
 from shadowscan.connectors.code.scan_records import _read_issue_reason as _read_issue_reason
 from shadowscan.connectors.code.scan_records import _SourceFile as _SourceFile
-from shadowscan.connectors.code.semantic_config import (  # noqa: F401 - re-exported
+from shadowscan.connectors.code.semantic_config import (
     a2a_card_metadata,
     a2a_card_tags,
     a2a_unsupported_protocol_version,
@@ -285,7 +286,7 @@ from shadowscan.connectors.code.source_semantics import MAX_CALL_TEXT as MAX_CAL
 from shadowscan.connectors.code.source_semantics import SourceBudgetExceeded as SourceBudgetExceeded
 from shadowscan.connectors.code.source_semantics import SourceNotParsed as SourceNotParsed
 from shadowscan.connectors.code.source_semantics import bound_source_matches as bound_source_matches
-from shadowscan.connectors.code.source_text import (  # noqa: F401 - re-exported
+from shadowscan.connectors.code.source_text import (
     _COMMENT_OPENERS,
     _COMMENT_START,
     _CRAWLER_UA_MARK,
@@ -418,9 +419,9 @@ from shadowscan.utils.git import read_gitlink_paths as read_gitlink_paths
 from shadowscan.utils.git import require_local_git_metadata as require_local_git_metadata
 from shadowscan.utils.git import run_bounded_metadata as run_bounded_metadata
 from shadowscan.utils.jsonc import (
-    load_json_lenient_marked as _load_json_lenient_marked,  # noqa: F401 - re-exported
+    load_json_lenient_marked as _load_json_lenient_marked,
 )
-from shadowscan.utils.jsonc import strip_json_comments as _strip_json_comments  # noqa: F401 - historical name
+from shadowscan.utils.jsonc import strip_json_comments as _strip_json_comments  # historical name
 from shadowscan.utils.redaction import SanitizationLimitError as SanitizationLimitError
 from shadowscan.utils.redaction import sanitize as sanitize
 from shadowscan.utils.redaction import sanitize_text as sanitize_text
@@ -443,6 +444,336 @@ from shadowscan.utils.text import truncate as truncate
 
 # The name this module bound CODEOWNERS matching to before its caller moved (ADR-005).
 _codeowners_match = codeowners_match
+
+# The importable surface described at the top of this module: every name moved out
+# of it (ADR-005), its historical aliases, and its own public API.
+__all__ = [
+    "ARTIFACT_SUFFIXES",
+    "AbstractSet",
+    "Artifact",
+    "ArtifactBudgetExhausted",
+    "BINARY_CONTENT_ERROR",
+    "CATALOG_MIN_SIGNATURES",
+    "CI_IMAGE_WEIGHT_SCALE",
+    "CLIENT_SIGNATURES",
+    "CREDENTIAL_FILE_NAMES",
+    "Callable",
+    "ContentHit",
+    "DEADLINE_MARGIN_FRACTION",
+    "DEADLINE_MARGIN_MIN_SECONDS",
+    "DEFAULT_EXCLUDES",
+    "DEFAULT_MAX_NOTEBOOK_SIZE",
+    "DISCLOSED_DEFAULT_EXCLUDES",
+    "DOCS_MAX_CONFIDENCE",
+    "DOCS_WEIGHT_SCALE",
+    "Dep",
+    "ENUMERATION_DEADLINE_SHARE",
+    "ENV_ONLY_MAX_CONFIDENCE",
+    "ENV_ONLY_WEIGHT_SCALE",
+    "EXAMPLE_CREDENTIAL_WEIGHT",
+    "EXAMPLE_PATH_MAX_CONFIDENCE",
+    "EXAMPLE_PATH_WEIGHT_SCALE",
+    "Evidence",
+    "FilesystemConnector",
+    "GENERATED_MAX_CONFIDENCE",
+    "GENERATED_WEIGHT_SCALE",
+    "HostLineFilter",
+    "ImportResolver",
+    "InstructionAudit",
+    "JSONIntegrityError",
+    "LFS_POINTER_MAX_BYTES",
+    "LFS_POINTER_PREFIX",
+    "LOADER_EXTENSIONS",
+    "LOCKFILE_NAMES",
+    "LOCK_FILES",
+    "LiteralScan",
+    "LockInventory",
+    "MAX_CALL_TEXT",
+    "MAX_EXAMPLE_CREDENTIAL_EVIDENCE",
+    "MAX_GITMODULES_BYTES",
+    "MAX_INSTRUCTION_TEXT_BYTES",
+    "MAX_MODEL_LITERALS_PER_FILE",
+    "MAX_MODEL_MATCHES_PER_SIGNATURE",
+    "MAX_OWNERSHIP_STEPS",
+    "MAX_PATTERN_LENGTH",
+    "MAX_PENDING_BYTES",
+    "MAX_PENDING_FILES",
+    "MAX_ROOT_OWNERSHIP_STEPS",
+    "MAX_RULES",
+    "MAX_SECRETS_PER_SIGNAL",
+    "MCPToolLimitError",
+    "MCP_CONFIG_NAMES",
+    "MODEL_IDS_ONLY_MAX_CONFIDENCE",
+    "MODEL_LITERAL_MAX_WEIGHT",
+    "MatchTimeoutError",
+    "MetadataOutputLimitError",
+    "MetadataTimeoutError",
+    "NEGATIVE_CONTEXT_TAGS",
+    "NegativeContext",
+    "OwnershipBudget",
+    "OwnershipLimitError",
+    "PROFILES",
+    "PROJECT_ROOT_MARKERS",
+    "PurePosixPath",
+    "ReexportLimitError",
+    "SCAN_TIMEOUT_BAND_HEADROOM_BYTES",
+    "SCAN_TIMEOUT_CAP_SECONDS",
+    "SCAN_TIMEOUT_STEP_BYTES",
+    "SOURCE_EXTENSIONS",
+    "SanitizationLimitError",
+    "Sequence",
+    "Signature",
+    "SourceBudgetExceeded",
+    "SourceNotParsed",
+    "TEXT_CONFIG_EXTENSIONS",
+    "ToolRegions",
+    "VCS_METADATA_EXCLUDES",
+    "WALL_BUDGET_FACTOR",
+    "WEAK_MENTION_WEIGHT",
+    "YAMLIntegrityError",
+    "YAMLResourceLimitError",
+    "_AGENT_DEFINITION_DIRS",
+    "_ANY_FILE_NAME",
+    "_BUNDLED_PACKS",
+    "_CODING_AGENT_DOC_NAMES",
+    "_COLOCATED_SIGNATURES",
+    "_COMMENT_OPENERS",
+    "_COMMENT_START",
+    "_CORROBORATING_SIGNALS",
+    "_CRAWLER_UA_MARK",
+    "_CellSpans",
+    "_DEDICATED_MCP_CONFIG_NAMES",
+    "_DOCS_DIR_NAMES",
+    "_DOCUMENTATION_EXTENSIONS",
+    "_ENV_TEMPLATE_WORDS",
+    "_EXAMPLE_DIR_NAMES",
+    "_ExcerptSource",
+    "_FRONTMATTER",
+    "_GENERATED_FILE_RE",
+    "_GLOB_KEYS",
+    "_IAC_EXTENSIONS",
+    "_IAC_MODEL_RE",
+    "_IAM_WILDCARD_RE",
+    "_IGNORED_STAT_ERRNOS",
+    "_IPYTHON_LINE",
+    "_JSON_SUFFIXES",
+    "_LFS_POINTER_TEXT",
+    "_LIBRARY_SIGNALS",
+    "_LINE_BREAK",
+    "_LLM_CATEGORIES",
+    "_LOCATION_LINE",
+    "_LOCKFILE_MANIFESTS",
+    "_LazyExcerpt",
+    "_MANIFEST_EXTENSIONS",
+    "_MAX_AGENT_DEFINITIONS",
+    "_MAX_CARD_FILES",
+    "_MAX_GIT_AUTHOR_CHARS",
+    "_MAX_GIT_EMAIL_CHARS",
+    "_MAX_GIT_TIMESTAMP_CHARS",
+    "_MAX_LISTED_RULE_FILES",
+    "_MAX_MCP_SERVER_CONSTRUCTIONS",
+    "_MAX_MCP_TOOLS",
+    "_MAX_NON_REGULAR_NOTES",
+    "_MCP_CAPABILITY_KEYWORDS",
+    "_MCP_REGISTRATION_RE",
+    "_MCP_SERVER_IMPORT_RE",
+    "_MCP_STRUCTURE_SUFFIXES",
+    "_MCP_TRANSPORTS",
+    "_MENTION_SIGNALS",
+    "_MENTION_SIGNAL_TYPES",
+    "_MODEL_FAMILY_SHAPES",
+    "_MODEL_FILE_NAME_RE",
+    "_MODEL_KEY_VALUE_RE",
+    "_MODEL_LITERAL_CONFIG_EXTENSIONS",
+    "_MODEL_QUOTED_RE",
+    "_MODEL_ROUTE_PREFIXES",
+    "_MODEL_SEGMENT_RE",
+    "_MODEL_STEMS",
+    "_MODEL_STEM_RE",
+    "_MODEL_TOOLING_NAMES",
+    "_MODEL_TOOLING_SEGMENTS",
+    "_NEVER_READ_SUFFIXES",
+    "_NO_STRUCTURE",
+    "_Observation",
+    "_PIPELINE_DIRECTORIES",
+    "_PIPELINE_NAMES",
+    "_PROJECT_MANIFESTS",
+    "_ProjectEvidence",
+    "_QUOTED_VALUE",
+    "_QUOTE_START",
+    "_READ_ISSUE_REASONS",
+    "_ROOT_OPEN_REASONS",
+    "_ScanState",
+    "_Snippet",
+    "_SourceFile",
+    "_TEST_DIR_NAMES",
+    "_TEST_FILE_RE",
+    "_UndecodableFile",
+    "_WORKFLOW_EXTENSIONS",
+    "_WORKFLOW_FILE",
+    "_WalkBudget",
+    "_WalkCounters",
+    "_WalkLimitError",
+    "_XML_EXTENSIONS",
+    "_YAML_SUFFIXES",
+    "_analyzed_by_name",
+    "_below_root",
+    "_bundled_signature",
+    "_cell_noncode_ranges",
+    "_check_enumeration_time",
+    "_checked_scan_root",
+    "_clip",
+    "_codeowners_match",
+    "_comment_spans",
+    "_corroborates",
+    "_crawler_ua_text",
+    "_document_declares_mcp",
+    "_env_values_file",
+    "_exception_name",
+    "_excerpt",
+    "_file_failure_reason",
+    "_finditer",
+    "_has_model_stem",
+    "_holds_file",
+    "_is_coding_agent_doc",
+    "_is_docs_path",
+    "_is_example_path",
+    "_is_generated_path",
+    "_is_pipeline_file",
+    "_is_test_path",
+    "_link_names_one_file",
+    "_load_json_lenient",
+    "_load_json_lenient_marked",
+    "_local_module_predicate",
+    "_marks_deployable_project",
+    "_marks_project",
+    "_mcp_client_for",
+    "_mention",
+    "_mentions_mcp_keys",
+    "_model_lookalike",
+    "_nearest_root",
+    "_never_read_by_name",
+    "_note_unread_settings",
+    "_notebook_binder_source",
+    "_on_disk_project",
+    "_parse_mcp_servers",
+    "_pattern_timeout",
+    "_project_root",
+    "_quote_glob_values",
+    "_quote_plain_values",
+    "_quoted_values",
+    "_read_issue_reason",
+    "_redacted_source",
+    "_report_name",
+    "_resolved_link_target",
+    "_root_open_failure",
+    "_scan_priority",
+    "_special_file_kind",
+    "_strip_comment",
+    "_strip_json_comments",
+    "_structured_context",
+    "_uncorroborated_signatures",
+    "_walk_directories",
+    "_weak_mention_signatures",
+    "_within",
+    "_without_ipython_lines",
+    "_without_source_ranges",
+    "_without_xml_comments",
+    "_yaml_declares_mcp",
+    "a2a_card_metadata",
+    "a2a_card_tags",
+    "a2a_unsupported_protocol_version",
+    "agent_manifest_kind",
+    "apply_matches",
+    "approval_scopes",
+    "approval_settings",
+    "assess_posture",
+    "ast",
+    "audit_skill_text",
+    "bisect_right",
+    "bound_source_matches",
+    "builtin_signature_dir",
+    "canonical_settings_path",
+    "cap_confidence",
+    "catalog_metadata",
+    "configuration_document",
+    "contextmanager",
+    "coverage_profile",
+    "deadline_margin",
+    "declared_submodule_paths",
+    "deny_list_file",
+    "detection_rule_format",
+    "enumeration_deadline",
+    "errno",
+    "finalize",
+    "fnmatch",
+    "foreign_cell",
+    "has_local_import",
+    "has_template_markers",
+    "incomplete_reason",
+    "inspect_artifact",
+    "inspect_instruction_text",
+    "is_agent_config_path",
+    "is_manifest_name",
+    "is_vendored_path",
+    "langchaingo_agent_matches",
+    "language_for_path",
+    "line_counter",
+    "link_in_path",
+    "local_module_conflict",
+    "looks_like_placeholder",
+    "manifest_comment_projection",
+    "mcp_tool_capabilities",
+    "mcp_tool_names",
+    "metadata_git_argv_prefix",
+    "metadata_git_env",
+    "microsoft_tool_loop_matches",
+    "named_construction_spans",
+    "negative_context",
+    "noncode_ranges",
+    "notebook_to_source",
+    "nul_reading_ranges",
+    "open_confined_directory",
+    "open_confined_file",
+    "parse_agent_manifest",
+    "parse_manifest",
+    "parse_timestamp",
+    "placeholder_reason",
+    "posture_client",
+    "posture_parseable",
+    "project_catalog_files",
+    "project_path",
+    "read_credential_text",
+    "read_gitlink_paths",
+    "read_policy_text",
+    "read_text",
+    "record_approval",
+    "record_posture",
+    "record_server_risks",
+    "redact",
+    "referenced_data_files",
+    "references_could_change",
+    "regex",
+    "replace",
+    "reported_credential",
+    "require_local_git_metadata",
+    "run_bounded_metadata",
+    "sanitize",
+    "sanitize_text",
+    "scan_timeout_for_size",
+    "spring_tool_registration_matches",
+    "stat",
+    "strict_bounded_safe_load",
+    "structured_code_matches",
+    "subprocess",
+    "time",
+    "tomllib",
+    "truncate",
+    "unreadable_settings",
+    "validate_distinct_paths",
+    "validate_root_ids",
+    "yaml",
+]
 
 # Saved outputs (plots, tables, logs) routinely push small notebooks past
 # max_file_size. Their code cells are still analyzed up to this size.

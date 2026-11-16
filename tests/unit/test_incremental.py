@@ -593,6 +593,8 @@ def test_incomplete_runs_never_cached_and_constructor_errors_isolated(tmp_path, 
 
     class Broken(Partial):
         def __init__(self, ctx):
+            # A connector validates its options once the base class has read the context.
+            super().__init__(ctx)
             raise ValueError("invalid connector option")
 
     monkeypatch.setattr("shadowscan.engine.get_connector_class", lambda _: Broken)

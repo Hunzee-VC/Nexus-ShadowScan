@@ -503,8 +503,6 @@ def test_quadratic_tokenizer_versions_pay_for_each_line_copy(monkeypatch):
     Forced on here so every interpreter runs that path: a hostile long line
     must end in the fail-closed limit quickly, and ordinary text still redacts.
     """
-    import time
-
     from shadowscan.utils import redaction_statements
     from shadowscan.utils.redaction import SanitizationLimitError
 

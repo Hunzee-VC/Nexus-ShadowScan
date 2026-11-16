@@ -333,7 +333,7 @@ _CREW_AGENT = (
 
 def _diff_reports(monkeypatch, changed: set[str]) -> None:
     """Have the connector see ``changed`` as the committed diff, whatever Git is installed."""
-    import shadowscan.utils.git as git_utils
+    from shadowscan.utils import git as git_utils
 
     monkeypatch.setattr(git_utils, "diff_changed_files", lambda root, ref, ctx, **_: frozenset(changed))
 
@@ -420,7 +420,7 @@ def test_diff_base_without_local_paths_is_a_usage_error(remote: list[str]) -> No
 def test_diff_base_with_remote_repositories_applies_only_to_local_paths(tmp_path: Path, monkeypatch) -> None:
     from click.testing import CliRunner
 
-    import shadowscan.cli as cli
+    from shadowscan import cli as cli
 
     captured = []
     monkeypatch.setattr(cli, "_run_scan", lambda config, opts: captured.append(config))
@@ -446,8 +446,8 @@ def test_diff_base_with_remote_repositories_applies_only_to_local_paths(tmp_path
 
 def test_non_utf8_diff_output_is_a_diff_error(tmp_path: Path, index, monkeypatch) -> None:
     """Undecodable diff output takes the documented full-scan fallback instead of failing the connector."""
-    import shadowscan.utils.git as git_utils
     from shadowscan.connectors.base import ConnectorContext
+    from shadowscan.utils import git as git_utils
 
     (tmp_path / ".git").mkdir()
     monkeypatch.setattr(git_utils, "require_local_git_metadata", lambda root, timeout: None)

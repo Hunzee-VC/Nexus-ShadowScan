@@ -894,8 +894,6 @@ def test_ja4_storage_is_bounded_and_context_uid_join_is_scoped(run_connector, tm
 
 
 def test_network_enrichment_never_resolves_names(run_connector, monkeypatch):
-    import socket
-
     def refuse(*args, **kwargs):
         raise AssertionError("offline network logs must not resolve names")
 

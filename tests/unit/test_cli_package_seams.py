@@ -19,7 +19,7 @@ import pytest
 from click.testing import CliRunner
 from rich.console import Console
 
-import shadowscan.cli as cli
+from shadowscan import cli as cli
 from shadowscan.cli import main
 
 # The names tests and callers replace on shadowscan.cli.
@@ -100,7 +100,7 @@ _COMMANDS = (
 def test_each_command_stays_importable_from_the_package(name: str) -> None:
     import click
 
-    import shadowscan.cli as cli
+    from shadowscan import cli as cli
 
     command = getattr(cli, name)
     assert isinstance(command, click.Command)

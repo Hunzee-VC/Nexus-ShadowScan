@@ -8,7 +8,7 @@ from typing import Any
 import click
 from rich.text import Text
 
-import shadowscan.cli as _cli
+from shadowscan import cli as _cli
 from shadowscan.cli import ScanOptions, main, scan_options
 from shadowscan.config import ConnectorSpec
 from shadowscan.endpoint import (

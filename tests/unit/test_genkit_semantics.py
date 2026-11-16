@@ -30,14 +30,18 @@ def _scan(tmp_path, run_connector, source: str, suffix: str):
         _REGISTER + 'await ai.generate({tools: [lookup], toolChoice: "none"});\n',
         _REGISTER + "await ai.generate({tools: [lookup], ...options});\n",
         'const lookup = ai.defineTool({name: "lookup"}, false);\nawait ai.generate({tools: [lookup]});\n',
-        'const lookup = ai.defineTool({name: "lookup"}, (() => false)());\n'
-        "await ai.generate({tools: [lookup]});\n",
+        (
+            'const lookup = ai.defineTool({name: "lookup"}, (() => false)());\n'
+            "await ai.generate({tools: [lookup]});\n"
+        ),
         "await ai.generate({tools: [unknown]});\n",
         "await ai.generate({tools: [lookup]});\n" + _REGISTER,
         _REGISTER + "lookup = foreign;\nawait ai.generate({tools: [lookup]});\n",
-        "const other = genkit({plugins: []});\n"
-        'const lookup = other.defineTool({name: "lookup"}, async (input) => input);\n'
-        "await ai.generate({tools: [lookup]});\n",
+        (
+            "const other = genkit({plugins: []});\n"
+            'const lookup = other.defineTool({name: "lookup"}, async (input) => input);\n'
+            "await ai.generate({tools: [lookup]});\n"
+        ),
     ],
 )
 def test_genkit_framework_configuration_does_not_establish_an_agent(tmp_path, run_connector, suffix, body):

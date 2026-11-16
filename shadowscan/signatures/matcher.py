@@ -135,22 +135,22 @@ def _run_regex(operation: Callable[[float], Any], context: str, *, max_seconds: 
 
     budget = remaining_timeout()
     started = time.thread_time()
+    timed_out = f"signature matching timed out ({context}); input scan is incomplete"
     for attempt in range(_MAX_CONTENTION_RETRIES + 1):
         elapsed = time.thread_time() - started
         remaining = min(remaining_timeout(), budget - elapsed)
         if remaining <= 0:
-            raise MatchTimeoutError(f"signature matching timed out ({context}); input scan is incomplete")
+            raise MatchTimeoutError(timed_out)
         try:
             result = operation(remaining)
             remaining_timeout()
             if time.thread_time() - started >= budget:
-                raise MatchTimeoutError(f"signature matching timed out ({context}); input scan is incomplete")
+                raise MatchTimeoutError(timed_out)
             return result
         except TimeoutError as exc:
             if attempt == _MAX_CONTENTION_RETRIES or time.thread_time() - started >= budget / 2:
-                raise MatchTimeoutError(
-                    f"signature matching timed out ({context}); input scan is incomplete"
-                ) from exc
+                raise MatchTimeoutError(timed_out) from exc
+    raise MatchTimeoutError(timed_out)  # Unreachable; fail closed, never None (read as no match).
 
 
 def _plan_candidates(

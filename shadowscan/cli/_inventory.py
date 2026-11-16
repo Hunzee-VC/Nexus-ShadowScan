@@ -9,7 +9,7 @@ import yaml
 from rich.table import Table
 from rich.text import Text
 
-import shadowscan.cli as _cli
+from shadowscan import cli as _cli
 from shadowscan.cli import LEVELS, _load_report, main
 from shadowscan.errors import SetupError
 from shadowscan.models import Finding, Kind

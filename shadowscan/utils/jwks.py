@@ -102,7 +102,7 @@ def _header_key_selection(
 
 def _select_key(document: Any, alg: str, kid: str | None) -> Any:
     """Exactly one eligible public key of an operator-trusted key set."""
-    from jwt import PyJWK
+    import jwt as pyjwt
 
     if not isinstance(document, dict) or not isinstance(document.get("keys"), list):
         raise ValueError("JWKS document is not a key set")
@@ -114,7 +114,7 @@ def _select_key(document: Any, alg: str, kid: str | None) -> Any:
         raise ValueError("JWKS does not contain a matching signature key")
     if len(candidates) != 1:
         raise ValueError("JWKS signing key selection is ambiguous")
-    key = PyJWK.from_dict(candidates[0], algorithm=alg).key
+    key = pyjwt.PyJWK.from_dict(candidates[0], algorithm=alg).key
     if alg in {"RS256", "PS256"} and not 2048 <= key.key_size <= 8192:
         raise ValueError("RSA signing keys must be between 2048 and 8192 bits")
     return key

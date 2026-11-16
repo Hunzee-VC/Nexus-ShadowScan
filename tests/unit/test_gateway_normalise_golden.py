@@ -37,7 +37,8 @@ import pytest
 
 from shadowscan.connectors import ConnectorContext
 from shadowscan.connectors.base import ConnectorError
-from shadowscan.connectors.gateway.logs import NORMALISERS, GatewayLogConnector, _normalise, detect_schema
+from shadowscan.connectors.gateway.logs import GatewayLogConnector, _normalise, detect_schema
+from shadowscan.connectors.gateway.normalise import NORMALISERS
 from shadowscan.signatures.matcher import MatchTimeoutError
 
 GATEWAY_FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "gateway"

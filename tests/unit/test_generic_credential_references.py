@@ -1565,8 +1565,10 @@ def test_other_literals_beside_a_password_value_keep_their_text(line: str, kept:
         "'PASSWORD': cfg.get('db', 'password', fallback='<P>'),",
         "password: env('DB_PASSWORD', default_value='<P>')",
         "'PASSWORD': get_secret('db', fallback='<P>')",
-        "{ anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? 'x', "
-        "password: cfg.get('db','password', { fallback: '<P>' }) }",
+        (
+            "{ anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? 'x', "
+            "password: cfg.get('db','password', { fallback: '<P>' }) }"
+        ),
         "CONF = {'OPENAI_API_KEY': '<K>', 'PASSWORD': cfg.get('db', 'password', fallback='<P>')}",
     ],
 )
@@ -1684,8 +1686,10 @@ def test_an_entry_after_the_password_read_keeps_its_text(line: str, kept: str):
         'const apiKey = process.env.OPENAI_API_KEY\n  || "<K>";',
         'client.setApiKey(cfg("a", "b") ||\n  "<K>");',
         'client.setApiKey(cfg("a", "b") ||\n  // dev fallback\n  "<K>");',
-        'OpenAIClient.builder().apiKey(System.getenv("OPENAI_API_KEY") != null ? '
-        'System.getenv("OPENAI_API_KEY") : "<K>").build();',
+        (
+            'OpenAIClient.builder().apiKey(System.getenv("OPENAI_API_KEY") != null ? '
+            'System.getenv("OPENAI_API_KEY") : "<K>").build();'
+        ),
         '<add key="OpenaiApiKey" value="%OPENAI_API_KEY%" /> <!--\n  old: <K>\n-->',
         "  apiKey: process.env.OPENAI_API_KEY, /*\n   old: <K>\n  */",
     ],

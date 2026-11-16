@@ -74,6 +74,7 @@ def test_lenient_binary_tag_never_raises_a_non_yaml_error(load):
     try:
         load("value: !!binary '!!'\n")
     except yaml.YAMLError:
+        # A YAML error is an accepted outcome; any other exception fails the test.
         pass
 
 

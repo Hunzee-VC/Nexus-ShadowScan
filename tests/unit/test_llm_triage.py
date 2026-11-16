@@ -11,8 +11,7 @@ import pytest
 import requests
 import responses
 
-import shadowscan.triage as triage_module
-import shadowscan.utils.http as http_module
+from shadowscan import triage as triage_module
 from shadowscan.config import ConfigValidationError, ScanConfig
 from shadowscan.connectors import get_connector_class
 from shadowscan.engine import Engine
@@ -25,6 +24,7 @@ from shadowscan.triage import (
     parse_reply,
     select,
 )
+from shadowscan.utils import http as http_module
 from shadowscan.utils.http import HttpClient, HttpError
 
 TOKEN = "sk-ant-api03-" + "B" * 93 + "AA"
@@ -350,7 +350,7 @@ def test_engine_runs_triage_only_when_enabled(monkeypatch, index, tmp_path):
                 f.metadata["llm_triage"] = {"status": "ok", "advisory": True}
             return ["llm triage: 1 finding(s) without a usable verdict"]
 
-    import shadowscan.engine as engine_module
+    from shadowscan import engine as engine_module
 
     monkeypatch.setattr(engine_module, "Triage", Recorder)
     repo = tmp_path / "repo"
@@ -406,7 +406,7 @@ def test_engine_keeps_the_report_when_triage_fails_unexpectedly(monkeypatch, ind
         def run(self, findings):
             raise OSError("socket closed")
 
-    import shadowscan.engine as engine_module
+    from shadowscan import engine as engine_module
 
     monkeypatch.setattr(engine_module, "Triage", Broken)
     repo = tmp_path / "repo"
@@ -466,7 +466,7 @@ def test_any_triage_exception_keeps_the_report(monkeypatch, index, tmp_path):
         def run(self, findings):
             raise TypeError("'int' object is not iterable")
 
-    import shadowscan.engine as engine_module
+    from shadowscan import engine as engine_module
 
     monkeypatch.setattr(engine_module, "Triage", Broken)
     repo = tmp_path / "repo"
@@ -683,7 +683,7 @@ def test_rate_limited_endpoint_cannot_hold_triage_past_its_budget(monkeypatch):
 
 
 def test_engine_skips_triage_too_close_to_the_job_deadline(monkeypatch, index, tmp_path):
-    import shadowscan.engine as engine_module
+    from shadowscan import engine as engine_module
 
     monkeypatch.setattr(engine_module, "Triage", Mock(side_effect=AssertionError("triage must not start")))
     engine = Engine(ScanConfig.from_dict(_repo_spec(tmp_path)), index)
@@ -698,7 +698,7 @@ def test_engine_skips_triage_too_close_to_the_job_deadline(monkeypatch, index, t
 
 
 def test_engine_does_not_warn_about_a_skip_that_selected_nothing(monkeypatch, index, tmp_path):
-    import shadowscan.engine as engine_module
+    from shadowscan import engine as engine_module
 
     monkeypatch.setattr(engine_module, "Triage", Mock(side_effect=AssertionError("triage must not start")))
     engine = Engine(ScanConfig.from_dict(_repo_spec(tmp_path, min_level="critical")), index)
@@ -739,7 +739,7 @@ def test_engine_accepts_no_job_deadline_or_a_finite_one(monkeypatch, index, tmp_
             deadlines.append(deadline)
             return []
 
-    import shadowscan.engine as engine_module
+    from shadowscan import engine as engine_module
 
     monkeypatch.setattr(engine_module, "Triage", Recorder)
     job_deadline = None if offset is None else time.monotonic() + offset
@@ -762,7 +762,7 @@ def test_engine_ends_triage_a_reserve_before_the_job_deadline(
             deadlines.append(deadline)
             return []
 
-    import shadowscan.engine as engine_module
+    from shadowscan import engine as engine_module
 
     monkeypatch.setattr(engine_module, "Triage", Recorder)
     spec = _repo_spec(tmp_path)

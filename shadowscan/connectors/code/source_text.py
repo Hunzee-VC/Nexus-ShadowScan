@@ -33,6 +33,39 @@ from shadowscan.utils.safe_yaml import (
     strict_bounded_safe_load,
 )
 
+# The names other ShadowScan modules import from this one. Underscore names stay
+# package-internal; listing them keeps linters and CodeQL from reading them as unused.
+__all__ = [
+    "_COMMENT_OPENERS",
+    "_COMMENT_START",
+    "_CRAWLER_UA_MARK",
+    "_CellSpans",
+    "_FRONTMATTER",
+    "_GLOB_KEYS",
+    "_IPYTHON_LINE",
+    "_JSON_SUFFIXES",
+    "_LINE_BREAK",
+    "_NO_STRUCTURE",
+    "_QUOTED_VALUE",
+    "_QUOTE_START",
+    "_YAML_SUFFIXES",
+    "_cell_noncode_ranges",
+    "_comment_spans",
+    "_crawler_ua_text",
+    "_notebook_binder_source",
+    "_quote_glob_values",
+    "_quote_plain_values",
+    "_quoted_values",
+    "_redacted_source",
+    "_strip_comment",
+    "_structured_context",
+    "_within",
+    "_without_ipython_lines",
+    "_without_source_ranges",
+    "_without_xml_comments",
+    "foreign_cell",
+]
+
 # One quoted value, matched from its opening quote; none spans a line break.
 _QUOTED_VALUE = {
     '"': re.compile(r'"(?:[^"\\\r\n]|\\[^\r\n])*"'),

@@ -19,7 +19,6 @@ from types import SimpleNamespace
 import pytest
 from click.testing import CliRunner
 
-import shadowscan
 from shadowscan import engine as engine_module
 from shadowscan.cli import main
 from shadowscan.config import ConfigValidationError, ConnectorSpec, ScanConfig
@@ -413,7 +412,8 @@ Engine(config, SignatureIndex([])).run()
 
 def test_worker_exits_when_scanner_process_dies(installed_probe, monkeypatch, tmp_path):
     monkeypatch.setenv("SHADOWSCAN_PROCESS_PROBE", "hang")
-    checkout = Path(shadowscan.__file__).resolve().parents[1]
+    # shadowscan/engine.py sits beside the package __init__, so parents[1] is the checkout.
+    checkout = Path(engine_module.__file__).resolve().parents[1]
     environment = {**os.environ, "PYTHONPATH": os.pathsep.join([str(tmp_path), str(checkout)])}
     command = [sys.executable, "-c", _DYING_SCANNER, str(installed_probe), ENTRY]
     subprocess.run(command, env=environment, timeout=60, check=True)
@@ -488,7 +488,8 @@ def test_non_json_metadata_round_trips_like_thread_mode(installed_probe, monkeyp
         registry._cache.pop(ENTRY, None)
     assert reported["process"] == reported["thread"]
     # The engine derives the autonomy block after collection, for either backend alike.
-    assert reported["thread"].pop("autonomy")["schema"] == "shadowscan.autonomy/v1"
+    autonomy = reported["thread"].pop("autonomy")
+    assert autonomy["schema"] == "shadowscan.autonomy/v1"
     # Threat and control references are derived from the finding at export,
     # not carried by the plugin (tests/unit/test_mappings.py covers them).
     connector_metadata = {k: v for k, v in reported["thread"].items() if k not in DERIVED_METADATA_KEYS}
@@ -528,7 +529,7 @@ def test_plugin_allowlist_still_required_without_parent_import(installed_probe):
 
 
 def test_process_resource_failure_is_incomplete(installed_probe, monkeypatch):
-    import shadowscan.plugin_process as transport
+    from shadowscan import plugin_process as transport
 
     def exhausted():
         raise OSError("sensitive resource diagnostic")
@@ -683,7 +684,7 @@ def test_descriptor_limit_without_platform_limits_uses_cap(monkeypatch):
 
 
 def test_result_encoder_enforces_limit(monkeypatch):
-    import shadowscan.plugin_process as transport
+    from shadowscan import plugin_process as transport
 
     monkeypatch.setattr(transport, "MAX_RESULT_BYTES", 16)
     with pytest.raises(ValueError, match="transport limit"):

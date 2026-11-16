@@ -7,7 +7,7 @@ from typing import Any
 import click
 import yaml
 
-import shadowscan.cli as _cli
+from shadowscan import cli as _cli
 from shadowscan.cli import ScanOptions, _warn_argv_secret, main, scan_options
 from shadowscan.config import (
     ConfigValidationError,

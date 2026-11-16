@@ -20,7 +20,7 @@ from shadowscan.utils.python_tokens import TokenizerFault, generate_tokens
 
 _RUBY_BLOCK_END = re.compile(r"(?m)^=end(?:\s|$)")
 
-_FSTRING_PREFIX = re.compile(r"(?i)^([rubf]{1,3})(\"\"\"|'''|\"|')")
+_FSTRING_PREFIX = re.compile(r"^([rubf]{1,3})(\"\"\"|'''|\"|')", re.IGNORECASE)
 _STRING_PREFIX = re.compile(r"(?i)[rubf]{0,3}(\"\"\"|'''|\"|')")
 _MAX_FSTRING_DEPTH = 24
 

@@ -448,8 +448,10 @@ def test_incremental_lock_contention_does_not_wait_or_replace_cache(tmp_path):
         [
             sys.executable,
             "-c",
-            "import fcntl,sys; f=open(sys.argv[1],'r+'); fcntl.flock(f,fcntl.LOCK_EX); "
-            "print('locked',flush=True); sys.stdin.read(1)",
+            (
+                "import fcntl,sys; f=open(sys.argv[1],'r+'); fcntl.flock(f,fcntl.LOCK_EX); "
+                "print('locked',flush=True); sys.stdin.read(1)"
+            ),
             str(lock_path),
         ],
         stdin=subprocess.PIPE,

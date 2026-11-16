@@ -11,6 +11,7 @@ import pytest
 from click.testing import CliRunner
 
 from shadowscan.cli import main
+from shadowscan.config import ConfigValidationError
 
 BAD_PACK = (
     "signatures:\n"
@@ -140,6 +141,19 @@ def test_unexpected_exception_during_setup_is_masked_even_when_verbose(tmp_path,
     assert (
         "private-value-do-not-echo" not in flat and "plugin failure" not in flat and "Traceback" not in flat
     )
+
+
+def test_a_policy_rejection_during_setup_is_named_a_scan_configuration_error(tmp_path, monkeypatch):
+    # Regression: ConfigValidationError is a SetupError, so the SetupError handler caught it
+    # first and the handler naming the scan configuration was unreachable.
+    class RejectingEngine:
+        def __init__(self, *args, **kwargs):
+            raise ConfigValidationError("a code scan cannot share a run with a live credentialed connector")
+
+    monkeypatch.setattr("shadowscan.cli.Engine", RejectingEngine)
+    result = CliRunner().invoke(main, ["code", str(tmp_path)])
+    assert result.exit_code == 1, result.output
+    assert "invalid scan configuration: a code scan cannot share a run" in _flat(result.output)
 
 
 def test_scan_config_yaml_error_reports_position_without_source_text(tmp_path):

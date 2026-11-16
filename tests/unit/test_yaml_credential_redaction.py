@@ -243,8 +243,10 @@ def test_yaml_conditional_name_reads_a_value_beside_a_trailing_note_or_a_sequenc
         # inside it were then never read, and their wrapped value was joined
         # with an outer line that made it a placeholder or a URL.
         "key:\n  # signing material\n  key:\n    Ab1Cd2\n    Ef3Gh4\n  example:\n    a: b\nmodel: langchain\n",
-        "key: |\n  rotated by the platform team\n  key: |\n    Ab1Cd2\n    Ef3Gh4\n"
-        "  https://kms.internal/rotate\nmodel: langchain\n",
+        (
+            "key: |\n  rotated by the platform team\n  key: |\n    Ab1Cd2\n    Ef3Gh4\n"
+            "  https://kms.internal/rotate\nmodel: langchain\n"
+        ),
         "key: # signing material\n  pwd: |\n    Ab1Cd\n    2Ef3Gh\n  https://vault.internal/v1/kv\nmodel: langchain\n",
         # A path, a URL or a note beside the wrapped lines at their own indentation.
         "key: |\n  Ab1Cd2\n  Ef3Gh4\n  certs/tls.key\nmodel: langchain\n",

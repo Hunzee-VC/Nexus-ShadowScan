@@ -8,7 +8,7 @@ import textwrap
 
 import pytest
 
-import shadowscan.config as config_module
+from shadowscan import config as config_module
 from shadowscan.config import (
     SHARED_CONNECTOR_KEYS,
     ConfigValidationError,

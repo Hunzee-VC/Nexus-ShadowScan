@@ -191,7 +191,7 @@ def test_parallel_tokenization_does_not_exhaust_regex_deadlines(index):
 
 @pytest.mark.production_budgets
 def test_parallel_match_processing_is_not_charged_to_regex_iterator(monkeypatch):
-    import shadowscan.signatures.matcher as matcher_module
+    from shadowscan.signatures import matcher as matcher_module
 
     matcher = SignatureIndex([signature_from_dict(_signature())])
     original = matcher_module.sanitize_text
