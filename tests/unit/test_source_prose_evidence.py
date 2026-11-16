@@ -205,11 +205,35 @@ def test_usage_beside_prose_is_still_found_at_the_code_line(tmp_path: Path, run_
     assert not locations & {"ask.py:4", "ask.py:6"}
 
 
-def test_a_link_in_a_comment_is_not_a_potential_provider(tmp_path: Path, run_connector):
+def test_a_provider_named_only_in_a_comment_is_a_potential_provider(tmp_path: Path, run_connector):
+    # Maintainer decision (#361): prose is no usage evidence, but a provider it names
+    # stays a hint for review, as it was before prose was classified.
     source = "from openai import OpenAI\n\n# weights: https://huggingface.co/meta-llama/Llama-3-8b\nclient = OpenAI()\n"
     [finding] = _scan(tmp_path, run_connector, {"app.py": source})
     assert finding.model_providers == ["provider.openai"]
-    assert "potential_providers" not in finding.metadata
+    assert finding.metadata["potential_providers"] == ["provider.huggingface"]
+    assert not any((item.location or "").endswith(":3") for item in finding.evidence)
+
+
+def test_a_provider_named_only_in_a_docstring_is_a_potential_provider(tmp_path: Path, run_connector):
+    source = (
+        "from openai import OpenAI\n\n\ndef ask(q):\n"
+        '    """Mirrors the same call to api.anthropic.com."""\n'
+        '    return OpenAI().responses.create(model="gpt-4o", input=q)\n'
+    )
+    [finding] = _scan(tmp_path, run_connector, {"app.py": source})
+    assert finding.model_providers == ["provider.openai"]
+    assert finding.metadata["potential_providers"] == ["provider.anthropic"]
+
+
+def test_a_provider_the_code_establishes_is_not_also_a_hint(tmp_path: Path, run_connector):
+    [finding] = _scan(tmp_path, run_connector, {"app.py": PY_USAGE_AFTER_NOTE})
+    assert "provider.openai" in finding.model_providers
+    assert "provider.openai" not in finding.metadata.get("potential_providers", [])
+
+
+def test_prose_hints_alone_make_no_finding(tmp_path: Path, run_connector):
+    assert _scan(tmp_path, run_connector, {"proxy.py": PY_COMMENTS}) == []
 
 
 def test_string_statements_are_docstrings():
@@ -389,7 +413,11 @@ class _KeyIndex:
     def match_envs_in_text(self, text: str) -> list[SimpleNamespace]:
         self.texts.append(text)
         return [
-            SimpleNamespace(line=n) for n, line in enumerate(text.split("\n"), 1) if "OPENAI_API_KEY" in line
+            SimpleNamespace(
+                line=n, signature_id="provider.openai", signature=SimpleNamespace(category="provider")
+            )
+            for n, line in enumerate(text.split("\n"), 1)
+            if "OPENAI_API_KEY" in line
         ]
 
     def match_domains_in_text(self, text: str, *, skip_line=None, source=False) -> list[SimpleNamespace]:
@@ -402,7 +430,7 @@ def _evidence(source: str) -> tuple[list[int], int, int]:
     ignored, _ = noncode_ranges(source, "python", ".py")
     prose = _Prose(source, ignored, ".py", False, lambda: checks.append(None))
     index = _KeyIndex()
-    variables, _, _ = prose.evidence(source, index, None, source=True)
+    variables, _, _, _ = prose.evidence(source, index, None, source=True)
     return [match.line for match in variables], len(index.texts), len(checks)
 
 
@@ -415,6 +443,10 @@ def test_a_file_whose_matches_avoid_its_prose_is_neither_classified_nor_matched_
 def test_a_match_on_a_masked_line_is_matched_again_without_the_prose():
     lines, matched, checks = _evidence("# OPENAI_API_KEY is blocked\nx = 1\n")
     assert (lines, matched) == ([], 2) and checks
+    # The provider it names is returned as a hint, not as a match.
+    ignored, _ = noncode_ranges("# OPENAI_API_KEY\n", "python", ".py")
+    prose = _Prose("# OPENAI_API_KEY\n", ignored, ".py", False, lambda: None)
+    assert prose.evidence("# OPENAI_API_KEY\n", _KeyIndex(), None, source=True)[3] == {"provider.openai"}
     lines, matched, checks = _evidence('KEY = os.environ["OPENAI_API_KEY"]  # OPENAI_API_KEY\n')
     assert (lines, matched) == ([1], 2) and checks
 
@@ -422,10 +454,10 @@ def test_a_match_on_a_masked_line_is_matched_again_without_the_prose():
 def test_other_files_are_never_classified():
     checks: list[None] = []
     prose = _Prose("# OPENAI_API_KEY\n", [(0, 16)], ".go", False, lambda: checks.append(None))
-    variables, _, _ = prose.evidence("# OPENAI_API_KEY\n", _KeyIndex(), None, source=True)
+    variables, _, _, _ = prose.evidence("# OPENAI_API_KEY\n", _KeyIndex(), None, source=True)
     assert [match.line for match in variables] == [1]
     assert not checks
-    variables, _, _ = _Prose().evidence("OPENAI_API_KEY\n", _KeyIndex(), None, source=False)
+    variables, _, _, _ = _Prose().evidence("OPENAI_API_KEY\n", _KeyIndex(), None, source=False)
     assert [match.line for match in variables] == [1]
 
 

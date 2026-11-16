@@ -49,8 +49,9 @@ explain operator migrations. Earlier per-change entries are preserved in the
   prose (a docstring read only from another module or as a doctest is still
   blanked). String literals the code reads, f-strings included,
   count as before. Notebooks and other languages are unchanged. Findings that
-  rested on Python prose alone are absent from the next report, and a host
-  named only in a Python comment is no longer a `potential_providers` hint.
+  rested on Python prose alone are absent from the next report. A provider
+  named only in Python prose stays a `potential_providers` hint on a finding
+  that has other evidence; it adds no evidence or confidence.
   Engineering log: "Prose in Python source files is not usage evidence".
 
 - The development toolchain moves to pytest 9.2.0 (#347). The repository's

@@ -139,11 +139,16 @@ files.
   3.13; the fourteenth needs 3.11. All of them report usage again. That version
   also sliced the text before each candidate string, which is quadratic, and
   blanked spans the lexer had reported ambiguous.
-- **Behavior that changes with it.** A host named only in a Python comment was
-  a weak hint: `# weights: https://huggingface.co/...` beside an OpenAI import
-  listed `provider.huggingface` under `potential_providers`. It is now not
-  read, so that entry disappears; the same link in a string, or in a comment
-  in another language, still lists it. A finding that keeps other evidence
+- **Behavior kept: prose hints.** A host named only in a Python comment was a
+  weak hint: `# weights: https://huggingface.co/...` beside an OpenAI import
+  listed `provider.huggingface` under `potential_providers`. The maintainer
+  decided (#361) to keep that hint. `_Prose.evidence` returns the provider
+  signatures matched only in prose, the scanner collects them on the project
+  (`_Project.prose_hints`), and `_attach_prose_hints` lists those the
+  project's evidence does not establish under `potential_providers`. They add
+  no evidence item, confidence or provider, and prose alone still makes no
+  finding. `file_scan.py` grows by one line for this (baseline 2444 to 2445).
+- **Behavior that changes with it.** A finding that keeps other evidence
   keeps its ID and SARIF fingerprint, but its evidence lines move from the
   prose to the code, providers named only in prose drop out, and its
   confidence can fall (0.96 to 0.90 for the raw HTTP call in the tests). Three

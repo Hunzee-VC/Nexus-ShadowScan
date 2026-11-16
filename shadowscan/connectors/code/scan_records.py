@@ -119,6 +119,9 @@ class _Project:
     skill_audits: dict[str, InstructionAudit] = field(default_factory=dict)
     agent_defs: list[dict[str, Any]] = field(default_factory=list)
     seen: set[tuple[str, int, str, str, int | None]] = field(default_factory=set)
+    # Provider signatures named only in a Python file's prose (_Prose.evidence): never usage
+    # evidence, listed under potential_providers when the project's finding exists.
+    prose_hints: set[str] = field(default_factory=set)
     mcp_tools: dict[str, str] = field(default_factory=dict)  # registered MCP tool name -> relpath
     detection_rules: dict[str, int] = field(default_factory=dict)  # rule-pack format -> files
     detection_rule_files: list[str] = field(default_factory=list)  # the first, in walk order

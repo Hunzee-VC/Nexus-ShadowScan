@@ -94,8 +94,9 @@ Python files.
   finding that keeps other evidence keeps its ID and SARIF fingerprint, but
   providers named only in prose drop out of it, its evidence lines move from
   the prose to the code, and its confidence can fall, which matters with
-  `--min-confidence`. A host named only in a Python comment is no longer a
-  `potential_providers` hint. Comments in notebooks and other languages, and
+  `--min-confidence`. A provider named only in Python prose is still listed
+  under `potential_providers` on a finding that has other evidence, as before,
+  without evidence or confidence. Comments in notebooks and other languages, and
   configuration files, are read as before. When accepting a build with this
   change, compare reports of repositories with commented-out or documented
   provider calls in Python.

@@ -305,7 +305,9 @@ Prose in a Python source file is not evidence. In a `.py` file that parses
 under the Python running the scanner, hosts, environment-variable names and
 model identifiers are read with the file's comments and docstrings blanked:
 comments are the tokenizer's comment tokens, and a docstring is a statement
-that is only a string or bytes literal. A note that a service "must never call
+that is only a string or bytes literal. A provider named only in that prose is
+listed under `metadata.potential_providers` for review when the project has a
+finding, and adds no evidence or confidence. A note that a service "must never call
 api.openai.com" names the host without using it. A string the code reads still
 counts, whether it is assigned, passed to a call, listed in a table or built as
 an f-string. A file that names `__doc__`, `getdoc`, `get_docstring` or `pydoc`

@@ -279,15 +279,27 @@ class _Prose(Sequence[tuple[int, int]]):
 
     def evidence(
         self, text: str, index: SignatureIndex, skip_line: Callable[[str], bool] | None, *, source: bool
-    ) -> tuple[list[Match], list[Match], str]:
-        """The variable-name and host matches of ``text`` outside exact prose, and its user-agent text."""
+    ) -> tuple[list[Match], list[Match], str, set[str]]:
+        """The variable-name and host matches of ``text`` outside exact prose, its user-agent text,
+        and the provider signatures named only in prose.
+
+        A match in prose is no usage evidence. The providers it names are returned so the caller
+        can list them as potential providers to review, which establishes nothing.
+        """
         found = _variables_and_hosts(text, index, skip_line, source)
         if text is not self._text or self._ext != ".py" or self._ambiguous or not self._masks(found):
-            return found
+            return (*found, set())
         spans, exact = self.resolve()
         if not exact or not spans:
-            return found
-        return _variables_and_hosts(_without_spans(text, spans), index, skip_line, source)
+            return (*found, set())
+        kept = _variables_and_hosts(_without_spans(text, spans), index, skip_line, source)
+        outside = {(m.signature_id, m.line) for m in (*kept[0], *kept[1])}
+        in_prose = {
+            m.signature_id
+            for m in (*found[0], *found[1])
+            if (m.signature_id, m.line) not in outside and m.signature.category == "provider"
+        }
+        return (*kept, in_prose)
 
     def _masks(self, found: tuple[list[Match], list[Match], str]) -> bool:
         """Whether a match lies on a line where the lexer masked a comment or a string."""

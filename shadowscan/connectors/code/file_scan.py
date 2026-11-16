@@ -1163,11 +1163,12 @@ class FileScanner:
             # Source code is never a rule list: `|| "https://api.openai.com"` continues an expression and
             # `host, err := ...` unpacks a result. A Python file's prose is no evidence (_Prose.evidence).
             skip = None if file.ext in SOURCE_EXTENSIONS else HostLineFilter(content_text)
-            variables, hosts, ua_text = file.prose.evidence(
+            variables, hosts, ua_text, in_prose = file.prose.evidence(
                 content_text, self.index, skip, source=file.ext in SOURCE_EXTENSIONS
             )
             for m in (*variables, *hosts):
                 self._record_content(file, m, self._lazy_excerpt(file, m.line))
+            file.proj.prose_hints |= in_prose
             if ua_text:
                 ua_hosts = [str(m.value) for m in self.index.match_domains_in_text(ua_text)]
                 if ua_hosts:
