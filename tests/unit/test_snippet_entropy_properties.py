@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import string
 
 import pytest
@@ -10,7 +11,7 @@ hypothesis = pytest.importorskip("hypothesis")
 from hypothesis import assume, given, settings  # noqa: E402
 from hypothesis import strategies as st  # noqa: E402
 
-from shadowscan.models import Evidence  # noqa: E402
+from shadowscan.models import Evidence, Finding, Kind, Surface  # noqa: E402
 from shadowscan.utils.redaction import REDACTED  # noqa: E402
 from shadowscan.utils.redaction_entropy import (  # noqa: E402
     looks_random,
@@ -198,3 +199,84 @@ def test_a_withheld_literal_running_past_the_part_read_ends_the_excerpt() -> Non
     assert _excerpt([f'blob = "{long_secret[:200]}"; other = 1' + " " * 300], 1).startswith(
         f'blob = "{REDACTED}"; other = 1'
     )
+
+
+# SEC-01 (audit 2026-11-12): the entropy pass used to apply to evidence
+# snippets only. The same literal leaked verbatim in a finding's description,
+# title and metadata. It must not survive export from any report field.
+_AUDIT_LITERAL = "aB3dE5gH7jK9mN2pQ4rS6tU8vW0xY1z"
+
+
+def test_random_looking_literals_never_survive_description_title_or_metadata() -> None:
+    assert looks_random(_AUDIT_LITERAL)
+    finding = Finding(
+        surface=Surface.CODE,
+        connector="code.filesystem",
+        kind=Kind.AGENT,
+        title=f'Agent using "{_AUDIT_LITERAL}"',
+        resource="r",
+        resource_type="repo",
+        evidence=[Evidence(signal="s", description=f'secret is "{_AUDIT_LITERAL}"')],
+        metadata={
+            "note": f'copy of "{_AUDIT_LITERAL}"',
+            "nested": {"inner": f'also "{_AUDIT_LITERAL}"'},
+        },
+    )
+    exported = json.dumps(finding.to_dict())
+    assert _AUDIT_LITERAL not in exported
+    assert REDACTED in exported
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "3f9a1c2b4d5e6f708192a3b4c5d6e7f801234567",  # git SHA
+        "550e8400-e29b-41d4-a716-446655440000",  # UUID
+        "hello world, no secret here",  # plain prose
+        "gpt-4o-mini-2024-07-18",  # model id
+    ],
+)
+def test_digests_ids_and_prose_keep_their_text_in_report_fields(value: str) -> None:
+    finding = Finding(
+        surface=Surface.CODE,
+        connector="code.filesystem",
+        kind=Kind.AGENT,
+        title=f"Agent {value}",
+        resource="r",
+        resource_type="repo",
+        evidence=[Evidence(signal="s", description=f"found {value}")],
+        metadata={"note": value},
+    )
+    assert value in json.dumps(finding.to_dict())
+
+
+def test_a_quoted_hex_digest_in_a_description_keeps_its_text() -> None:
+    digest = "3f9a1c2b4d5e6f708192a3b4c5d6e7f801234567"
+    evidence = Evidence(signal="s", description=f'commit "{digest}"')
+    assert evidence.description == f'commit "{digest}"'
+
+
+def test_identity_fields_keep_their_text_so_distinct_findings_never_collide():
+    # SEC-01 widened the entropy pass to report text; identity fields must stay out
+    # of it, or two findings whose resources differ only by a random-looking quoted
+    # literal would derive one id and be merged.
+    from shadowscan.models import Finding, Kind, Surface
+
+    literals = ("aB3dE5gH7jK9mN2pQ4rS6tU8vW0xY1z", "Zq8Xw7Vu6Ts5Rq4Po3Nm2Lk1Jh0GfEdC")
+    findings = [
+        Finding(
+            surface=Surface.CODE,
+            kind=Kind.AGENT,
+            connector="plugin.x",
+            resource_type="app",
+            resource=f'app:"{literal}"',
+            title="t",
+        )
+        for literal in literals
+    ]
+    for finding in findings:
+        resource = finding.resource
+        # The engine re-derives a plugin finding's id from its sanitized identity.
+        finding.reattribute("plugin.x", derive_id=True)
+        assert finding.resource == resource
+    assert findings[0].id != findings[1].id

@@ -799,7 +799,11 @@ ES256, EdDSA and PS256 by default. `allowed_algorithms` may narrow that list.
 `expected_issuer` binds verification to an operator-supplied exact issuer; the
 unverified token's issuer does not choose or authorize a key source. The JWKS URL
 is configured by the operator, so legitimate providers may host keys separately.
-Audience and historical-token expiry are not authorization checks here. Read
+Audience and historical-token expiry are not authorization checks here: an
+expired token whose signature verifies is still `metadata.verified: true`.
+`metadata.validity_period` says whether the token is `current`, `expired`,
+`not-yet-valid` or `unparseable` (an `exp` or `nbf` that is present but not a
+timestamp), with a matching tag. Read
 `metadata.verified` as signature evidence, not permission to act.
 A token analyzed without `jwks_url`, or whose verification failed, carries
 `metadata.signature_verified: false`, the `signature-unverified` tag and a

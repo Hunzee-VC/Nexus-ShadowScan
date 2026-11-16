@@ -1373,11 +1373,12 @@ def test_provider_host_in_test_data_alone_yields_a_note_not_a_finding(run_connec
 
 
 def test_weak_mention_beside_an_established_provider_is_potential(run_connector, tmp_path):
-    # A model-hub link in a comment is a hint written as corroboration only.
+    # A model-hub link is a hint written as corroboration only. (In a comment it is not read at all:
+    # see test_source_prose_evidence.py.)
     write(
         tmp_path,
         "app.py",
-        "from openai import OpenAI\n\n# weights: https://huggingface.co/meta-llama/Llama-3-8b\nclient = OpenAI()\n",
+        'from openai import OpenAI\n\nWEIGHTS = "https://huggingface.co/meta-llama/Llama-3-8b"\nclient = OpenAI()\n',
     )
     findings, stats = scan(run_connector, tmp_path)
     assert not stats.errors
