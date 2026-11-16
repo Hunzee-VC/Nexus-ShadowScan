@@ -373,7 +373,6 @@ _MOVED_FROM_FILESYSTEM = {
         "CI_IMAGE_WEIGHT_SCALE",
         "_clip",
         "_COLOCATED_SIGNATURES",
-        "_ENV_TEMPLATE_WORDS",
         "_env_values_file",
         "_IAC_EXTENSIONS",
         "_IAC_MODEL_RE",
@@ -437,6 +436,7 @@ _MOVED_FROM_FILESYSTEM = {
         "_MODEL_TOOLING_SEGMENTS",
     ),
     "shadowscan.connectors.code.ownership": (
+        "_codeowners_match",
         "_MAX_GIT_AUTHOR_CHARS",
         "_MAX_GIT_EMAIL_CHARS",
         "_MAX_GIT_TIMESTAMP_CHARS",
@@ -505,6 +505,7 @@ _MOVED_FROM_FILESYSTEM = {
         "CREDENTIAL_FILE_NAMES",
         "_DEDICATED_MCP_CONFIG_NAMES",
         "_document_declares_mcp",
+        "_ENV_TEMPLATE_WORDS",
         "_local_module_predicate",
         "_MCP_TRANSPORTS",
         "_on_disk_project",
@@ -699,9 +700,40 @@ def test_names_moved_out_of_filesystem_stay_importable_from_it():
     for module_name, names in _MOVED_FROM_FILESYSTEM.items():
         module = importlib.import_module(module_name)
         for name in names:
-            # utils.jsonc defines the marked loader without the underscore alias.
-            source = "load_json_lenient_marked" if name == "_load_json_lenient_marked" else name
+            # An aliased name is the defining module's object under another name.
+            source = _ALIASED.get(name, name)
             assert getattr(filesystem, name) is getattr(module, source), name
+    for module_name in _MODULES_MOVED_TO_COLLABORATORS:
+        assert getattr(filesystem, module_name) is importlib.import_module(module_name), module_name
     assert filesystem.ast is ast
     assert filesystem.subprocess is subprocess
     assert filesystem.tomllib is tomllib
+
+
+def test_filesystem_all_declares_every_name_it_re_exports():
+    # filesystem.py binds names it never uses so that they stay importable from
+    # it. Without an __all__ entry such a binding reads as an unused import to
+    # CodeQL (it does not honour the `name as name` convention ruff and mypy
+    # do), so a re-export added without one fails here instead of there.
+    import ast
+    from pathlib import Path
+
+    from shadowscan.connectors.code import filesystem
+
+    tree = ast.parse(Path(filesystem.__file__).read_text(encoding="utf-8"))
+    loaded = {
+        node.id for node in ast.walk(tree) if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load)
+    }
+    imported = {
+        alias.asname or alias.name.split(".")[0]
+        for node in tree.body
+        if isinstance(node, (ast.Import, ast.ImportFrom)) and getattr(node, "module", None) != "__future__"
+        for alias in node.names
+    }
+    exported = set(filesystem.__all__)
+    assert len(exported) == len(filesystem.__all__), "duplicate __all__ entry"
+    assert sorted(imported - loaded - exported) == []
+    promised = {name for names in _MOVED_FROM_FILESYSTEM.values() for name in names}
+    promised |= set(_MODULES_MOVED_TO_COLLABORATORS) | set(_ALIASED)
+    assert sorted(promised - exported) == []
+    assert [name for name in filesystem.__all__ if not hasattr(filesystem, name)] == []

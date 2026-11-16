@@ -1259,6 +1259,7 @@ def _coerce(value: str) -> Any:
         except JSONIntegrityError:
             raise ValueError("structured --set values require unique fields and finite numbers") from None
         except json.JSONDecodeError:
+            # Not JSON after all: fall through to the list and plain-string forms below.
             pass
     if "," in value and not value.startswith(("http", "/")):
         return [v.strip() for v in value.split(",") if v.strip()]

@@ -9,7 +9,6 @@ sanctioned inventory) whether it is a *shadow* agent.
 
 from __future__ import annotations
 
-import datetime as _datetime
 import decimal
 import hashlib
 import json
@@ -18,7 +17,7 @@ import uuid
 from collections import Counter
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass, field, fields
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, time, timedelta
 from enum import Enum
 from typing import Any
 
@@ -695,10 +694,10 @@ _DETACHED_LEAF_TYPES = frozenset(
         int,
         float,
         bool,
-        _datetime.date,
-        _datetime.datetime,
-        _datetime.time,
-        _datetime.timedelta,
+        date,
+        datetime,
+        time,
+        timedelta,
         decimal.Decimal,
         uuid.UUID,
     )
@@ -895,13 +894,17 @@ def merged_incomplete_reasons(parts: Iterable[ScanStats]) -> dict[str, int]:
     return dict(reasons)
 
 
+def now_iso() -> str:
+    return datetime.now(UTC).replace(microsecond=0).isoformat()
+
+
 @dataclass(slots=True)
 class ScanResult:
     findings: list[Finding] = field(default_factory=list)
     stats: list[ScanStats] = field(default_factory=list)
     # Empty only when the report cannot be dated (a fleet merge with an undated source); it is
     # published as null.
-    started_at: str = field(default_factory=lambda: now_iso())
+    started_at: str = field(default_factory=now_iso)
     finished_at: str | None = None
     version: str = ""
     inventory_size: int = 0
@@ -975,7 +978,3 @@ class ScanResult:
         # RFC 8259 JSON has no representation for NaN or infinity.  Refuse to
         # publish a report that downstream controls would parse inconsistently.
         return json.dumps(self.to_dict(), indent=indent, default=str, allow_nan=False)
-
-
-def now_iso() -> str:
-    return datetime.now(UTC).replace(microsecond=0).isoformat()

@@ -70,18 +70,6 @@ METADATA = st.fixed_dictionaries(
         "autonomy": st.just({"schema": "forged", "floor": 9}),
     },
 )
-FINDINGS = st.builds(
-    lambda kind, caps, tags, metadata, signatures, surface, resource_type: _finding(
-        kind, caps, tags, metadata, signatures, surface, resource_type
-    ),
-    st.sampled_from(sorted(Kind, key=lambda kind: kind.value)),
-    st.lists(st.sampled_from(sorted(CAPABILITIES)), unique=True),
-    st.lists(st.sampled_from(TAGS), unique=True),
-    METADATA,
-    st.lists(st.sampled_from(["heuristic.autonomy", "heuristic.scheduled-agent", "framework.x"]), max_size=2),
-    st.sampled_from([Surface.ENDPOINT, Surface.CODE, Surface.CLOUD]),
-    st.sampled_from(["ide-extension", "agent-config", "project"]),
-)
 
 
 def _finding(
@@ -107,6 +95,18 @@ def _finding(
     for signature in signatures:
         f.add_evidence(Evidence(signal=f"code:{signature}", description="matched", signature=signature))
     return f
+
+
+FINDINGS = st.builds(
+    _finding,
+    st.sampled_from(sorted(Kind, key=lambda kind: kind.value)),
+    st.lists(st.sampled_from(sorted(CAPABILITIES)), unique=True),
+    st.lists(st.sampled_from(TAGS), unique=True),
+    METADATA,
+    st.lists(st.sampled_from(["heuristic.autonomy", "heuristic.scheduled-agent", "framework.x"]), max_size=2),
+    st.sampled_from([Surface.ENDPOINT, Surface.CODE, Surface.CLOUD]),
+    st.sampled_from(["ide-extension", "agent-config", "project"]),
+)
 
 
 @given(f=FINDINGS)

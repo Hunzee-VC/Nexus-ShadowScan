@@ -19,6 +19,7 @@ Nothing here inspects payloads, and no function raises on hostile input.
 
 from __future__ import annotations
 
+import math
 import re
 from collections import Counter
 from collections.abc import Iterable, Mapping
@@ -236,7 +237,7 @@ def loop_cadence(
     or duplicated log lines, not sequential steps of a loop, so each distinct
     time counts once.
     """
-    ordered = sorted({t for t in times if t == t})  # distinct, without NaN
+    ordered = sorted({t for t in times if not math.isnan(t)})  # distinct, without NaN
     loops = longest = in_loops = 0
     run = 0
     previous: float | None = None

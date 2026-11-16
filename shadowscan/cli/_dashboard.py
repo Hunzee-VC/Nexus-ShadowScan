@@ -7,7 +7,7 @@ import os
 import click
 from rich.text import Text
 
-import shadowscan.cli as _cli
+from shadowscan import cli as _cli
 from shadowscan.cli import _load_report, main
 from shadowscan.comparison import MAX_REPORT_BYTES, ReportDigestMismatch
 from shadowscan.dashboard import (

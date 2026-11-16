@@ -17,6 +17,25 @@ explain operator migrations. Earlier per-change entries are preserved in the
   signature evidence, as documented (audit SEC-02). Reports made
   before this change are not retroactively redacted; regenerate retained reports
   after upgrading.
+- CodeQL code-quality cleanup. A policy rejection raised while the engine is
+  set up (a `ConfigValidationError`) is reported as `invalid scan
+  configuration: <reason>` again, as at load time: since that error became a
+  `SetupError` the handler naming the configuration was unreachable and the
+  bare reason was printed. `_run_regex` raises `MatchTimeoutError` rather than
+  returning `None` (no match) if its retry loop ever ends without a result.
+  Modules that re-export names declare them in `__all__`
+  (`code.filesystem` keeps every name it held before ADR-005), and a unit test
+  requires a module with `__all__` to list every name the package imports
+  from it. `shadowscan.connectors.gateway.logs` no longer re-exports
+  `NORMALISERS`, `_b`, `_f`, `_i`, `_has_tools` and `_has_tool_calls`, which
+  only tests imported from it; import them from `gateway.normalise`. Because
+  `connectors.base`, `utils.http` and `code.filesystem` now declare `__all__`,
+  `from <module> import *` binds only the listed names (it used to bind every
+  public module-level name, imported modules included); explicit imports are
+  unaffected. Other
+  changes are behaviour-neutral: implicit string concatenations in lists are
+  parenthesized, empty `except` clauses say why they pass, and dead patterns
+  are removed.
 - The development toolchain moves to pytest 9.2.0 (#347). The repository's
   own pytest 9.2 fixes landed earlier (the redaction-namespace descriptors and
   the scoped `os.fstat` stub); CI's `benchmark-tests` job now runs the pinned

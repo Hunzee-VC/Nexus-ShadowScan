@@ -10,8 +10,8 @@ import pytest
 from click.testing import CliRunner
 
 import shadowscan.connectors as registry
-import shadowscan.engine as engine_module
 from shadowscan import cli as cli_module
+from shadowscan import engine as engine_module
 from shadowscan.cli import main
 from shadowscan.config import ConnectorSpec, ScanConfig
 from shadowscan.engine import Engine

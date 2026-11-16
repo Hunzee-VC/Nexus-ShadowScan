@@ -84,14 +84,22 @@ def test_dependency_manifests_reject_integrity_failures(name, text):
 @pytest.mark.parametrize(
     "duplicate",
     [
-        "<groupId>dev.langchain4j</groupId><groupId>org.example</groupId>"
-        "<artifactId>langchain4j</artifactId>",
-        "<groupId>dev.langchain4j</groupId><artifactId>langchain4j</artifactId>"
-        "<artifactId>ordinary</artifactId>",
-        "<groupId>dev.langchain4j</groupId><artifactId>langchain4j</artifactId>"
-        "<version>1</version><version>2</version>",
-        "<groupId>dev.langchain4j</groupId><artifactId>langchain4j</artifactId>"
-        "<scope>compile</scope><scope>test</scope>",
+        (
+            "<groupId>dev.langchain4j</groupId><groupId>org.example</groupId>"
+            "<artifactId>langchain4j</artifactId>"
+        ),
+        (
+            "<groupId>dev.langchain4j</groupId><artifactId>langchain4j</artifactId>"
+            "<artifactId>ordinary</artifactId>"
+        ),
+        (
+            "<groupId>dev.langchain4j</groupId><artifactId>langchain4j</artifactId>"
+            "<version>1</version><version>2</version>"
+        ),
+        (
+            "<groupId>dev.langchain4j</groupId><artifactId>langchain4j</artifactId>"
+            "<scope>compile</scope><scope>test</scope>"
+        ),
     ],
 )
 def test_pom_dependencies_reject_repeated_meaningful_children_without_losing_neighbors(duplicate):

@@ -449,8 +449,6 @@ def test_private_destinations_rejected_before_request(host):
 
 
 def test_dns_rebinding_cannot_change_the_connected_address(monkeypatch):
-    import socket
-
     from shadowscan.utils.http import _PublicHTTPSConnection
 
     resolver = Mock(
@@ -471,8 +469,6 @@ def test_dns_rebinding_cannot_change_the_connected_address(monkeypatch):
 
 
 def test_connect_rejects_private_dns_answer_without_creating_socket(monkeypatch):
-    import socket
-
     from shadowscan.utils.http import _PublicHTTPSConnection
 
     monkeypatch.setattr(
@@ -492,8 +488,6 @@ def test_connect_rejects_private_dns_answer_without_creating_socket(monkeypatch)
 
 
 def test_connect_rejects_rebinding_after_url_preflight(monkeypatch):
-    import socket
-
     from shadowscan.utils.http import _PublicHTTPSConnection, validate_url
 
     resolver = Mock(
@@ -975,7 +969,7 @@ def test_names_that_merely_contain_internal_or_local_are_not_blocked(host, monke
         "https://api.example.com/x ",
         "\x1bhttps://api.example.com/x",
     ],
-    ids=lambda url: repr(url),
+    ids=repr,
 )
 def test_urls_with_whitespace_or_control_characters_are_refused_not_cleaned(url):
     """urlsplit drops tabs and line breaks and strips leading blanks; git and libcurl do not."""
@@ -1009,7 +1003,7 @@ def test_port_zero_is_refused(url, monkeypatch):
         "https://api.example.com/x\\y",
         "https://api.example.com/x?q=a\\b",
     ],
-    ids=lambda url: repr(url),
+    ids=repr,
 )
 def test_urls_with_a_backslash_are_refused(url):
     """urlsplit keeps a backslash in the host; requests reads it as a path separator."""

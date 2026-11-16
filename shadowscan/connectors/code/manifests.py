@@ -932,7 +932,6 @@ _YAML_ENV_KEY = re.compile(
 )
 _YAML_USES = re.compile(r"^[ \t]*+-?[ \t]*+uses[ \t]*+:[ \t]*+['\"]?([^'\"\s#]+)", re.M)
 _SECRETS_REF = re.compile(r"\$\{\{\s*secrets\.([A-Za-z0-9_]+)\s*\}\}")
-_GITLAB_IMAGE = re.compile(r"^[ \t]*image\s*:\s*(?:name\s*:\s*)?['\"]?([^'\"\s#]+)", re.M)
 
 
 def _chunk_matches(
@@ -1028,11 +1027,6 @@ _TF_MODULE_SOURCE = re.compile(r"""^[ \t]*source\s*=\s*["']([^"']+)["']""", re.M
 _CFN_TYPE = re.compile(r"""^[ \t]*(?:"Type"|Type)\s*:\s*['"]?((?:AWS|Alexa|Custom)::[A-Za-z0-9:]+)""", re.M)
 _ARM_TYPE = re.compile(r"""["']type["']\s*:\s*["']((?:Microsoft|Oracle|Google)\.[A-Za-z0-9./]+)["']""", re.I)
 _BICEP_RESOURCE = re.compile(r"""^[ \t]*resource\s+\w+\s+['"]([A-Za-z0-9./]+)@[^'"]+['"]""", re.M)
-_PULUMI_TYPE = re.compile(r"""\b(?:aws|gcp|azure|azure_native|azurerm|oci)[.:][a-z_]+[.:][A-Z][A-Za-z]+""")
-_CDK_IMPORT = re.compile(
-    r"""(?:from\s+aws_cdk\s+import\s+([^\n]+)|aws-cdk-lib/([a-z_-]+)|@aws-cdk/([a-z_-]+)"""
-    r"""|aws_cdk\.([a-z_]+))"""
-)
 
 
 _TF_DISPLAY = re.compile(

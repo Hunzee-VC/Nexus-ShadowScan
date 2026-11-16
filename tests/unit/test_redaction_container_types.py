@@ -248,7 +248,7 @@ def test_a_scalar_subclass_keeps_the_value_a_report_shows() -> None:
 
     class Count(int):
         def __int__(self) -> int:
-            raise RuntimeError("override must not run")
+            return -1  # a value the report must never show
 
     class Ratio(float):
         def __float__(self) -> float:

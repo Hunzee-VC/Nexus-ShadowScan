@@ -24,7 +24,7 @@ from typing import Any, ClassVar, TypeGuard
 from urllib.parse import quote, urlsplit
 
 from shadowscan.connectors.base import ConnectorContext, ConnectorError
-from shadowscan.connectors.code.remote import (  # noqa: F401 - re-exported for callers and tests
+from shadowscan.connectors.code.remote import (  # re-exported (see __all__) for callers and tests
     API_MAX_BLOB_BYTES,
     API_MODE_MAX_FILES,
     INTERESTING_DIRS,
@@ -44,6 +44,25 @@ from shadowscan.connectors.common import apply_matches, config_boolean, finalize
 from shadowscan.models import Evidence, Finding, Kind, Surface
 from shadowscan.utils.git import clone_limits
 from shadowscan.utils.http import HttpError, validate_url
+
+__all__ = [
+    "API_MAX_BLOB_BYTES",
+    "API_MODE_MAX_FILES",
+    "INTERESTING_DIRS",
+    "SOURCE_SAMPLE",
+    "GitHubConnector",
+    "RemoteRepositoryConnector",
+    "UnusualRepositoryPath",
+    "config_integer",
+    "config_string_list",
+    "config_text",
+    "remote_record",
+    "repository_blob_id",
+    "repository_blob_matches",
+    "repository_full_name",
+    "repository_target",
+    "select_api_paths",
+]
 
 # Repository-level endpoints listing credential *names* (never values).
 _SECRET_NAME_ENDPOINTS = ("actions/secrets", "actions/variables", "codespaces/secrets", "dependabot/secrets")

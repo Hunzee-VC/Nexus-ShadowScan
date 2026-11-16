@@ -13,14 +13,11 @@ from shadowscan.connectors.base import ConnectorError
 from shadowscan.connectors.gateway import logs as logs_module
 from shadowscan.connectors.gateway.logs import (
     GatewayLogConnector,
-    _f,
-    _has_tool_calls,
-    _has_tools,
-    _i,
     detect_schema,
     normalise,
     parse_text_line,
 )
+from shadowscan.connectors.gateway.normalise import _f, _has_tool_calls, _has_tools, _i
 from shadowscan.models import Kind, ScanStats, now_iso
 
 

@@ -14,7 +14,7 @@ from typing import Any, ClassVar
 
 import pytest
 
-import shadowscan.engine as engine_module
+from shadowscan import engine as engine_module
 from shadowscan.comparison import IDENTITY_KEY_ENV
 from shadowscan.config import ConnectorSpec, ScanConfig
 from shadowscan.connectors import builtin_connector_names, get_connector_class

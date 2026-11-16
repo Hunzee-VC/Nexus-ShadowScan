@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 from typing import Any
-from unittest.mock import MagicMock, Mock
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 import yaml
@@ -31,6 +31,9 @@ FILES = [{"filename": "shadowscan/cli.py", "sha": "b" * 40, "status": "modified"
 
 class FakeGitHub(GitHub):
     def __init__(self) -> None:
+        # The real constructor validates the repository; give it a fake one, not the runner's.
+        with patch.dict(os.environ, {"GITHUB_REPOSITORY": "example/repository", "GH_TOKEN": "unused"}):
+            super().__init__()
         self.calls: list[tuple[str, dict[str, Any] | None]] = []
         self.labels: list[dict[str, str]] = []
         self.head = HEAD

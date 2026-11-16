@@ -95,8 +95,10 @@ def test_definition_after_unconditional_exit_cannot_supply_a_tool_helper(tmp_pat
         "return subprocess.run(cmd, shell=True)",
         "if cmd:\n        return cmd\n    return subprocess.run(cmd, shell=True)",
         "try:\n        return cmd\n    finally:\n        subprocess.run(cmd, shell=True)",
-        "try:\n        raise ValueError(cmd)\n    except ValueError:\n        pass\n"
-        "    subprocess.run(cmd, shell=True)",
+        (
+            "try:\n        raise ValueError(cmd)\n    except ValueError:\n        pass\n"
+            "    subprocess.run(cmd, shell=True)"
+        ),
         "return (lambda: subprocess.run(cmd, shell=True))()",
         "return (lambda value=subprocess.run(cmd, shell=True): value)()",
     ],

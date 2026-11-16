@@ -76,6 +76,30 @@ from shadowscan.utils.http_scope import set_allow_private_origin as set_allow_pr
 from shadowscan.utils.http_scope import set_request_deadline as set_request_deadline
 from shadowscan.utils.redaction import sanitize_text
 
+# The policy setters are re-exported from http_scope so that this module and the
+# engine hand out the same functions over the same context variables.
+__all__ = [
+    "DEFAULT_MAX_RESPONSE_BYTES",
+    "DEFAULT_TIMEOUT",
+    "MAX_RETRY_DELAY",
+    "METADATA_HOSTS",
+    "METADATA_NETS",
+    "READ_DEADLINE_FACTOR",
+    "RETRY_STATUSES",
+    "DestinationUnresolved",
+    "HttpClient",
+    "HttpError",
+    "diagnostic_url",
+    "reset_allow_private_origin",
+    "reset_ca_bundle",
+    "reset_request_deadline",
+    "resolve_destination",
+    "set_allow_private_origin",
+    "set_ca_bundle",
+    "set_request_deadline",
+    "validate_url",
+]
+
 log = logging.getLogger("shadowscan.http")
 
 DEFAULT_TIMEOUT = 30

@@ -10,7 +10,7 @@ from typing import Any, ClassVar
 import pytest
 import yaml
 
-import shadowscan.engine as engine_module
+from shadowscan import engine as engine_module
 from shadowscan.config import ConfigValidationError, ConnectorSpec, ScanConfig, validate_trusted_registries
 from shadowscan.connectors.base import BaseConnector
 from shadowscan.engine import Engine

@@ -216,15 +216,21 @@ def test_gateway_hosted_agent_runtime_and_mcp_endpoints(run_connector, tmp_path)
 def test_names_and_consumer_sites_are_not_agent_indicators(run_connector, tmp_path):
     """Regression: a user called Jules and browsing chatgpt.com made callers agentic."""
     lines = [
-        '{"time": "2025-09-01T09:00:00Z", "remote_user": "jules", "request_method": "POST", '
-        '"request_uri": "/api/chat", "status": 200, "http_user_agent": "ollama-python/0.4.4", '
-        '"host": "127.0.0.1:11434"}\n',
-        '{"time": "2025-09-01T09:30:00Z", "remote_user": "kofi", "request_method": "POST", '
-        '"request_uri": "/backend-api/conversation", "status": 200, '
-        '"http_user_agent": "Mozilla/5.0 (X11; Linux x86_64) Chrome/129.0", "host": "chatgpt.com"}\n',
-        '{"time": "2025-09-01T09:40:00Z", "remote_user": "dev", "request_method": "POST", '
-        '"request_uri": "/aiserver.v1.ChatService/StreamChat", "status": 200, '
-        '"http_user_agent": "connect-es/1.4.0", "host": "api2.cursor.sh"}\n',
+        (
+            '{"time": "2025-09-01T09:00:00Z", "remote_user": "jules", "request_method": "POST", '
+            '"request_uri": "/api/chat", "status": 200, "http_user_agent": "ollama-python/0.4.4", '
+            '"host": "127.0.0.1:11434"}\n'
+        ),
+        (
+            '{"time": "2025-09-01T09:30:00Z", "remote_user": "kofi", "request_method": "POST", '
+            '"request_uri": "/backend-api/conversation", "status": 200, '
+            '"http_user_agent": "Mozilla/5.0 (X11; Linux x86_64) Chrome/129.0", "host": "chatgpt.com"}\n'
+        ),
+        (
+            '{"time": "2025-09-01T09:40:00Z", "remote_user": "dev", "request_method": "POST", '
+            '"request_uri": "/aiserver.v1.ChatService/StreamChat", "status": 200, '
+            '"http_user_agent": "connect-es/1.4.0", "host": "api2.cursor.sh"}\n'
+        ),
     ]
     path = tmp_path / "access.jsonl"
     path.write_text("".join(lines))

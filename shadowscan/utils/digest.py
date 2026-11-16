@@ -64,6 +64,7 @@ def runtime_semantics() -> dict[str, Any]:
             if value.startswith("git version ") and len(value) <= 128:
                 git_version = value.removeprefix("git version ")
     except (OSError, subprocess.SubprocessError, ValueError):
+        # Git is optional provenance: its version stays unknown.
         pass
 
     implementation_version = sys.implementation.version

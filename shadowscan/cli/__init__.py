@@ -312,14 +312,15 @@ def _run_and_emit_with_deadline(
             # The engine ends LLM triage early enough to emit the report before the watchdog fires.
             # Command-level stats join before a record-export manifest states the run's completeness.
             result = engine.run(only=only, job_deadline=job_deadline, extra_stats=extra_stats or ())
+    except ConfigValidationError as exc:
+        # Before SetupError, which it subclasses. Policy rejections (for example a
+        # code scan selected alongside a live credentialed connector) never echo
+        # configured values, so the reason can be shown instead of a generic setup
+        # failure the operator cannot act on.
+        raise click.ClickException(f"invalid scan configuration: {exc}") from None
     except SetupError as exc:
         # SetupError messages are credential-free by contract (shadowscan.errors).
         raise click.ClickException(str(exc)) from None
-    except ConfigValidationError as exc:
-        # Policy rejections (for example a code scan selected alongside a live
-        # credentialed connector) never echo configured values, so the reason
-        # can be shown instead of a generic setup failure the operator cannot act on.
-        raise click.ClickException(f"invalid scan configuration: {exc}") from None
     except Exception as exc:  # noqa: BLE001 - third-party exception text may echo credentials
         _log_masked_failure("scan setup failed", exc)
         raise click.ClickException(f"{SETUP_FAILED} ({type(exc).__name__})") from None

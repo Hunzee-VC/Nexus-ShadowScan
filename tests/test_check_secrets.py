@@ -580,8 +580,6 @@ def test_reported_file_names_cannot_forge_a_report_line_or_a_workflow_command(tm
     "header", [b' {"alg":"HS256"}', b'{ "alg":"HS256"}', b'{\n "alg":"RS256"}', b'\t{"alg":"none"}']
 )
 def test_jwt_with_whitespace_header_is_reported(header):
-    import base64
-
     def b64(data: bytes) -> str:
         return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
 

@@ -268,7 +268,7 @@ def test_valid_comparison_does_not_mutate_reports():
 
 @pytest.mark.parametrize("command", ["diff", "stubs"])
 def test_report_commands_reject_oversized_input_before_reading(tmp_path, monkeypatch, command):
-    import shadowscan.comparison as comparison
+    from shadowscan import comparison as comparison
 
     monkeypatch.setattr(comparison, "MAX_REPORT_BYTES", 4096)
     source = tmp_path / "report.json"

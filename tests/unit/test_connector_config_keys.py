@@ -20,12 +20,12 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-import shadowscan.connectors
+from shadowscan import connectors as connectors_package
 from shadowscan.cli import main
 from shadowscan.connectors import builtin_connector_names, get_connector_class
 from shadowscan.connectors.base import BaseConnector
 
-PACKAGE = Path(shadowscan.connectors.__file__).resolve().parent
+PACKAGE = Path(connectors_package.__file__).resolve().parent
 CONNECTORS = sorted(builtin_connector_names())
 KEY_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
 # Injected by the engine for its own bookkeeping; never user configuration.

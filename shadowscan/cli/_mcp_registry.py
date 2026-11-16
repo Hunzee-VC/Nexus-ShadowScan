@@ -8,7 +8,7 @@ import sys
 import click
 from rich.text import Text
 
-import shadowscan.cli as _cli
+from shadowscan import cli as _cli
 from shadowscan.cli import main
 from shadowscan.mcp_registry import (
     DEFAULT_MAX_PAGES,

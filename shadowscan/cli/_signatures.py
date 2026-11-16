@@ -11,7 +11,7 @@ from rich.markup import escape
 from rich.table import Table
 from rich.text import Text
 
-import shadowscan.cli as _cli
+from shadowscan import cli as _cli
 from shadowscan.cli import _log_masked_failure, main
 from shadowscan.errors import SetupError
 from shadowscan.signatures import Match, SignatureIndex, get_index

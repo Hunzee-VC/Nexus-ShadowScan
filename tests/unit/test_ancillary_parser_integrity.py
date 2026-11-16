@@ -8,10 +8,10 @@ from typing import Any
 import jwt
 import pytest
 
-import shadowscan.connectors.identity.google_workspace as google_workspace
 from shadowscan.comparison import load_report
 from shadowscan.config import parse_set_options
 from shadowscan.connectors.base import ConnectorError
+from shadowscan.connectors.identity import google_workspace as google_workspace
 from shadowscan.connectors.identity.google_workspace import SCOPES, _dwd_token
 from shadowscan.registry import Inventory, InventoryValidationError
 
@@ -74,9 +74,11 @@ def test_structured_set_values_reject_ambiguous_or_nonfinite_json(value: str) ->
 @pytest.mark.parametrize(
     "document",
     [
-        '{"client_email":"service@example.test","private_key":"key",'
-        '"token_uri":"https://oauth2.googleapis.com/token",'
-        '"token_uri":"https://attacker.example/token"}',
+        (
+            '{"client_email":"service@example.test","private_key":"key",'
+            '"token_uri":"https://oauth2.googleapis.com/token",'
+            '"token_uri":"https://attacker.example/token"}'
+        ),
         '{"client_email":"service@example.test","private_key":"key","private-extension":1e999}',
     ],
 )
