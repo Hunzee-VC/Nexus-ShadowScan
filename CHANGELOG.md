@@ -19,7 +19,11 @@ explain operator migrations. Earlier per-change entries are preserved in the
   requires a module with `__all__` to list every name the package imports
   from it. `shadowscan.connectors.gateway.logs` no longer re-exports
   `NORMALISERS`, `_b`, `_f`, `_i`, `_has_tools` and `_has_tool_calls`, which
-  only tests imported from it; import them from `gateway.normalise`. Other
+  only tests imported from it; import them from `gateway.normalise`. Because
+  `connectors.base`, `utils.http` and `code.filesystem` now declare `__all__`,
+  `from <module> import *` binds only the listed names (it used to bind every
+  public module-level name, imported modules included); explicit imports are
+  unaffected. Other
   changes are behaviour-neutral: implicit string concatenations in lists are
   parenthesized, empty `except` clauses say why they pass, and dead patterns
   are removed.

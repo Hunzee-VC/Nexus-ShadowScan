@@ -10,6 +10,7 @@ module that declares one, but missing from it, would come back as an alert.
 from __future__ import annotations
 
 import ast
+import importlib
 from functools import cache
 from pathlib import Path
 
@@ -74,12 +75,7 @@ def test_all_entries_are_unique_and_defined() -> None:
         if declared is None:
             continue
         assert len(declared) == len(set(declared)), module
-        bound: set[str] = set()
-        for node in ast.walk(tree):
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                bound.add(node.name)
-            elif isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
-                bound.add(node.id)
-            elif isinstance(node, (ast.Import, ast.ImportFrom)):
-                bound.update(alias.asname or alias.name.split(".")[0] for alias in node.names)
-        assert sorted(set(declared) - bound) == [], module
+        # Check the imported module, not the AST: a name bound only inside a
+        # function is in the tree but not a module attribute, and `import *` fails on it.
+        loaded = importlib.import_module(module)
+        assert [name for name in declared if not hasattr(loaded, name)] == [], module

@@ -9,7 +9,10 @@ from an ordered table of detectors.
 Normalisers only extract fields. They never redact: opaque caller and scope
 identities are derived afterwards by ``logs.normalise_with_record``.
 
-Public names remain importable from ``shadowscan.connectors.gateway.logs``.
+The connector-facing names (``Event``, ``detect_schema`` and the other names
+``gateway.logs`` imports from here) remain importable from
+``shadowscan.connectors.gateway.logs``. Import ``NORMALISERS`` and the field
+helpers from this module.
 """
 
 from __future__ import annotations
