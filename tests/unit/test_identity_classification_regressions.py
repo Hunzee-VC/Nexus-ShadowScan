@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime, timedelta
 from unittest.mock import patch
 
 import jwt
@@ -308,6 +309,59 @@ def test_failed_and_successful_verification_set_the_same_field(index: SignatureI
     assert bad.metadata["signature_verified"] is False
     assert bad.metadata["verified"] is False
     assert "signature-unverified" in bad.tags
+
+
+def _signed_token(claims: dict, private) -> str:
+    return jwt.encode(claims, private, algorithm="RS256", headers={"kid": "key-1"})
+
+
+def _verified(index: SignatureIndex, claims: dict, private):
+    """A finding for a token whose signature verifies against a mocked JWKS."""
+    jwk = json.loads(jwt.algorithms.get_default_algorithms()["RS256"].to_jwk(private.public_key()))
+    jwk.update({"alg": "RS256", "use": "sig", "key_ops": ["verify"], "kid": "key-1"})
+    connector = JwtConnector(ConnectorContext(index=index, config={"jwks_url": JWKS_URL}))
+    with patch("shadowscan.utils.http.HttpClient.get_json", return_value={"keys": [jwk]}):
+        finding = connector.analyze_token(_signed_token(claims, private), jwks_url=JWKS_URL)
+    assert finding is not None
+    return finding
+
+
+# SEC-02 (audit 2026-11-12): a consumer must be able to tell a live token from an
+# expired one. ``verified`` stays signature evidence (historical tokens are valid
+# analysis inputs, SECURITY.md); time validity is reported in its own field.
+@pytest.mark.parametrize(
+    ("offset_claims", "period", "tag"),
+    [
+        ({"exp": -3600}, "expired", "expired"),
+        ({"nbf": 3600}, "not-yet-valid", "not-yet-valid"),
+        ({"iat": -300, "exp": 3600}, "current", None),
+    ],
+    ids=["expired", "not-yet-valid", "current"],
+)
+def test_validity_period_is_reported_beside_an_unchanged_signature_result(
+    index: SignatureIndex, offset_claims: dict, period: str, tag: str | None
+):
+    private = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    now = datetime.now(UTC)
+    claims = {"iss": OKTA_ISSUER, "sub": "u1"}
+    claims.update(
+        {name: int((now + timedelta(seconds=offset)).timestamp()) for name, offset in offset_claims.items()}
+    )
+    finding = _verified(index, claims, private)
+    assert finding.metadata["validity_period"] == period
+    assert finding.metadata["signature_verified"] is True
+    assert finding.metadata["verified"] is True
+    assert "signature-unverified" not in finding.tags
+    if tag:
+        assert tag in finding.tags
+
+
+@pytest.mark.parametrize("claims", [{"exp": "garbage"}, {"exp": [1]}, {"exp": True}, {"nbf": "x"}], ids=str)
+def test_an_unreadable_validity_claim_is_not_reported_current(index: SignatureIndex, claims: dict):
+    private = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    finding = _verified(index, {"iss": OKTA_ISSUER, "sub": "u1", **claims}, private)
+    assert finding.metadata["validity_period"] == "unparseable"
+    assert "validity-unparseable" in finding.tags
 
 
 # ------------------------------------------------- precision: decoy name suppression
