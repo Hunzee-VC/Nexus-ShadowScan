@@ -43,9 +43,11 @@ explain operator migrations. Earlier per-change entries are preserved in the
   Anthropic" finding for a file that calls neither. Comments are the
   tokenizer's comment tokens and docstrings are statements that are only a
   string or bytes literal, found in the syntax tree. A file that names
-  `__doc__` keeps its docstrings as evidence, and a file that does not parse
-  keeps all of its prose (a docstring read only from another module, through
-  `inspect.getdoc` or as a doctest is still blanked). String literals the code reads, f-strings included,
+  `__doc__`, `getdoc`, `get_docstring` or `pydoc` keeps its docstrings as
+  evidence; a file that reads its own source (`inspect.getsource`,
+  `getcomments`, `linecache` and similar) or does not parse keeps all of its
+  prose (a docstring read only from another module or as a doctest is still
+  blanked). String literals the code reads, f-strings included,
   count as before. Notebooks and other languages are unchanged. Findings that
   rested on Python prose alone are absent from the next report, and a host
   named only in a Python comment is no longer a `potential_providers` hint.

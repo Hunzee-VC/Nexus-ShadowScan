@@ -108,6 +108,22 @@ USAGE = {
         '  --base-url=<url>  API base [default: https://api.openai.com/v1]\n"""\n'
         'from docopt import docopt\nimport requests\n\nargs = docopt(__doc__)\nrequests.get(args["--base-url"] + "/models")\n',
     ),
+    # A docstring or comment the file reads back at runtime is data, not prose.
+    "py-inspect-getdoc": (
+        "client.py",
+        f'import inspect\nimport requests\n\n\ndef endpoint():\n    """{OPENAI}"""\n\n\n'
+        "requests.get(inspect.getdoc(endpoint))\n",
+    ),
+    "py-ast-get-docstring": (
+        "client.py",
+        f'"""{OPENAI}"""\nimport ast\nimport requests\n\n'
+        "requests.get(ast.get_docstring(ast.parse(open(__file__).read())))\n",
+    ),
+    "py-inspect-getcomments": (
+        "client.py",
+        f"import inspect\nimport requests\n\n\n# {OPENAI}\ndef endpoint():\n    pass\n\n\n"
+        'requests.get(inspect.getcomments(endpoint).lstrip("# ").strip())\n',
+    ),
     "ts-template-after-interpolation": (
         "models.ts",
         "export async function models(): Promise<Response> {\n"
@@ -267,6 +283,33 @@ def test_a_file_that_reads_its_docstring_keeps_it():
         "ARGS = docopt.docopt(__doc__)  # parse\n"
     )
     assert _prose(source) == ["# parse"]
+
+
+@pytest.mark.parametrize(
+    "reader",
+    ["inspect.getdoc(main)", "ast.get_docstring(TREE)", "pydoc.render_doc(main)"],
+    ids=["inspect-getdoc", "ast-get-docstring", "pydoc"],
+)
+def test_a_file_that_reads_docstrings_without_naming_dunder_doc_keeps_them(reader):
+    source = f'def main():\n    """https://api.openai.com/v1"""\n\n\nURL = {reader}  # read\n'
+    assert _prose(source) == ["# read"]
+
+
+@pytest.mark.parametrize(
+    "reader",
+    [
+        "inspect.getsource(main)",
+        "inspect.getsourcelines(main)",
+        "inspect.findsource(main)",
+        "inspect.getcomments(main)",
+        "linecache.getline(__file__, 1)",
+        "__loader__.get_source(__name__)",
+    ],
+)
+def test_a_file_that_reads_its_own_source_has_no_exact_prose(reader):
+    # Its comments are readable too, so nothing is blanked (main's behaviour).
+    source = f'# https://api.openai.com/v1\ndef main():\n    """doc"""\n\n\nSOURCE = {reader}\n'
+    assert _python_prose_spans(source, _unchecked) is None
 
 
 @pytest.mark.parametrize(

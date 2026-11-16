@@ -187,6 +187,13 @@ _LONG_LINE = 10_000
 _STATEMENT_LISTS = ("body", "orelse", "finalbody", "handlers", "cases")
 # How a str or bytes constant begins in Python source; an f-string is never a constant.
 _PY_STRING_START = re.compile(r"[rRbBuU]{0,2}['\"]")
+# A file that names one of these may read its docstrings at runtime and use them as data
+# (``requests.get(inspect.getdoc(endpoint))``), so its docstrings are not prose.
+_READS_DOCSTRINGS = re.compile(r"__doc__|\b(?:getdoc|get_docstring|pydoc)\b")
+# A file that names one of these may read its own source text, comments included
+# (``inspect.getcomments`` returns the comment lines above a definition), so none of its
+# text is prose. A reader spelled at runtime (getattr with a built name) is not seen.
+_READS_SOURCE = re.compile(r"\b(?:getsource|getsourcelines|findsource|getcomments|linecache|get_source)\b")
 
 
 def _comment_spans(text: str, ignored: Sequence[tuple[int, int]]) -> list[tuple[int, int]]:
@@ -313,9 +320,12 @@ def _python_prose_spans(text: str, check: Callable[[], object]) -> list[tuple[in
 
     Comments are the tokenizer's COMMENT tokens. A docstring is an expression statement whose value
     is a str or bytes constant: it documents, and evaluating it does nothing. An f-string statement
-    runs the code in its replacement fields and is not one. A file that names ``__doc__`` may read
-    its docstrings (``docopt(__doc__)`` takes option defaults from one), so only its comments are
-    prose. Nothing is known when the text does not parse or tokenize, when a span found does not
+    runs the code in its replacement fields and is not one. A file that names ``__doc__``,
+    ``getdoc``, ``get_docstring`` or ``pydoc`` may read its docstrings (``docopt(__doc__)`` takes
+    option defaults from one, ``inspect.getdoc`` returns one), so only its comments are prose. A file
+    that names a reader of its own source text (``inspect.getsource``, ``getcomments``,
+    ``linecache``, a loader's ``get_source``) may read its comments too, and nothing in it is known.
+    Nothing is known either when the text does not parse or tokenize, when a span found does not
     begin and end the way its kind must, or when the text has a bare carriage return, which Python
     reads as a line break and this mapping does not. The work is linear in the text and is charged to
     the input's execution budget through ``check``, which raises once the budget is spent. A text
@@ -324,6 +334,8 @@ def _python_prose_spans(text: str, check: Callable[[], object]) -> list[tuple[in
     if "#" not in text and '"' not in text and "'" not in text:
         return []
     if "\r" in text and "\r" in text.replace("\r\n", ""):
+        return None
+    if _READS_SOURCE.search(text):
         return None
     if _QUADRATIC_TOKENIZE and max(map(len, text.split("\n"))) > _LONG_LINE:
         return None
@@ -338,7 +350,7 @@ def _python_prose_spans(text: str, check: Callable[[], object]) -> list[tuple[in
     comments = _python_comments(text, starts, check)
     if comments is None:
         return None
-    docstrings = [] if "__doc__" in text else list(_python_docstrings(text, tree, starts, check))
+    docstrings = [] if _READS_DOCSTRINGS.search(text) else list(_python_docstrings(text, tree, starts, check))
     if not _shaped(text, comments, docstrings):
         return None
     return _merged([*comments, *docstrings])

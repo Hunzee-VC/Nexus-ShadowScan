@@ -43,7 +43,10 @@ SEC-02: `analyze_token` in `shadowscan/connectors/identity/jwt.py` now parses
 `nbf` and reports `metadata["validity_period"]`: `current`, `expired`,
 `not-yet-valid`, or `unparseable` when an `exp` or `nbf` claim is present but
 is not a timestamp (fail closed rather than claim a live token), with matching
-`expired`, `not-yet-valid` and `validity-unparseable` tags. A first version
+`expired`, `not-yet-valid` and `validity-unparseable` tags. The period and the
+`expired` tag are judged from one clock read; the integration review (#361)
+found two reads, so a token expiring between them was reported `current` and
+tagged `expired` (`test_validity_period_and_expired_tag_read_one_clock`). A first version
 folded expiry into `signature_verified`; review showed that contradicts the
 documented contract (SECURITY.md: historical tokens are valid analysis inputs;
 identity.md: read `metadata.verified` as signature evidence) and broke
@@ -93,9 +96,17 @@ files.
   model-identifier pass skips them. Nothing is blanked when the file does not
   parse or tokenize, when the lexer reports its reading ambiguous, when the
   text has a bare carriage return, or when a span found does not begin and end
-  the way its kind must. A file that names `__doc__` keeps its docstrings:
-  `docopt(__doc__)` reads option defaults from one; a docstring read only from
-  another module, through `inspect.getdoc` or as a doctest is still blanked. Classification is linear (except on CPython 3.12.0 to 3.12.3, whose tokenizer is quadratic in a line's length; there a file with a line over 10,000 characters is not classified),
+  the way its kind must. A file that names `__doc__`, `getdoc`,
+  `get_docstring` or `pydoc` keeps its docstrings: `docopt(__doc__)` reads
+  option defaults from one, and the integration review (#361) showed a file
+  hiding its endpoint from the scan with `requests.get(inspect.getdoc(f))`, a
+  call `main` reported at 0.9. A file that names a reader of its own source
+  text (`inspect.getsource`, `getsourcelines`, `findsource`, `getcomments`,
+  `linecache`, a loader's `get_source`) keeps all of its prose, since
+  `inspect.getcomments` returns comment lines. A docstring read only from
+  another module, a reader reached through a name built at runtime, or a
+  doctest is still blanked; string concatenation already hides a host from
+  `main`, so this is the same class of deliberate evasion. Classification is linear (except on CPython 3.12.0 to 3.12.3, whose tokenizer is quadratic in a line's length; there a file with a line over 10,000 characters is not classified),
   checks the input's execution budget every 4,096 tokens or statements, and
   took 0.45 s for a 1 MB file on Python 3.11 (0.2 s on 3.13) here. Notebooks and
   every other language are unchanged: their comments are still evidence, and

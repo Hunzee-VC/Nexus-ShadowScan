@@ -308,11 +308,15 @@ comments are the tokenizer's comment tokens, and a docstring is a statement
 that is only a string or bytes literal. A note that a service "must never call
 api.openai.com" names the host without using it. A string the code reads still
 counts, whether it is assigned, passed to a call, listed in a table or built as
-an f-string. A file that names `__doc__` keeps its docstrings, since it may
-read them, and a file that does not parse keeps all of its prose. The `__doc__`
-check looks at that file only: a docstring another module reads
-(`endpoints.__doc__`), one read through `inspect.getdoc`, and doctest examples
-are blanked like any other docstring. On CPython 3.12.0 to 3.12.3, whose
+an f-string. A file that names `__doc__`, `getdoc`, `get_docstring` or `pydoc`
+keeps its docstrings, since it may read them as data
+(`requests.get(inspect.getdoc(endpoint))`). A file that names a reader of its
+own source text (`inspect.getsource`, `getsourcelines`, `findsource`,
+`getcomments`, `linecache` or a loader's `get_source`) keeps all of its prose,
+comments included, and so does a file that does not parse. These checks look at
+that file only, by name: a docstring another module reads
+(`endpoints.__doc__`), a reader reached through a name built at runtime, and
+doctest examples are blanked like any other prose. On CPython 3.12.0 to 3.12.3, whose
 tokenizer is quadratic in a line's length, a file with a line over 10,000
 characters is not classified. Notebooks and other languages are unchanged, and
 their comments still count: a lexer span that starts with `//` or `#` can be a

@@ -356,6 +356,26 @@ def test_validity_period_is_reported_beside_an_unchanged_signature_result(
         assert tag in finding.tags
 
 
+def test_validity_period_and_expired_tag_read_one_clock(index: SignatureIndex):
+    # A token that expires between two clock reads was reported "current" and tagged
+    # "expired" at once. The analysis reads the clock once, so the two always agree.
+    expires = datetime.now(UTC).replace(microsecond=0) + timedelta(hours=1)
+
+    class _TickingClock(datetime):
+        reads = 0
+
+        @classmethod
+        def now(cls, tz=None):  # type: ignore[override]
+            cls.reads += 1
+            return expires + timedelta(seconds=-1 if cls.reads == 1 else 1)
+
+    with patch("shadowscan.connectors.identity.jwt.datetime", _TickingClock):
+        finding = _analyze(index, {"iss": OKTA_ISSUER, "sub": "u1", "exp": int(expires.timestamp())})
+    assert _TickingClock.reads >= 1
+    assert finding.metadata["validity_period"] == "current"
+    assert "expired" not in finding.tags
+
+
 @pytest.mark.parametrize("claims", [{"exp": "garbage"}, {"exp": [1]}, {"exp": True}, {"nbf": "x"}], ids=str)
 def test_an_unreadable_validity_claim_is_not_reported_current(index: SignatureIndex, claims: dict):
     private = rsa.generate_private_key(public_exponent=65537, key_size=2048)

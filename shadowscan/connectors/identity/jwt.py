@@ -304,11 +304,13 @@ class JwtConnector(BaseConnector, _NoDump):
         lifetime_h = (exp - iat).total_seconds() / 3600 if iat and exp else None
         alg = str(header.get("alg", ""))
         hygiene = _hygiene_issues(alg, family, exp, lifetime_h)
-        validity = _validity_period(claims, exp, nbf, datetime.now(UTC))
+        # One clock read: a token expiring between two reads would be both current and expired.
+        now = datetime.now(UTC)
+        validity = _validity_period(claims, exp, nbf, now)
         f.metadata["validity_period"] = validity
         if validity == "unparseable":
             f.add_tag("validity-unparseable")
-        if exp and exp < datetime.now(UTC):
+        if exp and exp < now:
             f.add_tag("expired")
         if validity == "not-yet-valid":
             f.add_tag("not-yet-valid")
