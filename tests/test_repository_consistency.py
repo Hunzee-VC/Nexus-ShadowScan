@@ -59,7 +59,7 @@ GITHUB = ROOT / ".github"
 # GitHub runs both YAML spellings; test_repository_policy.py checks the glob.
 WORKFLOWS = sorted(path for path in (GITHUB / "workflows").glob("*.y*ml") if path.is_file())
 FORMS = sorted(path for path in (GITHUB / "ISSUE_TEMPLATE").glob("*.yml") if path.name != "config.yml")
-ADVISORY_URL = "https://github.com/Hunzee-VC/Nexus-ShadowScan/security/advisories/new"
+ADVISORY_URL = "https://github.com/aisecnomad/Nexus-ShadowScan/security/advisories/new"
 
 # Files GitHub's community profile and the OpenSSF Scorecard look for, plus the
 # project's own governance set. Each must exist and carry content.
@@ -278,46 +278,54 @@ def test_markdown_checks_cover_benchmarks_but_not_the_frozen_estate() -> None:
 
 
 _REPOSITORY_LINK = re.compile(
-    r"https://github\.com/Hunzee-VC/Nexus-ShadowScan/(blob|tree)/main/([^#?]+)(?:#(.+))?"
+    r"https://github\.com/aisecnomad/Nexus-ShadowScan/(blob|tree)/main/([^#?]+)(?:#(.+))?"
 )
 
 
 # The repository was renamed from aisecnomad/Project-Nexus to aisecnomad/Nexus-ShadowScan so
-# that its URL, the NexusShadowScan distribution and the brand match, and then transferred to
-# Hunzee-VC/Nexus-ShadowScan. These paths record history as it happened and keep a former
-# name: retained reviews and GitHub's recorded ruleset responses. The benchmark corpora and
-# harnesses that kept the first name moved to the pinned Nexus ShadowBench companion. Released
-# changelog entries are history too; the newest section is not.
+# that its URL, the NexusShadowScan distribution and the brand match. It was then transferred to
+# the Hunzee-VC organization with its companion repositories, and in November 2026 all of them
+# were transferred back. These paths record history as it happened and keep a former name:
+# retained reviews and GitHub's recorded ruleset responses. The benchmark corpora and harnesses
+# that kept the first name moved to the pinned Nexus ShadowBench companion. Released changelog
+# entries are history too; the newest section is not.
 _FORMER_NAME_RECORDS = (
     "archive/",
     ".github/rulesets/observed/",
 )
 _FORMER_NAME = re.compile(
-    r"aisecnomad(?:/|%2F|\.github\.io/)(?:Project-Nexus|Nexus-ShadowScan|Nexus-ShadowBench)",
+    r"aisecnomad(?:/|%2F|\.github\.io/)Project-Nexus"
+    r"|hunzee-vc(?:/|%2F|\.github\.io/)Nexus-(?:ShadowScan|ShadowBench|Symbiote)",
     re.IGNORECASE,
 )
+# Dated entries written while the repository belonged to Hunzee-VC name it as it was then, in
+# code spans, as released changelog sections do: the engineering log's entries on the transfer
+# and on the November 5 readback, and the merge policy's record of that readback. Only their
+# code spans are exempt, so a stale link there is still caught.
+_FORMER_NAME_SECTIONS = {
+    "docs/engineering-log.md": (
+        "### Ruleset readback after the transfer (November 5)",
+        "### Repository transfer to the Hunzee-VC organization (November 4)",
+    ),
+    "docs/operations/merge-policy.md": ("## November 5 readback",),
+}
+_CODE_SPAN = re.compile(r"`[^`\n]*`")
 # Elsewhere a former name may appear only in these forms, which say that it is a former
-# name: 0.1.2 was attested under the first and 0.1.3 and 0.1.4 under the second, the rename
-# and the transfer are described, and one dated observation keeps the request path it
-# recorded. The pinned companion moved with the repository, so its former owner URL is
-# a stale reference too. Each form is removed from the line before the check, so a stale link beside one
-# is still caught.
+# name: 0.1.2 was attested under the first, the rename and the transfers are described, and
+# one dated observation keeps the request path it recorded. The companions moved with the
+# repository, so their former owner URLs are stale references too. Each form is removed from
+# the line before the check, so a stale link beside one is still caught.
 # Split so that this file passes its own check.
-_FORMER_SLUGS = ("aisecnomad/" + "Project-Nexus", "aisecnomad/" + "Nexus-ShadowScan")
+_FORMER_SLUGS = ("aisecnomad/" + "Project-Nexus", "Hunzee-VC/" + "Nexus-ShadowScan")
 _FORMER_SLUG = "(?:" + "|".join(re.escape(slug) for slug in _FORMER_SLUGS) + ")"
 _FORMER_NAME_FORMS = re.compile(
     "|".join(
         form.replace("SLUG", _FORMER_SLUG)
         for form in (
             r"gh attestation verify \S*-0\.1\.2-\S* --repo SLUG$",
-            r"^repo=SLUG\s+# 0\.1\.[34] was attested under this name, before the transfer$",
-            r"`gh attestation verify <file> --repo SLUG`",
             r"verify (?:it|them|0\.1\.\d+(?: and 0\.1\.\d+)?) with `--repo SLUG`",
-            r"0\.1\.3 and 0\.1\.4 with `--repo SLUG`",
             r"attested (?:as|under) `SLUG` before the (?:rename|transfer)",
             r"(?:renamed|transferred) from `?SLUG`? to(?: `?SLUG`?)?",
-            r"renamed to `SLUG`",
-            r"checked after the upload, names `SLUG`",
             r"formerly `?SLUG`?(?:,? (?:and|then) `?SLUG`?)*(?![\w.%/-])",
             r"`GET /repos/SLUG/[^`]*` \(the former name\)",
             r'^FORMER_REPOSITORIES = \("SLUG", "SLUG"\)$',
@@ -330,8 +338,27 @@ def _names_former_repository(line: str) -> bool:
     return bool(_FORMER_NAME.search(_FORMER_NAME_FORMS.sub("", line.strip())))
 
 
+def _without_recorded_names(lines: list[str], headings: tuple[str, ...]) -> list[str]:
+    """Drop the code spans of each named dated section, from its heading to the next of its level."""
+    lines = list(lines)
+    for heading in headings:
+        starts = [index for index, line in enumerate(lines) if line == heading]
+        assert len(starts) == 1, f"expected exactly one {heading!r}"
+        level = heading.index(" ")
+        end = next(
+            (
+                index
+                for index in range(starts[0] + 1, len(lines))
+                if re.match(rf"#{{1,{level}}} ", lines[index])
+            ),
+            len(lines),
+        )
+        lines[starts[0] : end] = [_CODE_SPAN.sub("", line) for line in lines[starts[0] : end]]
+    return lines
+
+
 def test_live_files_name_the_current_repository() -> None:
-    """Regression: links, badges, clone commands and policy checks follow the repository rename."""
+    """Regression: links, badges, clone commands and policy checks follow the repository's moves."""
     tracked = subprocess.run(
         ["git", "ls-files", "-z"], cwd=ROOT, capture_output=True, check=True, timeout=60
     ).stdout.decode("utf-8")
@@ -343,39 +370,37 @@ def test_live_files_name_the_current_repository() -> None:
             text = (ROOT / name).read_text(encoding="utf-8")
         except UnicodeDecodeError:
             continue
+        lines = _without_recorded_names(text.splitlines(), _FORMER_NAME_SECTIONS.get(name, ()))
         if name in ("CHANGELOG.md", "docs/engineering-log.md"):
             # Dated logs: the released sections record the name the repository had then.
-            text = text[: _history_start(text)]
+            lines = lines[: len(text[: _history_start(text)].splitlines())]
         stale.extend(
-            f"{name}:{number}"
-            for number, line in enumerate(text.splitlines(), start=1)
-            if _names_former_repository(line)
+            f"{name}:{number}" for number, line in enumerate(lines, start=1) if _names_former_repository(line)
         )
-    assert not stale, "use Hunzee-VC/Nexus-ShadowScan:\n  " + "\n  ".join(stale)
+    assert not stale, "use aisecnomad/Nexus-ShadowScan:\n  " + "\n  ".join(stale)
 
 
 def test_former_name_check_flags_unexplained_references() -> None:
     # Assembled from parts so that this test's own lines do not trip the check above.
     first, second = _FORMER_SLUGS
+    current = "aisecnomad/Nexus-ShadowScan"
     pages = "aisecnomad.github.io/" + "Project-Nexus"
     assert _FORMER_NAME.search(f"https://github.com/{first.lower()}/blob/main/README.md")
     assert _FORMER_NAME.search(f"https://{pages}/")
     assert _FORMER_NAME.search(f"https://github.com/{second}/security/advisories/new")
-    assert _FORMER_NAME.search("https://" + "aisecnomad.github.io/" + "Nexus-ShadowScan/")
-    assert not _FORMER_NAME.search("https://github.com/Hunzee-VC/Nexus-ShadowScan")
-    assert not _FORMER_NAME.search("https://hunzee-vc.github.io/Nexus-ShadowScan/")
+    assert _FORMER_NAME.search(f"https://github.com/{second.lower()}/pulls")
+    assert _FORMER_NAME.search("https://" + "hunzee-vc.github.io/" + "Nexus-ShadowScan/")
+    assert not _FORMER_NAME.search(f"https://github.com/{current}")
+    assert not _FORMER_NAME.search("https://aisecnomad.github.io/Nexus-ShadowScan/")
     for explained in (
         f"gh attestation verify wheels/nexusshadowscan-0.1.2-py3-none-any.whl --repo {first}",
         f"The 0.1.2 wheel was attested before the rename; verify it with `--repo {first}`.",
         f"The repository was formerly `{first}`; GitHub redirects the old links.",
         f"- The repository is renamed from `{first}` to",
         f"`GET /repos/{first}/rules/branches/main` (the former name) returned no active",
-        f"repo={second}                # 0.1.4 was attested under this name, before the transfer",
-        f"The repository was renamed from `{first}` to `{second}` and then transferred.",
-        f"transferred from `{second}` to `Hunzee-VC/Nexus-ShadowScan`; GitHub redirects",
+        f"The repository was renamed from `{first}` to `{current}` and then transferred.",
+        f"transferred from `{second}` to `{current}`; GitHub redirects",
         f"(formerly `{second}` and `{first}`), so a rename cannot skip the audit job.",
-        f"and 0.1.3 and 0.1.4 with `--repo {second}`.",
-        f"files, checked after the upload, names `{second}`,",
     ):
         assert not _names_former_repository(explained), explained
     for slug in _FORMER_SLUGS:
@@ -391,16 +416,43 @@ def test_former_name_check_flags_unexplained_references() -> None:
             f"It was formerly {slug}.git; clone it from there",
             f"gh attestation verify nexusshadowscan-0.1.5-py3-none-any.whl --repo {slug}",
             f"gh api repos/{slug}/rulesets/23913372",
+            f"0.1.3 and 0.1.4 with `--repo {slug}`.",
+            f"`gh attestation verify <file> --repo {slug}`",
+            f"The repository is renamed to `{slug}`",
+            f"files, checked after the upload, names `{slug}`,",
         ):
             assert _names_former_repository(stale), stale
-    companion = "aisecnomad/" + "Nexus-ShadowBench"
-    assert not _FORMER_NAME.search("https://github.com/Hunzee-VC/Nexus-ShadowBench.git")
-    for stale in (
-        f"\turl = https://github.com/{companion}.git",
-        f"git -c submodule.benchmark-suite.url=https://github.com/{companion}.git submodule update",
-        f"[Nexus ShadowBench](https://github.com/{companion})",
-    ):
-        assert _names_former_repository(stale), stale
+    for companion in ("Hunzee-VC/" + "Nexus-ShadowBench", "Hunzee-VC/" + "Nexus-Symbiote"):
+        for stale in (
+            f"\turl = https://github.com/{companion}.git",
+            f"git -c submodule.benchmark-suite.url=https://github.com/{companion}.git submodule update",
+            f"[Nexus companion](https://github.com/{companion})",
+        ):
+            assert _names_former_repository(stale), stale
+    assert not _FORMER_NAME.search("https://github.com/aisecnomad/Nexus-ShadowBench.git")
+    assert not _FORMER_NAME.search("https://github.com/aisecnomad/Nexus-Symbiote")
+
+
+def test_dated_sections_keep_a_former_name_only_in_code_spans() -> None:
+    _, second = _FORMER_SLUGS
+    heading = "### Repository transfer to the Hunzee-VC organization (November 4)"
+    assert heading in _FORMER_NAME_SECTIONS["docs/engineering-log.md"]
+    lines = [
+        "## Unreleased",
+        "### A later entry (November 17)",
+        f"The repository is `{second}`.",
+        heading,
+        f"The repository was transferred to `{second}`, and `source` now names it.",
+        f"Its runs are at https://github.com/{second}/actions.",
+        "#### A subsection of the dated entry",
+        f"`{second}` again.",
+        "### An earlier entry (November 3)",
+        f"The repository is `{second}`.",
+    ]
+    checked = _without_recorded_names(lines, (heading,))
+    assert [number for number, line in enumerate(checked) if _names_former_repository(line)] == [2, 5, 9]
+    with pytest.raises(AssertionError, match="expected exactly one"):
+        _without_recorded_names(lines + [heading], (heading,))
 
 
 def test_reporters_name_the_repository_that_pyproject_names() -> None:
@@ -478,12 +530,12 @@ _MARKDOWN_IMAGE = re.compile(r"!\[[^\]]*\]\(\s*<?([^)\s>]+)")
 # README images load from one full commit SHA, so the description frozen on a release's PyPI page
 # keeps showing the diagrams and charts its text describes after `main` regenerates or moves them.
 _PINNED_ASSET = re.compile(
-    r"^https://raw\.githubusercontent\.com/Hunzee-VC/Nexus-ShadowScan/([0-9a-f]{40})/(docs/assets/[^/?#]+)$"
+    r"^https://raw\.githubusercontent\.com/aisecnomad/Nexus-ShadowScan/([0-9a-f]{40})/(docs/assets/[^/?#]+)$"
 )
 # Every URL form that serves a file of this repository at a ref; workflow badges are not among them.
 _REPOSITORY_FILE = re.compile(
-    r"^https?://(?:raw\.githubusercontent\.com/Hunzee-VC/Nexus-ShadowScan/"
-    r"|github\.com/Hunzee-VC/Nexus-ShadowScan/(?:raw|blob)/)",
+    r"^https?://(?:raw\.githubusercontent\.com/aisecnomad/Nexus-ShadowScan/"
+    r"|github\.com/aisecnomad/Nexus-ShadowScan/(?:raw|blob)/)",
     re.IGNORECASE,
 )
 
@@ -2787,7 +2839,7 @@ def test_readme_and_guide_benchmark_metrics_and_sources_match_committed_evidence
         ["git", "-C", str(ROOT), "ls-files", "--stage", "--", "benchmark-suite"], text=True
     ).split()[1]
     for section in sections.values():
-        linked = re.findall(r"https://github\.com/Hunzee-VC/Nexus-ShadowBench/blob/([0-9a-f]{40})/", section)
+        linked = re.findall(r"https://github\.com/aisecnomad/Nexus-ShadowBench/blob/([0-9a-f]{40})/", section)
         assert linked and set(linked) == {pin}
     links = dict(re.findall(r"\[([^]]+)\]\((https://[^)]+)\)", sections["docs/reference/product-guide.md"]))
     for count, report in (
@@ -2796,7 +2848,7 @@ def test_readme_and_guide_benchmark_metrics_and_sources_match_committed_evidence
         (326, "tools/benchmark/realworld/REPORT.md"),
     ):
         [url] = [url for label, url in links.items() if re.match(rf"{count}\b", label)]
-        assert url == f"https://github.com/Hunzee-VC/Nexus-ShadowBench/blob/{pin}/{report}"
+        assert url == f"https://github.com/aisecnomad/Nexus-ShadowBench/blob/{pin}/{report}"
 
 
 def test_estate_benchmark_documents_say_later_shadowscan_runs_are_in_sample() -> None:

@@ -1,13 +1,26 @@
 # Changelog
 
 One summary per release. Detailed implementation history is maintained in the
-[engineering log](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/engineering-log.md);
-[release notes](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/RELEASE_NOTES.md)
+[engineering log](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/engineering-log.md);
+[release notes](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/RELEASE_NOTES.md)
 explain operator migrations. Earlier per-change entries are preserved in the
-[change-history archive](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/history/changelog-detail.md).
+[change-history archive](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/history/changelog-detail.md).
 
 ## Unreleased
 
+- The repository is back at `aisecnomad/Nexus-ShadowScan`, the name 0.1.3 and
+  0.1.4 were published and attested under, and its benchmark companion at
+  `aisecnomad/Nexus-ShadowBench`. Both were transferred to the `Hunzee-VC`
+  organization between October 27 and November 2 and back between November 15
+  and 16; no release was published in between, and GitHub redirects the interim
+  URLs. Each transfer failed the weekly governance audit's ruleset readback until
+  the governance tool's expected repository followed it, most recently on
+  November 17. The expected repository, package metadata, the SARIF and
+  CycloneDX project URLs, documentation links, badges, clone commands, the
+  submodule URL and the tests name `aisecnomad` again, and the consistency test
+  treats the interim owner's URLs as former names. The tool also compares
+  GitHub's off-by-default `dismissal_restriction` pull-request parameter as
+  absent, and only in that state.
 - On CPython 3.12, a Python file with a multi-byte character before a backslash
   line break inside an f-string's replacement field no longer loses all of its
   findings. The 3.12 tokenizer raises `UnicodeDecodeError` there, which left the
@@ -97,18 +110,6 @@ explain operator migrations. Earlier per-change entries are preserved in the
   since 2026-10-11, matching the committed policy with GitHub's new
   `dismissal_restriction` parameter in its off state), and a test checks the
   retained responses against the committed payloads.
-
-- The repository was transferred from `aisecnomad/Nexus-ShadowScan` to
-  `Hunzee-VC/Nexus-ShadowScan`, and the companion benchmark repository to
-  `Hunzee-VC/Nexus-ShadowBench`. The governance tool's expected repository,
-  which had failed the weekly audit's ruleset readback since the transfer
-  (it also compares GitHub's new, off-by-default `dismissal_restriction`
-  pull-request parameter as absent, and only in that state),
-  package metadata, the SARIF and CycloneDX project URLs, documentation links,
-  badges, clone commands, the submodule URL and the tests follow the new names;
-  the consistency test treats the former name like the earlier one. Releases
-  0.1.3 and 0.1.4 keep the name their attestations carry:
-  verify them with `--repo aisecnomad/Nexus-ShadowScan`.
 
 - A YAML file the configuration loader cannot read is MCP configuration by
   its keys (those read before the failure, and a key-shaped server table

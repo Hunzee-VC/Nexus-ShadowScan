@@ -13,6 +13,67 @@ Counts and figures quoted in an entry are those of its date.
 
 ## Unreleased
 
+### Repository transfer back to aisecnomad (November 17)
+
+The repository is back at `aisecnomad/Nexus-ShadowScan`, the name it had before the
+transfer recorded on November 4 below. GitHub's repository search lists it there with
+the same numeric repository ID (`1174915264`), and the benchmark companion at
+`aisecnomad/Nexus-ShadowBench`; the SymBiote repository that the integration page
+links is listed at `aisecnomad/Nexus-Symbiote`. Job logs bound the transfer: the
+scheduled fuzz run of November 15 printed its artifact URL under the `Hunzee-VC`
+owner at 11:35 UTC, and CI run 43813011886 printed one under `aisecnomad` at 05:59 UTC
+on November 16. No release was published in between: PyPI lists 0.1.2, 0.1.3 and
+0.1.4 only, the last uploaded on October 23.
+
+- **Governance audit.** The weekly audit of November 17 (run 44096664235, on
+  `2b80f19`) failed its observe step for both `main` rulesets with "failed settings
+  assurance". As after the first transfer, `tools/governance/rulesets.py` still
+  named the owner the repository had left, and `observe` refuses a response whose
+  `source` names another repository before it compares any setting; GitHub reports
+  `source` as the repository's current full name. The audit's job condition uses
+  the numeric repository ID, so the job ran rather than skipped, and its two
+  ruleset reads printed no error, so both ruleset IDs still resolve. `REPOSITORY`
+  names `aisecnomad/Nexus-ShadowScan` again. The retained observation files were
+  not retrievable from this change's environment (their storage host is not
+  reachable), and no ruleset readback was taken for this change: whether the live
+  settings still match the committed `.update.json` payloads after the transfer
+  back is for the next audit run on `main`, or an administrator readback, to show.
+- **Tests.** `tests/test_governance_rulesets.py` now treats the first name and
+  the `Hunzee-VC` name as the former names. The November 5 readback, recorded
+  under `Hunzee-VC`, is refused as another repository's, and its settings are
+  still compared as this repository's. The October 26 readback, recorded under
+  the current name, verifies as recorded; that new regression test fails with the
+  previous pin. `tests/test_repository_consistency.py` flags the first name and
+  the `Hunzee-VC` URLs of the repository and both companions. The November 4 and
+  November 5 entries below and the merge policy's November 5 readback name the
+  repository as it was then, in code spans; only those code spans are exempt, so a
+  stale link in those sections is still caught. The explained forms that served
+  only the 0.1.3 and 0.1.4 attestation sentences are gone: those releases verify
+  under the current name again, and a former name beside them is now flagged.
+- **References.** Every live reference that the November 4 change moved to
+  `Hunzee-VC` moves back: package metadata URLs (`pyproject.toml`,
+  `CITATION.cff`, the Dockerfile `org.opencontainers.image.source` label), the
+  SARIF `informationUri` and CycloneDX `vcs` reference, the MkDocs settings, the
+  issue forms, README and product guide badges, links and clone commands, the
+  governance, security and support documents, the runbooks' `gh` commands, the
+  example workflows, the workflow comments, the companion submodule URL in
+  `.gitmodules`, CI and `tools/benchmark_suite.py`, and `source_repository` in
+  `tools/benchmark_evidence.json`, which `verify_evidence` compares with the
+  extract the tool computes. The install guide and the publishing runbook say that
+  0.1.3 and 0.1.4 verify under the current name and that nothing was released
+  under `Hunzee-VC`; the README and product guide name both former owners. Links
+  inside dated history point at the current URL; their prose is unchanged.
+- **Not done here.** Maintainer steps outside the repository, from the
+  publishing runbook's rename checklist: if the PyPI and TestPyPI trusted
+  publishers were moved to `Hunzee-VC`, they must name `aisecnomad` again before
+  the next release can upload; the GitHub Pages project site is served under
+  `aisecnomad.github.io` again, and what it serves was not checked from this
+  environment; local clones need their remote re-pointed, and the OpenSSF Best
+  Practices entry needs its repository URL checked. PyPI's change-of-provenance
+  comparison is unaffected: the next release is uploaded more than 14 days after
+  0.1.4, which was attested under this name anyway. No claim of independent
+  review is made for this change.
+
 ### A tokenizer codec error no longer drops a Python file (November 17)
 
 The scheduled lexing fuzz run of November 15 (run 43708921445, on `bd04e03`) found
@@ -1451,7 +1512,7 @@ CVE-2026-111943 (HIGH) in Wolfi `ca-certificates-bundle` 20260909-r2, fixed in
 
 - `benchmark-suite` moves from `e027b98` to `1ce0eee`, which adds the
   companion's documentation and standards, an append-only `AMENDMENTS.json`
-  ledger for migrated harness code (Hunzee-VC/Nexus-ShadowBench#2), a
+  ledger for migrated harness code (aisecnomad/Nexus-ShadowBench#2), a
   code-surface `fetch` that delegates to the hardened cases fetcher, certifi
   2026.10.19 with a CI `pip-audit` step, and errata for stale statements in
   preserved files.
@@ -2259,7 +2320,7 @@ The proposal stays open; these tests do not claim live DNS acceptance.
 ### Repository scan completion and bounded processing (October 20)
 
 Adapted selected changes from the closed, unmerged
-[PR #284](https://github.com/Hunzee-VC/Nexus-ShadowScan/pull/284), which had no recorded review, onto the
+[PR #284](https://github.com/aisecnomad/Nexus-ShadowScan/pull/284), which had no recorded review, onto the
 existing staged-scan and readiness workflows. The filesystem probe counts up to
 180,000 entries within its unchanged one-second bound and proposes at most
 1800 seconds at the 120-second default. The existing rate of 12,000 entries per
@@ -6186,7 +6247,7 @@ endpoint and IP-range source references. Live DNS enrichment stays deferred
 
 Rescan after upgrading and keep earlier reports as historical observations;
 lower attribution is not evidence that a workload stopped. See the
-[migration notes](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/production-migrations.md#october-14-bounded-evidence-migration-unreleased).
+[migration notes](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/production-migrations.md#october-14-bounded-evidence-migration-unreleased).
 The archived implementation record under
 `archive/reviews/evidence-depth-2026-10-14/` is author-written offline evidence;
 its full before/after reports were not committed.
@@ -6195,7 +6256,7 @@ its full before/after reports were not committed.
 
 Integrates the reviewed parts of three draft pull requests, #216, #203
 and #204, into one design. Rollout and migration notes are in the
-[deployment guide](https://github.com/Hunzee-VC/Nexus-ShadowScan/blob/main/docs/history/production-change-history.md#october-14-detection-precision-ambiguous-app-names-and-scoped-correlation-unreleased).
+[deployment guide](https://github.com/aisecnomad/Nexus-ShadowScan/blob/main/docs/history/production-change-history.md#october-14-detection-precision-ambiguous-app-names-and-scoped-correlation-unreleased).
 
 - Name signals can be marked `ambiguous: true`. The Google Gemini identity
   signature uses it: a Gemini display name, publisher or description stays a
@@ -6600,7 +6661,7 @@ That review is not independent human review.
 - `benchmarks/shadowbench/` and `tools/shadowbench/`: two benchmark tracks
   that measure shadow AI agent discovery across all nine surfaces, from #193
   and #194 (the `tools.shadowbench` cases/estate entry point, now retained in
-  [the companion](https://github.com/Hunzee-VC/Nexus-ShadowBench/tree/main/tools/shadowbench)). #195
+  [the companion](https://github.com/aisecnomad/Nexus-ShadowBench/tree/main/tools/shadowbench)). #195
   landed them as `synthetic` and `estate`; the track it called `synthetic`
   is `cases` here, since both tracks are synthetic, and this entry describes
   both tracks after the review fixes below. The *cases* track generates
