@@ -51,11 +51,14 @@ Not done here. The README images stay pinned to `84183af`, whose banner still
 reads `Apache-2.0`; they move to a commit on main at release preparation, as
 the release-candidate check requires, and so do the version and `date-released`
 in `pyproject.toml` and `CITATION.cff`, which still name 0.1.4 (published under
-Apache-2.0 only). The only human contributor other than the maintainer opened
-five pull requests (#175, #225, #229, #275 and #313), all closed unmerged;
-README edits from three of them reached main with co-author credit. Their
-consent to the dual licence, or a determination that those edits need none, is
-to be recorded on the pull request before it merges.
+Apache-2.0 only).
+
+Relicensing consent. The only human contributor other than the maintainer
+opened five pull requests (#175, #225, #229, #275 and #313), all closed
+unmerged; README edits from three of them reached main with co-author credit.
+They approved this pull request on November 17 but posted no separate statement
+of consent to the dual licence, and the maintainer decided the same day to
+merge it without one.
 
 ### Entropy redaction in finding text fields, and a JWT validity period (November 12)
 
