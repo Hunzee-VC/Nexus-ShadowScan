@@ -17,6 +17,15 @@ from shadowscan.utils.redaction import sanitize_text
 from shadowscan.utils.redaction_entropy import withhold_random_literals_cut
 from shadowscan.utils.text import redact
 
+# The names other ShadowScan modules import from this one. Underscore names stay
+# package-internal; listing them keeps linters and CodeQL from reading them as unused.
+__all__ = [
+    "_ExcerptSource",
+    "_LazyExcerpt",
+    "_Snippet",
+    "_excerpt",
+]
+
 
 def _excerpt(lines: list[str], line: int, secret: str | None = None, width: int = 160) -> str:
     """Return one trimmed source line; a matched credential is redacted before truncation.

@@ -20,6 +20,7 @@ from shadowscan import __version__
 from tools.acceptance import verify as gate
 from tools.evaluation.annotations import validate_annotations
 from tools.evaluation.evaluate import (
+    DEFAULT_CORPUS,
     _assertions,
     _exact_finding_set,
     _finding_checks,
@@ -552,7 +553,7 @@ def test_per_kind_false_negative_cap_is_stricter_than_aggregate_recall(evidence)
 
 
 def test_exact_bundled_corpus_cannot_serve_as_holdout():
-    _, cases, digest = load_corpus(gate.DEFAULT_CORPUS.with_name("review_corpus.json"))
+    _, cases, digest = load_corpus(DEFAULT_CORPUS.with_name("review_corpus.json"))
     with pytest.raises(gate.EvidenceError, match="holdout_reuses_evaluated_corpus"):
         gate._exclude_evaluated_cases(cases, digest, Path("."), [])
 
@@ -573,7 +574,7 @@ def test_reserved_all_family_is_rejected_before_summarizing(evidence):
 def test_holdout_cannot_reuse_september_review_regression_file(evidence):
     root, manifest, report = evidence
     corpus = json.loads((root / "corpus.json").read_text())
-    known = json.loads((gate.DEFAULT_CORPUS.with_name("review_corpus.json")).read_text())
+    known = json.loads((DEFAULT_CORPUS.with_name("review_corpus.json")).read_text())
     # The September review case, named rather than positioned: later reviews add cases ahead of it.
     contents = next(case for case in known["cases"] if case["id"] == "local-agent-module")["files"][
         "agents.py"
@@ -590,7 +591,7 @@ def test_holdout_cannot_reuse_september_review_regression_file(evidence):
 def test_holdout_cannot_reuse_new_realistic_multifile_evaluation(evidence):
     root, manifest, report = evidence
     corpus = json.loads((root / "corpus.json").read_text())
-    _, realistic, _ = load_corpus(gate.DEFAULT_CORPUS.with_name("realistic_corpus.json"))
+    _, realistic, _ = load_corpus(DEFAULT_CORPUS.with_name("realistic_corpus.json"))
     selected = corpus["cases"][0]
     source_path = selected["source"]["path"]
     contents = next(iter(realistic[0].files.values()))

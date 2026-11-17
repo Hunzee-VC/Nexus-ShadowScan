@@ -250,6 +250,7 @@ def _signal_clone_group(proc: subprocess.Popen[bytes]) -> None:
         try:
             os.killpg(proc.pid, signal.SIGKILL)
         except ProcessLookupError:
+            # The whole group has already exited; nothing is left to kill.
             pass
         except PermissionError:
             # Darwin's killpg() reports EPERM for a group that holds an
@@ -274,6 +275,7 @@ def _signal_clone_group(proc: subprocess.Popen[bytes]) -> None:
                     check=False,
                 )
             except (OSError, subprocess.TimeoutExpired):
+                # taskkill is missing or stuck: kill at least Git itself below.
                 pass
             if proc.poll() is None:
                 proc.kill()

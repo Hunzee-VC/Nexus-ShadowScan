@@ -31,12 +31,35 @@ from shadowscan.connectors.code.instruction_content import ContentHit
 from shadowscan.connectors.code.manifests import Dep
 from shadowscan.connectors.code.mcp_config import mcp_server_holders
 from shadowscan.connectors.code.skill_audit import InstructionAudit
-from shadowscan.connectors.code.source_text import _YAML_SUFFIXES, _CellSpans
+from shadowscan.connectors.code.source_text import _YAML_SUFFIXES, _CellSpans, _Prose
 from shadowscan.models import Finding, Kind
 from shadowscan.signatures import Match, Signature
 from shadowscan.signatures.loader import builtin_signature_dir
 from shadowscan.signatures.matcher import LiteralScan
 from shadowscan.utils.text import BINARY_CONTENT_ERROR
+
+# The names other ShadowScan modules import from this one. Underscore names stay
+# package-internal; listing them keeps linters and CodeQL from reading them as unused.
+__all__ = [
+    "CREDENTIAL_FILE_NAMES",
+    "FindingBase",
+    "_BUNDLED_PACKS",
+    "_DEDICATED_MCP_CONFIG_NAMES",
+    "_ENV_TEMPLATE_WORDS",
+    "_MCP_TRANSPORTS",
+    "_MatchedSource",
+    "_Project",
+    "_READ_ISSUE_REASONS",
+    "_SourceFile",
+    "_UndecodableFile",
+    "_bundled_signature",
+    "_document_declares_mcp",
+    "_env_values_file",
+    "_local_module_predicate",
+    "_names_mcp_key",
+    "_on_disk_project",
+    "_read_issue_reason",
+]
 
 # The transport an MCP server code match names (metadata.mcp_server.transports).
 _MCP_TRANSPORTS: tuple[tuple[str, re.Pattern[str]], ...] = (
@@ -96,6 +119,9 @@ class _Project:
     skill_audits: dict[str, InstructionAudit] = field(default_factory=dict)
     agent_defs: list[dict[str, Any]] = field(default_factory=list)
     seen: set[tuple[str, int, str, str, int | None]] = field(default_factory=set)
+    # Provider signatures named only in a Python file's prose (_Prose.evidence): never usage
+    # evidence, listed under potential_providers when the project's finding exists.
+    prose_hints: set[str] = field(default_factory=set)
     mcp_tools: dict[str, str] = field(default_factory=dict)  # registered MCP tool name -> relpath
     detection_rules: dict[str, int] = field(default_factory=dict)  # rule-pack format -> files
     detection_rule_files: list[str] = field(default_factory=list)  # the first, in walk order
@@ -136,6 +162,9 @@ class _SourceFile:
     # The text and context excerpts are cut from; created with the file (see _ExcerptSource).
     excerpts: _ExcerptSource = field(default_factory=lambda: _ExcerptSource("", Path(), None, None))
     literals: LiteralScan | None = None  # the signature literals found in ``text``, scanned once
+    # A lexed source file's prose, its comments and, in Python, its docstrings, classified on first
+    # use (``_Prose``); any other file has none.
+    prose: _Prose = field(default_factory=_Prose)
     card_kind: str | None = None  # agent manifest kind suggested by the path
     card_valid: bool = False
     card_incomplete: bool = False  # a recognizable card that misses required declarations
@@ -236,7 +265,8 @@ class FindingBase(Protocol):
         resource_type: str,
         *,
         identity_discriminator: str = "",
-    ) -> Finding: ...
+    ) -> Finding:
+        """A new finding for the file ``rel`` under ``root``, labelled ``label``."""
 
 
 # Tool credential files whose whole purpose is to hold a token or password:

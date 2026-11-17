@@ -14,6 +14,9 @@ import json
 import multiprocessing
 import multiprocessing.connection
 import multiprocessing.context
+import multiprocessing.popen_spawn_posix
+import multiprocessing.reduction
+import multiprocessing.spawn
 import multiprocessing.util
 import os
 import re
@@ -24,7 +27,6 @@ import threading
 import time
 from collections.abc import Iterable, Mapping, MutableMapping
 from dataclasses import asdict, replace
-from multiprocessing import popen_spawn_posix, reduction, spawn
 from multiprocessing.process import BaseProcess
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -237,7 +239,7 @@ def _close_descriptors(*descriptors: int) -> None:
         os.close(descriptor)
 
 
-class _WorkerPopen(popen_spawn_posix.Popen):
+class _WorkerPopen(multiprocessing.popen_spawn_posix.Popen):
     """multiprocessing's spawn launcher, handing the worker its own environment.
 
     The stdlib launcher starts the child with the process environment, so the only way to
@@ -262,12 +264,12 @@ class _WorkerPopen(popen_spawn_posix.Popen):
         if not isinstance(process_obj, _WorkerProcess):
             raise TypeError("only a plugin worker process starts through this launcher")
         environment = _worker_environment(os.environ, process_obj.credential_keep)
-        preparation = spawn.get_preparation_data(process_obj.name)
+        preparation = multiprocessing.spawn.get_preparation_data(process_obj.name)
         data = io.BytesIO()
         multiprocessing.context.set_spawning_popen(self)
         try:
-            reduction.dump(preparation, data)
-            reduction.dump(process_obj, data)
+            multiprocessing.reduction.dump(preparation, data)
+            multiprocessing.reduction.dump(process_obj, data)
         finally:
             multiprocessing.context.set_spawning_popen(None)
         parent_r: int | None = None
@@ -277,11 +279,11 @@ class _WorkerPopen(popen_spawn_posix.Popen):
         try:
             parent_r, child_w = os.pipe()
             child_r, parent_w = os.pipe()
-            command = spawn.get_command_line(pipe_handle=child_r)
+            command = multiprocessing.spawn.get_command_line(pipe_handle=child_r)
             self._fds.extend([child_r, child_w])
             self._child = subprocess.Popen(  # noqa: S603 - this interpreter, multiprocessing's own command
                 command,
-                executable=spawn.get_executable(),
+                executable=multiprocessing.spawn.get_executable(),
                 env=environment,
                 close_fds=True,
                 pass_fds=self._fds,
@@ -386,12 +388,14 @@ def _descriptor_limit() -> int:
         if soft >= 0:
             return min(soft, _MAX_DESCRIPTOR_LIMIT)
     except (ImportError, OSError, ValueError, OverflowError):
+        # No usable RLIMIT_NOFILE on this platform: try sysconf below.
         pass
     try:
         limit = os.sysconf("SC_OPEN_MAX")
         if limit >= 0:
             return min(limit, _MAX_DESCRIPTOR_LIMIT)
     except (AttributeError, OSError, ValueError, OverflowError):
+        # No SC_OPEN_MAX either: use the fixed bound.
         pass
     return _MAX_DESCRIPTOR_LIMIT
 

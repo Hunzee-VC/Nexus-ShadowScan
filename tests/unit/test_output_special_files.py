@@ -192,13 +192,13 @@ def test_in_place_write_rechecks_the_opened_pipe_owner_and_mode(tmp_path, monkey
 
 def test_report_to_named_pipe_without_reader_fails_instead_of_hanging(tmp_path):
     pipe = _private_pipe(tmp_path / "report.pipe")
-    outcome: list[BaseException | None] = []
+    outcome: list[Exception | None] = []
 
     def attempt() -> None:
         try:
             write_private_text(pipe, "report body")
             outcome.append(None)
-        except BaseException as exc:  # noqa: BLE001 - recorded for the assertion below
+        except Exception as exc:  # noqa: BLE001 - recorded for the assertion below
             outcome.append(exc)
 
     worker = threading.Thread(target=attempt, daemon=True)

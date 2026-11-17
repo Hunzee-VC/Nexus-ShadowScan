@@ -9,7 +9,7 @@ from typing import Any
 
 import pytest
 
-import shadowscan.connectors as registry
+from shadowscan import connectors as registry
 from shadowscan.config import ConnectorSpec, ScanConfig
 from shadowscan.connectors import PluginDiagnostic, PluginRegistryError
 from shadowscan.connectors.base import BaseConnector

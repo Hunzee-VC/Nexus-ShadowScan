@@ -522,4 +522,5 @@ __all__ = [
     "get_connector_class",
     "connectors_for_surface",
     "plugin_registry_errors",
+    "_BUILTIN",
 ]

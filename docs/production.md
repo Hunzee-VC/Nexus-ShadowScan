@@ -43,8 +43,9 @@ release is created by this change.
 
 ## Migration notes and change history
 
-Unreleased: what an operator sees change after the October 26 audit fixes and
-the November 1 AgentBOM inventory import.
+Unreleased: what an operator sees change after the October 26 audit fixes,
+the November 1 AgentBOM inventory import and the November 12 rule for prose in
+Python files.
 
 - **Exit 3 where 0 was reported.** An offline replay of a single saved
   `lowcode.zapier` `/v2/zaps` page with `links.next`, an `identity.auth0`
@@ -85,6 +86,20 @@ the November 1 AgentBOM inventory import.
   audit page fails, including a token response without an `access_token` (the
   scan stays incomplete). CycloneDX BOMs keep the sanitized endpoint of an MCP
   server whose URL carried inline credentials.
+- **Findings that change: prose in Python files.** In a `.py` file that
+  parses under the Python running the scanner, comments and docstrings are no longer evidence of hosts,
+  environment-variable names or model identifiers. A finding that rested on
+  such prose alone disappears, so `shadowscan code --fail-on low` can exit 0
+  where it exited 2 on a file whose only provider mention is a comment. A
+  finding that keeps other evidence keeps its ID and SARIF fingerprint, but
+  providers named only in prose drop out of it, its evidence lines move from
+  the prose to the code, and its confidence can fall, which matters with
+  `--min-confidence`. A provider named only in Python prose is still listed
+  under `potential_providers` on a finding that has other evidence, as before,
+  without evidence or confidence. Comments in notebooks and other languages, and
+  configuration files, are read as before. When accepting a build with this
+  change, compare reports of repositories with commented-out or documented
+  provider calls in Python.
 - **Deadlines.** With `--incremental` and several roots, the automatic deadline
   extension is applied once per job, capped at 1,800 s, not once per root.
 - **New inventory input.** `--inventory` accepts SymBiote AgentBOM 0.1 JSON, a
@@ -1280,6 +1295,10 @@ the concrete status, denominator, control and reviewer artifacts:
    repositories and restrict access to retained reports. Regenerate retained
    reports after an upgrade that withholds more, such as the
    [2026-09-28 redaction changes](history/production-change-history.md#completeness-report-and-credential-changes).
+   The November 12 change withholds generated-looking literals from finding
+   descriptions, titles and metadata as well as snippets, and adds a JWT
+   `validity_period` field; regenerate retained reports after
+   upgrading to a release that carries it.
 4. Replay each exported instance using its manifest filename, checking account,
    resource identity and detection consistency. Sanitized exports are not
    lossless raw API backups; credential findings may differ after redaction.

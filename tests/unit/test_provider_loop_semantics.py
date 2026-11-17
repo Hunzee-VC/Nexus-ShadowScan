@@ -518,8 +518,10 @@ def test_unbound_or_disconnected_dispatcher_cannot_establish_an_agent(tmp_path, 
         "from worker.tools import TOOL_SPECS\nif False:\n    from worker.tools import dispatch\n",
         "from worker.tools import TOOL_SPECS\nif True:\n    from worker.tools import dispatch\n",
         "from worker.tools import TOOL_SPECS\ndef unrelated():\n    from worker.tools import dispatch\n",
-        "from worker.tools import TOOL_SPECS\n"
-        "from worker.tools import dispatch\nif enabled:\n    from elsewhere import *\n",
+        (
+            "from worker.tools import TOOL_SPECS\n"
+            "from worker.tools import dispatch\nif enabled:\n    from elsewhere import *\n"
+        ),
         "from worker.tools import TOOL_SPECS\nfrom worker.tools import dispatch\nfrom elsewhere import *\n",
     ],
 )

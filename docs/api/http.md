@@ -59,3 +59,8 @@ it when changing the urllib3 constraint or lock.
       members_order: source
       show_source: false
       docstring_style: google
+      # __all__ re-exports the engine's policy setters from http_scope; they are
+      # not client API, so this page keeps documenting only the client.
+      filters:
+        - "!^_[^_]"
+        - "!^(re)?set_(allow_private_origin|request_deadline)$"

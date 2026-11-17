@@ -430,6 +430,7 @@ def _source_provenance() -> dict[str, Any]:
             commit=commit if re.fullmatch(r"[0-9a-f]{40,64}", commit) else None, dirty=bool(status)
         )
     except (OSError, subprocess.SubprocessError):
+        # Not a usable git checkout: the commit and dirty state stay unrecorded.
         pass
     return provenance
 

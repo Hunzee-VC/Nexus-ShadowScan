@@ -18,9 +18,8 @@ from threading import Event
 import pytest
 import regex
 
-import shadowscan.engine as engine_module
-import shadowscan.models as models
-import shadowscan.utils.redaction as redaction
+from shadowscan import engine as engine_module
+from shadowscan import models as models
 from shadowscan.comparison import _scanner_digest
 from shadowscan.config import ConfigValidationError, ConnectorSpec, ScanConfig
 from shadowscan.engine import Engine, _ExportLedger, _JobState, _retain_sanitizable
@@ -39,6 +38,7 @@ from shadowscan.models import (
 from shadowscan.registry import Inventory, InventoryValidationError
 from shadowscan.signatures import SignatureIndex
 from shadowscan.signatures.loader import Signal, signature_from_dict, signature_source_digest
+from shadowscan.utils import redaction as redaction
 from shadowscan.utils.digest import scanner_source_digest
 from shadowscan.utils.redaction import REDACTED, SanitizationLimitError
 

@@ -279,8 +279,10 @@ def analyze_workflow_graph(data: dict[str, Any], *, provider: str | None = None)
         "potential_input_ai_egress_path": None,
         "limitations": [
             "Declared connectivity does not prove execution, access to private data or exfiltration.",
-            "Only supported exact node types and literal HTTP destinations receive roles; "
-            "expressions are unresolved.",
+            (
+                "Only supported exact node types and literal HTTP destinations receive roles; "
+                "expressions are unresolved."
+            ),
         ],
     }
     result = GraphAnalysis(metadata)

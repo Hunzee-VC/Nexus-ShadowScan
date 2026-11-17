@@ -137,8 +137,9 @@ _YAML_ENTRY_MARKERS = re.compile(r"(?:-[ \t]+)+")
 # properties: tags ('!!binary', '!secret', '!<tag:yaml.org,2002:str>') and an
 # anchor ('&cert'). Each property and the blanks after it are read once
 # (possessively), so a long run of blanks is not read again from each blank.
+# A property may also end the value (\Z; the pattern is only fullmatched).
 _YAML_VALUE_BELOW = re.compile(
-    r"(?:(?:![^ \t\r\n]*+|&[^ \t\r\n]++)(?:[ \t]++|$))*+(?:[|>][0-9+-]*)?(?:[ \t]*#[^\r\n]*)?[ \t]*"
+    r"(?:(?:![^ \t\r\n]*+|&[^ \t\r\n]++)(?:[ \t]++|\Z))*+(?:[|>][0-9+-]*)?(?:[ \t]*#[^\r\n]*)?[ \t]*"
 )
 
 

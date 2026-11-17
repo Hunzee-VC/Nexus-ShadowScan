@@ -1478,7 +1478,7 @@ class TreeWalker:
                 finally:
                     os.close(directory)
             except (OSError, ValueError):
-                pass
+                pass  # Unreadable or unsafe: materialized stays False and the gap is reported below.
             if not materialized:
                 self._submodule_gap(
                     f"submodule {rel}: checkout is missing, empty or unsafe; source coverage incomplete"
@@ -2738,7 +2738,7 @@ class TreeWalker:
         """
         seen = 0
         failed: list[OSError] = []
-        for directory, dirnames, filenames in os.walk(target, onerror=failed.append):
+        for directory, dirnames, filenames in os.walk(target, followlinks=False, onerror=failed.append):
             below = Path(directory).relative_to(target).as_posix()
             prefix = rel if below == "." else f"{rel}/{below}"
             links = [name for name in dirnames if os.path.islink(os.path.join(directory, name))]
@@ -2861,7 +2861,7 @@ class TreeWalker:
                     if _may_declare_mcp(window):
                         return not (structured and _json_holds_no_server_table(fh, kept, read))
         except (OSError, ValueError):
-            pass
+            pass  # Unreadable: keep the file as a possible MCP configuration (fail closed).
         return True
 
     def _agent_configuration(

@@ -336,9 +336,11 @@ def _overview(inv: dict[str, Any]) -> list[str]:
     if inv["autonomy"]["not_classified"]:
         cards.append((inv["autonomy"]["not_classified"], "autonomy not classified (unknown)"))
     parts = [
-        "<section id='overview' aria-labelledby='overview-h'><h2 id='overview-h'>Overview</h2>"
-        "<p class='note'>An AI system here is any finding except a credential: an agent, workflow, app,"
-        " MCP server, identity, grant or other kind the scanner reports.</p><div class='stats'>",
+        (
+            "<section id='overview' aria-labelledby='overview-h'><h2 id='overview-h'>Overview</h2>"
+            "<p class='note'>An AI system here is any finding except a credential: an agent, workflow, app,"
+            " MCP server, identity, grant or other kind the scanner reports.</p><div class='stats'>"
+        ),
         *(f"<div class='stat'><b>{_e(value)}</b>{_e(label)}</div>" for value, label in cards),
         "</div><div class='grid'>",
     ]
@@ -376,8 +378,10 @@ def _autonomy(inv: dict[str, Any]) -> list[str]:
         )
     columns = ["Autonomy floor", "Shadow", "Sanctioned", "No inventory", "Total"]
     return [
-        "<section id='autonomy' aria-labelledby='autonomy-h'>"
-        "<h2 id='autonomy-h'>Autonomy and shadow status</h2>",
+        (
+            "<section id='autonomy' aria-labelledby='autonomy-h'>"
+            "<h2 id='autonomy-h'>Autonomy and shadow status</h2>"
+        ),
         "<p class='note'>The floor is the lowest tier the evidence proves. A finding of a kind the scale"
         " describes that carries no valid interval is not classified: its tier is unknown. A finding the"
         f" scale does not describe is not applicable. Shadow systems at L{PRIORITY_FLOOR} and L5 are the"
@@ -489,8 +493,10 @@ def _reference_table(caption: str, rows: list[dict[str, Any]]) -> str:
 def _references(inv: dict[str, Any]) -> list[str]:
     references = inv["references"]
     return [
-        "<section id='references' aria-labelledby='references-h'>"
-        "<h2 id='references-h'>Threat and control references</h2>",
+        (
+            "<section id='references' aria-labelledby='references-h'>"
+            "<h2 id='references-h'>Threat and control references</h2>"
+        ),
         f"<p class='note'>{_e(references['note'])} Author mappings, not independently reviewed.</p>",
         _reference_table("Threat references by AI systems relevant to them", references["threats"]),
         _reference_table("Control references by AI systems relevant to them", references["controls"]),

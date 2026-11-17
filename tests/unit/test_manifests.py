@@ -227,17 +227,27 @@ def test_identical_image_in_another_document_cannot_borrow_workload_context():
 @pytest.mark.parametrize(
     "text",
     [
-        "defaults: &defaults\n  apiVersion: v1\n  kind: Pod\n  spec:\n    containers:\n      - image: n8nio/n8n:1\n"
-        "<<: *defaults\napiVersion: example.test/v1\n",
-        "defaults: &defaults\n  apiVersion: v1\n  kind: Pod\n  spec:\n    containers:\n      - image: n8nio/n8n:1\n"
-        "<<: *defaults\nkind: ConfigMap\n",
-        "defaults: &defaults\n  apiVersion: v1\n  kind: Pod\n  spec:\n    containers:\n      - image: n8nio/n8n:1\n"
-        "<<: *defaults\nspec:\n  containers:\n    - image: nginx:1\n",
-        "apiVersion: v1\nkind: Pod\nmetadata:\n  annotations: &defaults\n    image: n8nio/n8n:1\n"
-        "spec:\n  containers:\n    - <<: *defaults\n      name: workflow\n      image: nginx:1\n",
-        "apiVersion: v1\nkind: Pod\nmetadata:\n  annotations: &defaults\n"
-        "    containers:\n      - image: n8nio/n8n:1\nspec:\n  <<: *defaults\n"
-        "  containers:\n    - image: nginx:1\n",
+        (
+            "defaults: &defaults\n  apiVersion: v1\n  kind: Pod\n  spec:\n    containers:\n      - image: n8nio/n8n:1\n"
+            "<<: *defaults\napiVersion: example.test/v1\n"
+        ),
+        (
+            "defaults: &defaults\n  apiVersion: v1\n  kind: Pod\n  spec:\n    containers:\n      - image: n8nio/n8n:1\n"
+            "<<: *defaults\nkind: ConfigMap\n"
+        ),
+        (
+            "defaults: &defaults\n  apiVersion: v1\n  kind: Pod\n  spec:\n    containers:\n      - image: n8nio/n8n:1\n"
+            "<<: *defaults\nspec:\n  containers:\n    - image: nginx:1\n"
+        ),
+        (
+            "apiVersion: v1\nkind: Pod\nmetadata:\n  annotations: &defaults\n    image: n8nio/n8n:1\n"
+            "spec:\n  containers:\n    - <<: *defaults\n      name: workflow\n      image: nginx:1\n"
+        ),
+        (
+            "apiVersion: v1\nkind: Pod\nmetadata:\n  annotations: &defaults\n"
+            "    containers:\n      - image: n8nio/n8n:1\nspec:\n  <<: *defaults\n"
+            "  containers:\n    - image: nginx:1\n"
+        ),
     ],
 )
 def test_kubernetes_merge_overrides_do_not_attribute_inherited_images(text):
@@ -293,8 +303,10 @@ def test_unrelated_template_text_cannot_suppress_parsed_kubernetes_images(suffix
     "text",
     [
         "apiVersion: v1\nkind: Pod\nkind: ConfigMap\nmetadata:\n  example: '{{ username }}'\n",
-        "apiVersion: v1\nkind: Pod\nmetadata:\n  example: '{{ username }}'\nspec:\n"
-        "  containers:\n    - image: nginx:1\n      image: n8nio/n8n:1\n",
+        (
+            "apiVersion: v1\nkind: Pod\nmetadata:\n  example: '{{ username }}'\nspec:\n"
+            "  containers:\n    - image: nginx:1\n      image: n8nio/n8n:1\n"
+        ),
         'apiVersion: v1\nkind: Pod\nkind: ConfigMap\nlogLevel: "{{ .Values.logLevel }}"\nlogLevel: info\n',
         "apiVersion: v1\n? {key: value}\n: ordinary\nmetadata:\n  example: '{{ username }}'\n",
     ],

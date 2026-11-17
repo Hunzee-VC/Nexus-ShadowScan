@@ -263,6 +263,7 @@ class OwnershipResolver:
             )
             return {}
         except (OSError, ValueError, subprocess.SubprocessError):
+            # Reported by the generic enrichment warning below.
             pass
         self.ctx.warn(
             "code.filesystem: bounded offline git enrichment failed; Git 2.45+ and locally available history "

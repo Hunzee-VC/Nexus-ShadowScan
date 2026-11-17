@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import click
 
-import shadowscan.cli as _cli
+from shadowscan import cli as _cli
 from shadowscan.cli import _exit_code, _load_report, main
 from shadowscan.fleet import merge_reports, source_names
 from shadowscan.reporters import FORMATS

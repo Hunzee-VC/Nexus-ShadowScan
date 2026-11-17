@@ -27,9 +27,11 @@ def test_codeowners_overlapping_stars_finish_in_a_bounded_subprocess():
         [
             sys.executable,
             "-c",
-            "from shadowscan.connectors.code.ownership import codeowners_match; "
-            "assert not codeowners_match('*' * 12 + 'b', 'a' * 45 + '.py'); "
-            "assert not codeowners_match('*a' * 24 + 'b', 'a' * 80 + '.py')",
+            (
+                "from shadowscan.connectors.code.ownership import codeowners_match; "
+                "assert not codeowners_match('*' * 12 + 'b', 'a' * 45 + '.py'); "
+                "assert not codeowners_match('*a' * 24 + 'b', 'a' * 80 + '.py')"
+            ),
         ],
         capture_output=True,
         timeout=5,

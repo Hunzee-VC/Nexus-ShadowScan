@@ -25,7 +25,8 @@ class Renderer(Protocol):
     custom-pack signatures in the BOM, is passed only by :func:`render`.
     """
 
-    def __call__(self, result: ScanResult, /) -> str: ...
+    def __call__(self, result: ScanResult, /) -> str:
+        """The text of ``result`` in this renderer's format."""
 
 
 RENDERERS: dict[str, Renderer] = {

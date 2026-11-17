@@ -58,6 +58,24 @@ from shadowscan.signatures import SignatureIndex, get_index
 from shadowscan.utils.files import changed_since
 from shadowscan.utils.redaction import REDACTED, SanitizationLimitError, sanitize
 
+# The names other ShadowScan modules import from this one. Underscore names stay
+# package-internal; listing them keeps linters and CodeQL from reading them as unused.
+__all__ = [
+    "BaseConnector",
+    "ConnectorContext",
+    "ConnectorError",
+    "LIVE_SCOPE_SCHEMA",
+    "SCOPE_OUTCOMES",
+    "_MAX_OFFLINE_LINE_BYTES",
+    "_NoDump",
+    "_OfflineInputBudget",
+    "_non_negative_limit",
+    "_positive_limit",
+    "failure_summary",
+    "incomplete_reason",
+    "known_incomplete_reasons",
+]
+
 
 class ConnectorError(RuntimeError):
     """Raised when a connector cannot run at all (bad config, missing creds).

@@ -9,7 +9,6 @@ sanctioned inventory) whether it is a *shadow* agent.
 
 from __future__ import annotations
 
-import datetime as _datetime
 import decimal
 import hashlib
 import json
@@ -18,7 +17,7 @@ import uuid
 from collections import Counter
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass, field, fields
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, time, timedelta
 from enum import Enum
 from typing import Any
 
@@ -231,11 +230,33 @@ class RiskLevel(str, Enum):
         return cls.INFO
 
 
-def _evidence_value(name: str, value: Any) -> Any:
-    """A sanitized evidence field, with random-looking literals also withheld from snippets."""
-    if name == "snippet" and isinstance(value, str):
+def _entropy_value(value: Any) -> Any:
+    """Apply the random-literal pass to every string leaf of ``value``.
+
+    Only quoted literals that look generated are withheld, so identifiers,
+    digests, UUIDs and prose keep their text (see
+    ``shadowscan.utils.redaction_entropy``). Containers are rebuilt with the
+    same shape; anything else passes through unchanged.
+    """
+    if isinstance(value, str):
         return withhold_random_literals(value)
+    if isinstance(value, dict):
+        return {key: _entropy_value(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_entropy_value(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_entropy_value(item) for item in value)
     return value
+
+
+def _evidence_value(name: str, value: Any) -> Any:
+    """A sanitized evidence field, with random-looking literals also withheld.
+
+    The entropy pass applies to every text field, not only snippets: a quoted
+    literal that looks generated is withheld wherever it appears in a report
+    field, including ``description`` and ``location``.
+    """
+    return _entropy_value(value)
 
 
 @dataclass(slots=True)
@@ -449,8 +470,10 @@ class Finding:
             values, evidence_values, risk_values = sanitize(state)
         else:
             (values, evidence_values, risk_values), _ = sanitize((state, credential_context))
+        # Identity fields keep the regex sanitizer's result only: rewriting them would
+        # change a finding's identity and let distinct findings collide.
         for name, (value,) in zip(names, values, strict=True):
-            setattr(self, name, value)
+            setattr(self, name, value if name == "id" or name in identity_names else _entropy_value(value))
         changed = {
             name
             for name, original in zip(identity_names, identity_before, strict=True)
@@ -476,8 +499,8 @@ class Finding:
             for name, (value,) in zip(_EVIDENCE_FIELDS, clean, strict=True):
                 setattr(ev, name, _evidence_value(name, value))
         for factor, ((identifier,), (description,)) in zip(self.risk.factors, risk_values, strict=True):
-            factor.id = identifier
-            factor.description = description
+            factor.id = _entropy_value(identifier)
+            factor.description = _entropy_value(description)
         object.__setattr__(self, "_clean_digest", _clean_state(self._digest_state(), bounded=True))
 
     def add_evidence(self, ev: Evidence) -> None:
@@ -671,10 +694,10 @@ _DETACHED_LEAF_TYPES = frozenset(
         int,
         float,
         bool,
-        _datetime.date,
-        _datetime.datetime,
-        _datetime.time,
-        _datetime.timedelta,
+        date,
+        datetime,
+        time,
+        timedelta,
         decimal.Decimal,
         uuid.UUID,
     )
@@ -871,13 +894,17 @@ def merged_incomplete_reasons(parts: Iterable[ScanStats]) -> dict[str, int]:
     return dict(reasons)
 
 
+def now_iso() -> str:
+    return datetime.now(UTC).replace(microsecond=0).isoformat()
+
+
 @dataclass(slots=True)
 class ScanResult:
     findings: list[Finding] = field(default_factory=list)
     stats: list[ScanStats] = field(default_factory=list)
     # Empty only when the report cannot be dated (a fleet merge with an undated source); it is
     # published as null.
-    started_at: str = field(default_factory=lambda: now_iso())
+    started_at: str = field(default_factory=now_iso)
     finished_at: str | None = None
     version: str = ""
     inventory_size: int = 0
@@ -951,7 +978,3 @@ class ScanResult:
         # RFC 8259 JSON has no representation for NaN or infinity.  Refuse to
         # publish a report that downstream controls would parse inconsistently.
         return json.dumps(self.to_dict(), indent=indent, default=str, allow_nan=False)
-
-
-def now_iso() -> str:
-    return datetime.now(UTC).replace(microsecond=0).isoformat()

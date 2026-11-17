@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "metadata": {
-    "name": "September 25, October 8 and October 9 review regressions",
+    "name": "September 25, October 8, October 9 and November 10 review regressions",
     "type": "synthetic",
     "provenance": "Authored after review findings, with source-based labels. A regression suite used during development; not independent annotation, a held-out set, or field accuracy."
   },
@@ -851,6 +851,70 @@
             "product_signature": "framework.openai-agents-sdk"
           }
         ],
+        "max_agent_findings": 0
+      }
+    },
+    {
+      "id": "py-comment-names-provider",
+      "family": "framework",
+      "description": "Python comments that name provider hosts and key variables are a policy note, not LLM usage.",
+      "files": {
+        "proxy.py": "import requests\n\n# This service must never call api.openai.com or api.anthropic.com.\n# OPENAI_API_KEY and ANTHROPIC_API_KEY are blocked at the proxy.\n\ndef handler(event):\n    return requests.get(\"https://internal.example/health\").status_code\n"
+      },
+      "target": {
+        "kind": "framework-usage",
+        "signature": "provider.openai"
+      },
+      "present": false,
+      "assertions": {
+        "exact_findings": []
+      }
+    },
+    {
+      "id": "py-docstring-names-provider",
+      "family": "framework",
+      "description": "Python docstrings that name provider hosts, a key variable and a model document a deny rule; nothing reads them.",
+      "files": {
+        "proxy.py": "\"\"\"Deny list notes: api.openai.com and api.anthropic.com are blocked.\"\"\"\nimport requests\n\ndef handler(event):\n    \"\"\"Reject a request that carries OPENAI_API_KEY or names \"gpt-4o\".\"\"\"\n    return requests.get(\"https://internal.example/health\").status_code\n"
+      },
+      "target": {
+        "kind": "framework-usage",
+        "signature": "provider.openai"
+      },
+      "present": false,
+      "assertions": {
+        "exact_findings": []
+      }
+    },
+    {
+      "id": "py-provider-call-beside-prose",
+      "family": "framework",
+      "description": "A raw HTTP call to the provider is LLM usage; the comment and docstring beside it add nothing and hide nothing.",
+      "files": {
+        "ask.py": "import os\nimport requests\n\n# api.openai.com is the only provider this job may reach.\ndef ask(question):\n    \"\"\"Send one question to api.openai.com.\"\"\"\n    return requests.post(\n        \"https://api.openai.com/v1/chat/completions\",\n        headers={\"Authorization\": \"Bearer \" + os.environ[\"OPENAI_API_KEY\"]},\n        json={\"model\": \"gpt-4o\", \"messages\": [{\"role\": \"user\", \"content\": question}]},\n    ).json()\n"
+      },
+      "target": {
+        "kind": "framework-usage",
+        "signature": "provider.openai"
+      },
+      "present": true,
+      "assertions": {
+        "max_agent_findings": 0
+      }
+    },
+    {
+      "id": "py-fstring-host-after-interpolation",
+      "family": "framework",
+      "description": "An f-string piece that starts with // after a replacement field is code: the call is LLM usage even though the file's comment and docstring are prose.",
+      "files": {
+        "models.py": "import requests\n\n# api.openai.com is reached through the scheme the deployment sets.\nSCHEME = \"https:\"\n\ndef models():\n    \"\"\"List the models this account can use.\"\"\"\n    return requests.get(f\"{SCHEME}//api.openai.com/v1/models\").json()\n"
+      },
+      "target": {
+        "kind": "framework-usage",
+        "signature": "provider.openai"
+      },
+      "present": true,
+      "assertions": {
         "max_agent_findings": 0
       }
     }

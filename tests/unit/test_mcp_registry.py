@@ -14,8 +14,8 @@ from typing import Any, ClassVar
 import pytest
 from click.testing import CliRunner
 
-import shadowscan.engine as engine_module
-import shadowscan.mcp_registry as registry_module
+from shadowscan import engine as engine_module
+from shadowscan import mcp_registry as registry_module
 from shadowscan.cli import main
 from shadowscan.comparison import build_collection_scope
 from shadowscan.config import ConnectorSpec, ScanConfig
@@ -1214,7 +1214,8 @@ def test_the_engine_enriches_before_scoring_and_stays_complete(monkeypatch, tmp_
     plain = _engine(monkeypatch, findings).run()
     assert plain.complete and METADATA_KEY not in plain.findings[0].metadata
     factors = {f.id: f.weight for f in finding.risk.factors if f.id != "confidence-scaling"}
-    assert factors.pop(GOVERNANCE_FACTOR) == 15
+    governance_weight = factors.pop(GOVERNANCE_FACTOR)
+    assert governance_weight == 15
     assert factors == {f.id: f.weight for f in plain.findings[0].risk.factors if f.id != "confidence-scaling"}
     assert plain.findings[0].risk.danger_score == finding.risk.danger_score
 

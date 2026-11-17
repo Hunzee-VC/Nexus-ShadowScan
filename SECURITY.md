@@ -513,13 +513,13 @@ coverage, even when a response includes an empty collection field.
   `max_file_size`, or set `--max-coverage-gap 0`, where such a key must not be
   missed.
 - **Limitations:** Redaction cannot withhold a credential that nothing names or shapes as one,
-  so treat reports as confidential. In evidence snippets only, a last-resort
-  pass also withholds a quoted literal that looks generated: at least 20
+  so treat reports as confidential. A last-resort
+  pass also withholds, in evidence snippets and in finding descriptions,
+  titles and metadata, a quoted literal that looks generated: at least 20
   token characters mixing upper case, lower case and digits, switching between
   them often, with high per-character entropy. Hex digests, UUIDs and ordinary
-  identifiers keep their text; a short or low-entropy secret can still pass,
-  and descriptions, titles and metadata do not get this pass. Outside
-  snippets, these forms can remain: an unprefixed
+  identifiers keep their text; a short or low-entropy secret can still pass.
+  Outside report text, these forms can remain: an unprefixed
   literal passed to an ordinary function, or nested in another call inside a
   credential constructor (`AzureKeyCredential(str("..."))`) when it does not
   look like an opaque key (one that does is withheld, as after any credential

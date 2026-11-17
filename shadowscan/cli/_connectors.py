@@ -9,7 +9,7 @@ import click
 from rich.table import Table
 from rich.text import Text
 
-import shadowscan.cli as _cli
+from shadowscan import cli as _cli
 from shadowscan.cli import main
 from shadowscan.connectors import (
     builtin_connector_names,

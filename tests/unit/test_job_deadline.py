@@ -392,8 +392,6 @@ time.sleep(60)  # the stand-in for a scan that is still busy when the deadline p
 
 def test_exit_guard_armed_when_abandoned_workers_exist(monkeypatch):
     """An exit guard ensures the process cannot hang during emission with abandoned workers."""
-    import contextlib
-
     from shadowscan.cli import _run_and_emit_with_deadline
     from shadowscan.models import ScanResult
 
@@ -422,8 +420,6 @@ def test_exit_guard_armed_when_abandoned_workers_exist(monkeypatch):
 
 def test_exit_guard_not_armed_without_abandoned_workers(monkeypatch):
     """No exit guard when all workers complete normally."""
-    import contextlib
-
     from shadowscan.cli import _run_and_emit_with_deadline
     from shadowscan.models import ScanResult
 
@@ -446,8 +442,6 @@ def test_exit_guard_not_armed_without_abandoned_workers(monkeypatch):
 
 def _abandoned_worker_scan(monkeypatch):
     """Stub a scan that abandoned a timed-out worker; the hard exit raises instead."""
-    import contextlib
-
     from shadowscan.models import ScanResult
 
     engine_mock = Mock()

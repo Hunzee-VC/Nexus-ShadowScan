@@ -99,6 +99,19 @@ _MCP_CAPABILITY_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
 _LOCATION_LINE = re.compile(r":\d+\Z")
 
 
+def _attach_prose_hints(f: Finding, hints: set[str]) -> None:
+    """List providers named only in Python prose under ``potential_providers``.
+
+    A comment or docstring is no usage evidence, so these add no evidence, confidence or
+    provider; they keep a provider the code does not establish in front of a reviewer.
+    """
+    pending = hints - set(f.model_providers)
+    if pending:
+        potential: list[str] = f.metadata.setdefault("potential_providers", [])
+        potential.extend(sorted(pending - set(potential)))
+        potential.sort()
+
+
 class ProjectFindings:
     """Builds the findings of one scanned root from what the walk observed (ADR-005).
 
@@ -446,6 +459,7 @@ class ProjectFindings:
                 "runtime_instances": "not-enumerated",
             }
         self._apply_project_evidence(f, evidence)
+        _attach_prose_hints(f, proj.prose_hints)
         if evidence.env_only:
             f.add_tag("env-names-only")
         elif evidence.model_ids_only:

@@ -275,6 +275,7 @@ def write_private_text(path: str | Path, text: str) -> None:
             try:
                 os.unlink(temporary, dir_fd=directory)
             except FileNotFoundError:
+                # os.replace already moved it into place.
                 pass
     finally:
         os.close(directory)

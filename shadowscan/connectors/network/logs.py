@@ -1269,7 +1269,7 @@ class NetworkLogConnector(BaseConnector, _NoDump):
             }
         )
         if c.dns_attributions:
-            f.metadata["dns_attribution"] = sorted(c.dns_attributions, key=lambda item: str(item))
+            f.metadata["dns_attribution"] = sorted(c.dns_attributions, key=str)
         if c.ja4:
             f.metadata["tls_fingerprints"] = [
                 {
@@ -1281,7 +1281,7 @@ class NetworkLogConnector(BaseConnector, _NoDump):
                     "resolver": context[2],
                     "uid": uid,
                 }
-                for value, source_field, context, uid in sorted(c.ja4, key=lambda item: str(item))
+                for value, source_field, context, uid in sorted(c.ja4, key=str)
             ]
             c.limitations.add("JA4 describes a TLS client stack, not AI use, agency or a unique application")
         if c.limitations:
