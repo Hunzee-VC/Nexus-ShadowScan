@@ -504,11 +504,16 @@ def _python_ranges_from(
         # (Python 3.12+ raises for mid-file lexical errors that 3.11 tolerated)
         # masks the remainder ambiguously and must mark the file incomplete.
         return not (isinstance(exc, tokenize.TokenError) and "EOF" in message), None
-    except TokenizerFault:
+    except (TokenizerFault, UnicodeError):
         # The interpreter failed, not the text: CPython 3.12's tokenizer does for a NUL byte after an
         # indented line (found by the fuzzing in #259; see shadowscan.utils.python_tokens),
-        # where 3.13 raises TokenError. Nothing past the last token read can be said to be code, so it
-        # is masked and the file reported incomplete, as for any other tokenizer error.
+        # where 3.13 raises TokenError. Its UnicodeError, which python_tokens passes through as a
+        # documented error, is the same failure here: the text is already decoded, yet 3.12 raises
+        # UnicodeDecodeError for a multi-byte character before a backslash line break inside an
+        # f-string's replacement field, where 3.11 and 3.13 raise TokenError (lexing fuzz target,
+        # 2026-11-15). Uncaught, it dropped the whole file as incomplete, its real usage included.
+        # Nothing past the last token read can be said to be code, so it is masked and the file
+        # reported incomplete, as for any other tokenizer error.
         _mask_rest(spans, text, offset(read_to))
         return True, None
     if fstring_starts:

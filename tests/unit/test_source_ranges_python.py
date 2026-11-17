@@ -159,3 +159,38 @@ def test_nul_on_the_line_after_an_indented_one_is_lexed_on_every_interpreter():
     # The reproducer of the fault above: an exception on CPython 3.12, TokenError on 3.13 and fine on 3.11.
     spans, _ = noncode_ranges('\t""\n\x00', "python")
     assert (1, 3) in spans
+
+
+def test_a_codec_error_from_the_tokenizer_masks_the_rest_and_reports_it_incomplete(monkeypatch):
+    # shadowscan.utils.python_tokens passes the tokenizer's UnicodeError through as a documented error,
+    # so the lexer answers it as it answers a fault. CPython 3.12 raises UnicodeDecodeError for valid
+    # text (see the next test); simulated here so every interpreter runs the path.
+    real = source_ranges.tokenize.generate_tokens
+
+    def faulty(readline):
+        for index, token in enumerate(real(readline)):
+            if index == 3:
+                raise UnicodeDecodeError("utf-8", b"\xef", 0, 1, "unexpected end of data")
+            yield token
+
+    source = "\"a\" + 'b'\nimport openai\n"
+    monkeypatch.setattr(source_ranges.tokenize, "generate_tokens", faulty)
+    spans, incomplete = noncode_ranges(source, "python")
+    assert incomplete
+    assert spans == [(0, 3), (6, 9), (9, len(source))]
+
+
+# A multi-byte character before a backslash line break inside an f-string's replacement field. CPython
+# 3.12's tokenizer raises UnicodeDecodeError on these (found by the lexing fuzz target on main,
+# 2026-11-15); 3.11 and 3.13 raise TokenError.
+TOKENIZER_CODEC_FAULTS = ["f'''{=f'�\\\r\n':�", "f\"{=f'\U0001f600\\\r'}﻿"]
+
+
+@pytest.mark.parametrize("trigger", TOKENIZER_CODEC_FAULTS, ids=["crlf", "cr"])
+def test_the_codec_fault_keeps_the_code_before_it_on_every_interpreter(trigger):
+    # Before the fix, a file ending in one of these lost every finding on CPython 3.12: the error left
+    # the lexer and the whole file was dropped as incomplete, its real usage included.
+    code = "import openai\nclient = openai.OpenAI()\n"
+    spans, _ = noncode_ranges(code + trigger, "python")
+    assert all(0 <= start < end <= len(code + trigger) for start, end in spans)
+    assert not any(start < len(code) for start, _ in spans)

@@ -13,6 +13,31 @@ Counts and figures quoted in an entry are those of its date.
 
 ## Unreleased
 
+### A tokenizer codec error no longer drops a Python file (November 17)
+
+The scheduled lexing fuzz run of November 15 (run 43708921445, on `bd04e03`) found
+an input on which `noncode_ranges` raised `UnicodeDecodeError` on CPython 3.12. The
+3.12 tokenizer raises it for already-decoded text when a multi-byte character
+precedes a backslash line break inside an f-string's replacement field; 3.11 and
+3.13 raise `TokenError` for the same text. `shadowscan.utils.python_tokens` passes
+`UnicodeError` through as a documented tokenizer error, and two of its three
+callers (`redaction_statements`, `python_reexports`) already caught it. The source
+lexer caught only `TokenError`, `IndentationError` and `TokenizerFault`, so the
+error reached the per-file handler, which dropped the whole file as incomplete
+with reason `other`. A file with real provider usage followed by a 15-character
+trigger therefore reported no finding on 3.12; the scan still exited 3.
+
+`_python_ranges_from` now answers `UnicodeError` as it answers `TokenizerFault`:
+the text after the last token read is masked and the file reported incomplete
+(`unparsed-input`), and the evidence before it is kept. The wrapper's contract is
+unchanged, and so is `test_exhaustion_and_codec_errors_are_no_fault`. Only
+`UnicodeError` is caught, not `ValueError`, so a bug in the lexer's own loop body
+still surfaces. Regression tests: a simulated codec error on every interpreter, the
+two minimized reproducers (they fail before the fix on 3.12), and a lexing fuzz
+seed. The fuzz run's saved input was not retrievable here; the reproducers were
+found by a directed search on CPython 3.12.3 and hit the same exception on the same
+path.
+
 ### Entropy redaction in finding text fields, and a JWT validity period (November 12)
 
 Audit findings SEC-01 and SEC-02 (end-to-end audit of HEAD `d8f4e585`,

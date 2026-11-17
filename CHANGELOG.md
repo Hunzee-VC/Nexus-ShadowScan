@@ -8,6 +8,13 @@ explain operator migrations. Earlier per-change entries are preserved in the
 
 ## Unreleased
 
+- On CPython 3.12, a Python file with a multi-byte character before a backslash
+  line break inside an f-string's replacement field no longer loses all of its
+  findings. The 3.12 tokenizer raises `UnicodeDecodeError` there, which left the
+  source lexer and dropped the whole file as incomplete (reason `other`), its
+  real usage included. The lexer now masks from the last token read, keeps the
+  evidence before it and reports the file incomplete (`unparsed-input`), as it
+  does for any other tokenizer failure. Found by the scheduled lexing fuzz run.
 - Entropy (last-resort) redaction now withholds generated-looking literals from
   finding descriptions, titles and metadata, not only evidence snippets
   (audit SEC-01); finding-identity fields keep their text, so ids are unchanged.
