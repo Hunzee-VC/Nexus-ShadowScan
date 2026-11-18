@@ -57,6 +57,8 @@ LEXING_SNIPPETS: Final[dict[str, tuple[str, ...]]] = {
         'text = """never closed\n# not a comment\nimport secret_module\n',
         "a = 1\r\nb = '\\\r\ncontinued'\rc = 3\r",
         "# -*- coding: latin-1 -*-\nx = 'caf\xe9'\n",
+        # CPython 3.12's tokenizer raises UnicodeDecodeError on this valid text (2026-11-15 fuzz run).
+        "import openai\nf'''{=f'�\\\r\n':�",
     ),
     ".js": (
         "const a = `x ${ `y ${z}` } w`;\nconst b = a / 2 / 3; const r = /ab+c/gi.test(s) // note\n",

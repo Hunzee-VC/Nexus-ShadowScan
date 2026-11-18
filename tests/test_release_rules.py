@@ -20,7 +20,7 @@ from tools.release.rules import (
     verify_ruleset,
 )
 
-REPOSITORY = "Hunzee-VC/Nexus-ShadowScan"
+REPOSITORY = "aisecnomad/Nexus-ShadowScan"
 
 
 def _ruleset() -> dict[str, Any]:

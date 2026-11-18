@@ -39,7 +39,7 @@ def test_scheduled_audit_reports_scoped_assurance_without_admin_writes(tmp_path:
     job = workflow["jobs"]["merge-policy"]
     assert workflow["permissions"] == {"contents": "read"}
     # Pinned to the immutable repository ID of the repository that REPOSITORY names
-    # (formerly `aisecnomad/Nexus-ShadowScan` and `aisecnomad/Project-Nexus`), so a
+    # (formerly `Hunzee-VC/Nexus-ShadowScan` and `aisecnomad/Project-Nexus`), so a
     # rename or transfer cannot skip the audit job.
     assert job["if"] == "github.repository_id == '1174915264' && github.ref == 'refs/heads/main'"
     assert "permissions" not in job

@@ -19,9 +19,10 @@ from tools.governance_check import GITHUB_ACTIONS_APP_ID, check_ruleset, require
 ROOT = Path(__file__).resolve().parents[1]
 # The observed snapshots are GitHub's responses as recorded: the 2026-10-10 ones
 # before the repository was renamed from its first name, the 2026-10-18 and
-# 2026-10-26 sets before it was transferred, and the 2026-11-05 set under the
-# current name. They stay as recorded; tests read each as GitHub returned it.
-FORMER_REPOSITORIES = ("aisecnomad/Project-Nexus", "aisecnomad/Nexus-ShadowScan")
+# 2026-10-26 sets under the current name, and the 2026-11-05 set while it belonged
+# to the Hunzee-VC organization, before it was transferred back. They stay as
+# recorded; tests read each as GitHub returned it.
+FORMER_REPOSITORIES = ("aisecnomad/Project-Nexus", "Hunzee-VC/Nexus-ShadowScan")
 
 
 def _snapshot(ruleset_id: int = 23913372) -> dict[str, Any]:
@@ -32,7 +33,7 @@ def _snapshot(ruleset_id: int = 23913372) -> dict[str, Any]:
 
 @pytest.mark.parametrize(
     ("snapshot", "former"),
-    [("23913372.json", FORMER_REPOSITORIES[0]), ("2026-10-26/23913372.json", FORMER_REPOSITORIES[1])],
+    [("23913372.json", FORMER_REPOSITORIES[0]), ("2026-11-05/23913372.json", FORMER_REPOSITORIES[1])],
 )
 def test_observed_snapshot_of_a_former_name_is_refused_as_another_repository(
     snapshot: str, former: str
@@ -166,12 +167,15 @@ def test_readback_with_an_off_dismissal_restriction_matches_the_reviewed_payload
 
 @pytest.mark.parametrize("ruleset_id", RULESETS)
 def test_november_5_readback_matches_the_committed_payloads(ruleset_id: int) -> None:
-    # The first retained readback after the transfer, and the first that carries
-    # `dismissal_restriction`; the October 26 response for the same ruleset lacks it.
-    readback = json.loads((ROOT / ".github/rulesets/observed/2026-11-05" / f"{ruleset_id}.json").read_text())
+    # The first retained readback after the transfer to Hunzee-VC, and the first that carries
+    # `dismissal_restriction`; the October 26 response for the same ruleset lacks it. It names
+    # the owner the repository had then, which the test above refuses, so its settings are
+    # compared as this repository's.
+    recorded = json.loads((ROOT / ".github/rulesets/observed/2026-11-05" / f"{ruleset_id}.json").read_text())
     earlier = json.loads((ROOT / ".github/rulesets/observed/2026-10-26" / f"{ruleset_id}.json").read_text())
     expected = json.loads((ROOT / ".github/rulesets" / f"{ruleset_id}.update.json").read_text())
-    assert readback["source"] == REPOSITORY and readback["id"] == ruleset_id
+    assert recorded["source"] == FORMER_REPOSITORIES[1] and recorded["id"] == ruleset_id
+    readback = {**recorded, "source": REPOSITORY}
     assert readback["updated_at"] == earlier["updated_at"]
     assert "dismissal_restriction" not in _rule(earlier, "pull_request")["parameters"]
     review = _rule(readback, "pull_request")["parameters"]
@@ -180,6 +184,17 @@ def test_november_5_readback_matches_the_committed_payloads(ruleset_id: int) -> 
     observed = observe_readback(readback, expected, ruleset_id=ruleset_id)
     assert observed["status"] == "complete" and observed["complete_readback_verified"] is True
     assert prepare_payload(readback, ruleset_id=ruleset_id) == expected
+
+
+@pytest.mark.parametrize("ruleset_id", RULESETS)
+def test_a_readback_under_the_current_name_is_accepted_as_recorded(ruleset_id: int) -> None:
+    # Regression: the repository went back to the name the October 26 responses carry, and the
+    # weekly audit of 2026-11-17 refused GitHub's responses while REPOSITORY still named Hunzee-VC.
+    recorded = json.loads((ROOT / ".github/rulesets/observed/2026-10-26" / f"{ruleset_id}.json").read_text())
+    expected = json.loads((ROOT / ".github/rulesets" / f"{ruleset_id}.update.json").read_text())
+    assert recorded["source"] == REPOSITORY and recorded["id"] == ruleset_id
+    verify_readback(recorded, expected, ruleset_id=ruleset_id)
+    assert observe_readback(recorded, expected, ruleset_id=ruleset_id)["status"] == "complete"
 
 
 @pytest.mark.parametrize("ruleset_id", RULESETS)

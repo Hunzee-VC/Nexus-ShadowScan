@@ -1,6 +1,6 @@
 # SymBiote (AgentBOM) integration
 
-[Nexus SymBiote](https://github.com/Hunzee-VC/Nexus-Symbiote) describes one
+[Nexus SymBiote](https://github.com/aisecnomad/Nexus-Symbiote) describes one
 agent as a bill of materials: the MCP servers, models, instructions, retrieval
 sources, A2A cards and other components the agent is assembled from. ShadowScan
 reads one such format, the AgentBOM 0.1 document; current SymBiote builds write
@@ -15,7 +15,7 @@ split one governance loop:
 ## Compatibility
 
 This page was checked against Nexus SymBiote commit
-[`18e4b441`](https://github.com/Hunzee-VC/Nexus-Symbiote/tree/18e4b441bc78268db990d904f85e2ba8af9d9a52),
+[`18e4b441`](https://github.com/aisecnomad/Nexus-Symbiote/tree/18e4b441bc78268db990d904f85e2ba8af9d9a52),
 package `nexus-symbiote` version 0.1.0. Its console command is
 `nexus-symbiote`. At that commit it provides `scan`, `import-shadowscan`,
 `verify-artifact`, `verify-discovery`, `validate`, `risk`, `diff`, `summary`,
@@ -146,7 +146,7 @@ Without further options, `verify-discovery` compares the report bytes with the
 digest the AIBOM records and authenticates neither file. With `--bundle`,
 `--signer-identity` and `--issuer` it also verifies the report producer's
 Sigstore signature, and `--projection` rebuilds and compares the direct import. The companion's
-[ShadowScan integration guide](https://github.com/Hunzee-VC/Nexus-Symbiote/blob/18e4b441bc78268db990d904f85e2ba8af9d9a52/docs/shadowscan-integration.md)
+[ShadowScan integration guide](https://github.com/aisecnomad/Nexus-Symbiote/blob/18e4b441bc78268db990d904f85e2ba8af9d9a52/docs/shadowscan-integration.md)
 describes the mapping.
 
 At the checked commit SymBiote has no command that writes Agent Capability
@@ -162,4 +162,4 @@ observes against the AgentBOM's pinned `tooldef/v1` digests, so a tool whose
 description or schema changed after approval is flagged at discovery time,
 and cross-referencing `shadowscan diff` drift classes with `nexus-symbiote diff`
 delta events. Tracked in
-[#334](https://github.com/Hunzee-VC/Nexus-ShadowScan/issues/334).
+[#334](https://github.com/aisecnomad/Nexus-ShadowScan/issues/334).
